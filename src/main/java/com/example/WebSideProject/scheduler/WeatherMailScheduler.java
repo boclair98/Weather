@@ -1,5 +1,6 @@
 package com.example.WebSideProject.scheduler;
 
+import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.dto.WeatherDto;
 import com.example.WebSideProject.entity.User;
 import com.example.WebSideProject.service.MailService;
@@ -21,23 +22,52 @@ public class WeatherMailScheduler {
     private final UserService userService;
     private final MailService mailService;
 
-    // 매일 오후 11시 40분 실행
-    @Scheduled(cron = "0 40 23 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 30 6 * * *", zone = "Asia/Seoul")
+    public void sendMorningWeatherMail() {
+        sendWeatherMailByPeriod(WeatherPeriod.MORNING);
+    }
+
+    @Scheduled(cron = "0 30 11 * * *", zone = "Asia/Seoul")
+    public void sendAfternoonWeatherMail() {
+        sendWeatherMailByPeriod(WeatherPeriod.AFTERNOON);
+    }
+
+    @Scheduled(cron = "0 30 18 * * *", zone = "Asia/Seoul")
+    public void sendEveningWeatherMail() {
+        sendWeatherMailByPeriod(WeatherPeriod.EVENING);
+    }
+
     public void sendDailyWeatherMail() {
-        log.info("=== 날씨 메일 발송 시작 ===");
+        sendWeatherMailByPeriod(WeatherPeriod.MORNING);
+    }
+
+    public void sendWeatherMailByPeriod(WeatherPeriod period) {
+        log.info("=== {} 날씨 메일 발송 시작 ===", period.getLabel());
 
         List<User> subscribers = userService.getSubscribedUsers();
         log.info("구독자 수: {}명", subscribers.size());
 
         for (User user : subscribers) {
+            if (!isEnabledForPeriod(user, period)) {
+                continue;
+            }
+
             try {
-                WeatherDto weather = weatherService.getWeather(user.getNx(), user.getNy());
+                WeatherDto weather = weatherService.getWeather(user.getNx(), user.getNy(), period);
                 mailService.sendWeatherMail(user, weather);
             } catch (Exception e) {
                 log.error("사용자 {} 처리 중 오류 발생", user.getEmail(), e);
             }
         }
 
-        log.info("=== 날씨 메일 발송 완료: {}명 ===", subscribers.size());
+        log.info("=== {} 날씨 메일 발송 완료 ===", period.getLabel());
+    }
+
+    private boolean isEnabledForPeriod(User user, WeatherPeriod period) {
+        return switch (period) {
+            case MORNING -> user.isMorningEnabled();
+            case AFTERNOON -> user.isAfternoonEnabled();
+            case EVENING -> user.isEveningEnabled();
+        };
     }
 }

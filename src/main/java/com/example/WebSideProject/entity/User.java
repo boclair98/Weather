@@ -38,6 +38,15 @@ public class User {
     private int nx = 60;   // 기본값: 서울
     private int ny = 127;
 
+    @Column(nullable = false)
+    private boolean morningEnabled = true;
+
+    @Column(nullable = false)
+    private boolean afternoonEnabled = false;
+
+    @Column(nullable = false)
+    private boolean eveningEnabled = false;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
@@ -47,7 +56,18 @@ public class User {
     }
 
     @Builder
-    public User(String name, String email, String locationName, Double latitude, Double longitude, int nx, int ny) {
+    public User(
+            String name,
+            String email,
+            String locationName,
+            Double latitude,
+            Double longitude,
+            int nx,
+            int ny,
+            boolean morningEnabled,
+            boolean afternoonEnabled,
+            boolean eveningEnabled
+    ) {
         this.name = name;
         this.email = email;
         this.locationName = locationName == null || locationName.isBlank() ? "서울특별시 중구" : locationName;
@@ -55,6 +75,9 @@ public class User {
         this.longitude = longitude;
         this.nx = nx;
         this.ny = ny;
+        this.morningEnabled = morningEnabled;
+        this.afternoonEnabled = afternoonEnabled;
+        this.eveningEnabled = eveningEnabled;
     }
 
     public void unsubscribe() { this.subscribed = false; }

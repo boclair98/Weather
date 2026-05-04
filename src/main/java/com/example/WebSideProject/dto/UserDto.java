@@ -30,6 +30,12 @@ public class UserDto {
         private Double latitude;
 
         private Double longitude;
+
+        private boolean morningEnabled = true;
+
+        private boolean afternoonEnabled = false;
+
+        private boolean eveningEnabled = false;
     }
 
     @Getter
@@ -40,6 +46,9 @@ public class UserDto {
         private String email;
         private boolean subscribed;
         private String locationName;
+        private boolean morningEnabled;
+        private boolean afternoonEnabled;
+        private boolean eveningEnabled;
         private String message;
     }
 }

@@ -69,8 +69,45 @@
             background: #ffffff;
         }
 
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+        }
+
         .field {
             margin-bottom: 18px;
+        }
+
+        .time-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .time-option {
+            display: grid;
+            grid-template-columns: 18px 1fr;
+            gap: 10px;
+            align-items: start;
+            padding: 12px;
+            border: 1px solid #d6deec;
+            border-radius: 6px;
+            background: #ffffff;
+        }
+
+        .time-option strong {
+            display: block;
+            margin-bottom: 2px;
+            color: #172033;
+            font-size: 14px;
+        }
+
+        .time-option span {
+            display: block;
+            color: #66758d;
+            font-size: 13px;
+            line-height: 1.45;
         }
 
         .location-search {
@@ -185,7 +222,7 @@
     <div class="layout">
         <section>
             <h1>내 위치 날씨를 이메일로 받아보세요</h1>
-            <p class="intro">이름과 이메일을 입력하고 지역을 검색하면 오늘 날씨 메일이 바로 발송됩니다. 이후에는 매일 오후 11시 40분에 같은 주소로 날씨 알림을 보내드립니다.</p>
+            <p class="intro">이름과 이메일을 입력하고 지역을 검색하면 오늘 날씨 메일이 바로 발송됩니다. 이후에는 선택한 시간대에 같은 주소로 날씨 알림을 보내드립니다.</p>
         </section>
 
         <section class="panel" aria-label="날씨 구독 신청">
@@ -208,6 +245,34 @@
                     </div>
                     <div class="location-results" id="locationResults" aria-label="위치 검색 결과"></div>
                     <p class="meta" id="locationMeta">지역을 검색한 뒤 결과를 선택해주세요.</p>
+                </div>
+
+                <div class="field">
+                    <label>알림 시간</label>
+                    <div class="time-options">
+                        <label class="time-option" for="morningEnabled">
+                            <input id="morningEnabled" type="checkbox" checked>
+                            <span>
+                                <strong>아침 06:30</strong>
+                                <span>출근·등교 전 09시 예보를 보내드립니다.</span>
+                            </span>
+                        </label>
+                        <label class="time-option" for="afternoonEnabled">
+                            <input id="afternoonEnabled" type="checkbox">
+                            <span>
+                                <strong>점심 11:30</strong>
+                                <span>오후 외출 전 12시 예보를 보내드립니다.</span>
+                            </span>
+                        </label>
+                        <label class="time-option" for="eveningEnabled">
+                            <input id="eveningEnabled" type="checkbox">
+                            <span>
+                                <strong>저녁 18:30</strong>
+                                <span>퇴근길과 저녁 일정 전 18시 예보를 보내드립니다.</span>
+                            </span>
+                        </label>
+                    </div>
+                    <p class="meta">선택하지 않으면 아침 알림으로 등록됩니다.</p>
                 </div>
 
                 <button class="primary" type="submit" id="submitButton">구독하기</button>
@@ -253,7 +318,10 @@
             latitude: selectedLocation.latitude,
             longitude: selectedLocation.longitude,
             nx: selectedLocation.nx,
-            ny: selectedLocation.ny
+            ny: selectedLocation.ny,
+            morningEnabled: document.getElementById("morningEnabled").checked,
+            afternoonEnabled: document.getElementById("afternoonEnabled").checked,
+            eveningEnabled: document.getElementById("eveningEnabled").checked
         };
 
         try {

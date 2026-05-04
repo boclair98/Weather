@@ -27,6 +27,11 @@ public class UserService {
             throw new IllegalArgumentException("이미 등록된 이메일입니다: " + request.getEmail());
         }
 
+        boolean hasNotificationTime = request.isMorningEnabled()
+                || request.isAfternoonEnabled()
+                || request.isEveningEnabled();
+        boolean morningEnabled = request.isMorningEnabled() || !hasNotificationTime;
+
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
@@ -35,6 +40,9 @@ public class UserService {
                 .longitude(request.getLongitude())
                 .nx(request.getNx())
                 .ny(request.getNy())
+                .morningEnabled(morningEnabled)
+                .afternoonEnabled(request.isAfternoonEnabled())
+                .eveningEnabled(request.isEveningEnabled())
                 .build();
 
         User saved = userRepository.save(user);
@@ -47,7 +55,10 @@ public class UserService {
                 .email(saved.getEmail())
                 .subscribed(saved.isSubscribed())
                 .locationName(saved.getLocationName())
-                .message("구독이 완료되었습니다! 매일 아침 날씨를 보내드릴게요 🌤️")
+                .morningEnabled(saved.isMorningEnabled())
+                .afternoonEnabled(saved.isAfternoonEnabled())
+                .eveningEnabled(saved.isEveningEnabled())
+                .message("구독이 완료되었습니다! 선택한 시간에 날씨를 보내드릴게요 🌤️")
                 .build();
     }
 
@@ -69,6 +80,9 @@ public class UserService {
                 .email(email)
                 .subscribed(false)
                 .locationName(user.getLocationName())
+                .morningEnabled(user.isMorningEnabled())
+                .afternoonEnabled(user.isAfternoonEnabled())
+                .eveningEnabled(user.isEveningEnabled())
                 .message("구독이 취소되었습니다.")
                 .build();
     }
@@ -82,6 +96,9 @@ public class UserService {
                 .email(email)
                 .subscribed(true)
                 .locationName(user.getLocationName())
+                .morningEnabled(user.isMorningEnabled())
+                .afternoonEnabled(user.isAfternoonEnabled())
+                .eveningEnabled(user.isEveningEnabled())
                 .message("구독이 재개되었습니다!")
                 .build();
     }

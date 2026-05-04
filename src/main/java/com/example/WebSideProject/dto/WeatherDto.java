@@ -8,6 +8,7 @@ import lombok.Getter;
 public class WeatherDto {
     private String date;
     private String time;
+    private String periodLabel;
     private String sky;
     private String pty;
     private String tmp;
@@ -22,7 +23,8 @@ public class WeatherDto {
             return "아침 예보";
         }
 
-        return date.substring(4, 6) + "월 " + date.substring(6, 8) + "일 아침 예보";
+        String label = periodLabel == null || periodLabel.isBlank() ? "아침" : periodLabel;
+        return date.substring(4, 6) + "월 " + date.substring(6, 8) + "일 " + label + " 예보";
     }
 
     public String getSkyDescription() {

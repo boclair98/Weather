@@ -9,7 +9,8 @@
 - 위도/경도 좌표를 기상청 격자 좌표로 변환
 - 기상청 단기예보 API 연동
 - 구독 등록 시 웰컴 날씨 메일 즉시 발송
-- 스케줄러를 통한 매일 날씨 메일 자동 발송
+- 아침/점심/저녁 알림 시간 선택
+- 스케줄러를 통한 시간대별 날씨 메일 자동 발송
 - 이메일 수신 거부 및 재구독 API
 - Thymeleaf HTML 메일 템플릿
 
@@ -80,7 +81,7 @@ Kakao Local API로 장소 또는 주소를 검색하고, 기상청 격자 좌표
 ### 날씨 조회
 
 ```http
-GET /api/weather?nx=61&ny=125
+GET /api/weather?nx=61&ny=125&period=MORNING
 ```
 
 ### 구독 등록
@@ -98,7 +99,10 @@ Content-Type: application/json
   "latitude": 37.4979,
   "longitude": 127.0276,
   "nx": 61,
-  "ny": 125
+  "ny": 125,
+  "morningEnabled": true,
+  "afternoonEnabled": false,
+  "eveningEnabled": true
 }
 ```
 
@@ -119,6 +123,14 @@ PATCH /api/users/resubscribe?email=user@example.com
 
 ```http
 POST /api/weather-mails/send-now
+```
+
+특정 시간대만 수동 발송할 수도 있습니다.
+
+```http
+POST /api/weather-mails/send-now?period=MORNING
+POST /api/weather-mails/send-now?period=AFTERNOON
+POST /api/weather-mails/send-now?period=EVENING
 ```
 
 ## 환경 변수
@@ -163,7 +175,7 @@ $env:KAKAO_REST_API_KEY="your_kakao_rest_api_key"
 
 ## 개선 예정
 
-- 사용자별 발송 시간 설정
+- 사용자별 발송 시간 직접 지정
 - 메일 발송 이력 저장
 - 대기질 API 연동
 - 위치 변경 API

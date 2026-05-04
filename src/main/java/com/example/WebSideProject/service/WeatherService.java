@@ -1,5 +1,6 @@
 package com.example.WebSideProject.service;
 
+import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.dto.WeatherDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,9 +34,13 @@ public class WeatherService {
     private final RestTemplate restTemplate;
 
     public WeatherDto getWeather(int nx, int ny) {
+        return getWeather(nx, ny, WeatherPeriod.MORNING);
+    }
+
+    public WeatherDto getWeather(int nx, int ny, WeatherPeriod period) {
         ForecastBase forecastBase = getForecastBase();
-        String targetDate = getMorningForecastDate().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String targetTime = "0900";
+        String targetDate = getForecastDate(period).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String targetTime = period.getTargetTime();
         String encodedApiKey = UriUtils.encode(apiKey, StandardCharsets.UTF_8);
 
         URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl + "/getVilageFcst")
@@ -55,14 +60,15 @@ public class WeatherService {
         try {
             String response = restTemplate.getForObject(uri, String.class);
             log.debug("기상청 API 응답: {}", response);
-            return parseWeatherResponse(response, targetDate, targetTime);
+            return parseWeatherResponse(response, targetDate, period);
         } catch (Exception e) {
             log.error("기상청 API 호출 실패", e);
             throw new RuntimeException("날씨 정보를 가져오는데 실패했습니다.", e);
         }
     }
 
-    private WeatherDto parseWeatherResponse(String response, String targetDate, String targetTime) {
+    private WeatherDto parseWeatherResponse(String response, String targetDate, WeatherPeriod period) {
+        String targetTime = period.getTargetTime();
         JSONObject json = new JSONObject(response);
         JSONArray items = json
                 .getJSONObject("response")
@@ -72,7 +78,7 @@ public class WeatherService {
 
         Map<String, String> weatherMap = new HashMap<>();
         Map<String, String> dailyMap = new HashMap<>();
-        Map<String, ForecastValue> morningMap = new HashMap<>();
+        Map<String, ForecastValue> nearbyMap = new HashMap<>();
         for (int i = 0; i < items.length(); i++) {
             JSONObject item = items.getJSONObject(i);
             String category = item.getString("category");
@@ -90,11 +96,11 @@ public class WeatherService {
                 weatherMap.put(category, fcstValue);
             }
 
-            int morningDistance = getMorningDistance(item.getString("fcstTime"));
-            if (morningDistance >= 0) {
-                morningMap.merge(
+            int nearbyDistance = getNearbyDistance(item.getString("fcstTime"), period.getTargetHour());
+            if (nearbyDistance >= 0) {
+                nearbyMap.merge(
                         category,
-                        new ForecastValue(fcstValue, morningDistance),
+                        new ForecastValue(fcstValue, nearbyDistance),
                         (current, candidate) -> candidate.distance() < current.distance() ? candidate : current
                 );
             }
@@ -103,14 +109,15 @@ public class WeatherService {
         return WeatherDto.builder()
                 .date(targetDate)
                 .time(targetTime)
-                .sky(getForecastValue(weatherMap, morningMap, dailyMap, "SKY", "1"))
-                .pty(getForecastValue(weatherMap, morningMap, dailyMap, "PTY", "0"))
-                .tmp(getForecastValue(weatherMap, morningMap, dailyMap, "TMP", "-"))
+                .periodLabel(period.getLabel())
+                .sky(getForecastValue(weatherMap, nearbyMap, dailyMap, "SKY", "1"))
+                .pty(getForecastValue(weatherMap, nearbyMap, dailyMap, "PTY", "0"))
+                .tmp(getForecastValue(weatherMap, nearbyMap, dailyMap, "TMP", "-"))
                 .tmn(weatherMap.getOrDefault("TMN", dailyMap.getOrDefault("TMN", "-")))
                 .tmx(weatherMap.getOrDefault("TMX", dailyMap.getOrDefault("TMX", "-")))
-                .pop(getForecastValue(weatherMap, morningMap, dailyMap, "POP", "0"))
-                .reh(getForecastValue(weatherMap, morningMap, dailyMap, "REH", "-"))
-                .wsd(getForecastValue(weatherMap, morningMap, dailyMap, "WSD", "-"))
+                .pop(getForecastValue(weatherMap, nearbyMap, dailyMap, "POP", "0"))
+                .reh(getForecastValue(weatherMap, nearbyMap, dailyMap, "REH", "-"))
+                .wsd(getForecastValue(weatherMap, nearbyMap, dailyMap, "WSD", "-"))
                 .build();
     }
 
@@ -130,13 +137,14 @@ public class WeatherService {
         return dailyMap.getOrDefault(category, defaultValue);
     }
 
-    private int getMorningDistance(String fcstTime) {
+    private int getNearbyDistance(String fcstTime, int targetHour) {
         int hour = Integer.parseInt(fcstTime.substring(0, 2));
-        if (hour < 6 || hour > 12) {
+        int distance = Math.abs(hour - targetHour);
+        if (distance > 3) {
             return -1;
         }
 
-        return Math.abs(hour - 9);
+        return distance;
     }
 
     private ForecastBase getForecastBase() {
@@ -161,8 +169,8 @@ public class WeatherService {
         );
     }
 
-    private LocalDate getMorningForecastDate() {
-        return LocalTime.now().getHour() >= 18 ? LocalDate.now().plusDays(1) : LocalDate.now();
+    private LocalDate getForecastDate(WeatherPeriod period) {
+        return LocalDate.now();
     }
 
     private record ForecastBase(String date, String time) {

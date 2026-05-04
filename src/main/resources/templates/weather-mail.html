@@ -28,7 +28,7 @@
         <p th:text="|${locationName} · ${weather.forecastLabel}|">서울특별시 중구 · 5월 4일 아침 예보</p>
     </div>
     <div class="body">
-        <p class="greeting" th:text="|안녕하세요, ${name}님! 아침 외출 전에 날씨를 확인해보세요 😊|"></p>
+        <p class="greeting" th:text="|안녕하세요, ${name}님! 오늘 일정 전에 날씨를 확인해보세요 😊|"></p>
         <div class="weather-card">
             <div class="weather-main"  th:text="${weather.skyDescription}">맑음 ☀️</div>
             <div class="weather-desc"  th:text="'강수: ' + ${weather.ptyDescription} + ' / 강수확률: ' + ${weather.pop} + '%'"></div>

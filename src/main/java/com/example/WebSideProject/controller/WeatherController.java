@@ -1,5 +1,6 @@
 package com.example.WebSideProject.controller;
 
+import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.dto.WeatherDto;
 import com.example.WebSideProject.service.WeatherService;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +19,9 @@ public class WeatherController {
     @GetMapping
     public WeatherDto getWeather(
             @RequestParam(defaultValue = "60") int nx,
-            @RequestParam(defaultValue = "127") int ny
+            @RequestParam(defaultValue = "127") int ny,
+            @RequestParam(defaultValue = "MORNING") WeatherPeriod period
     ) {
-        return weatherService.getWeather(nx, ny);
+        return weatherService.getWeather(nx, ny, period);
     }
 }
