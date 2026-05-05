@@ -1,5 +1,7 @@
 package com.example.WebSideProject.entity;
 
+import com.example.WebSideProject.Enum.AgeGroup;
+import com.example.WebSideProject.Enum.GenderType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -38,6 +40,12 @@ public class User {
     private int nx = 60;   // 기본값: 서울
     private int ny = 127;
 
+    @Enumerated(EnumType.STRING)
+    private AgeGroup ageGroup = AgeGroup.NONE;
+
+    @Enumerated(EnumType.STRING)
+    private GenderType gender = GenderType.NONE;
+
     @Column(nullable = false)
     private boolean morningEnabled = true;
 
@@ -52,7 +60,19 @@ public class User {
 
     @PrePersist
     protected void onCreate() {
+        normalizeStylePreference();
         this.createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    @PostLoad
+    protected void normalizeStylePreference() {
+        if (this.ageGroup == null) {
+            this.ageGroup = AgeGroup.NONE;
+        }
+        if (this.gender == null) {
+            this.gender = GenderType.NONE;
+        }
     }
 
     @Builder
@@ -64,6 +84,8 @@ public class User {
             Double longitude,
             int nx,
             int ny,
+            AgeGroup ageGroup,
+            GenderType gender,
             boolean morningEnabled,
             boolean afternoonEnabled,
             boolean eveningEnabled
@@ -75,6 +97,8 @@ public class User {
         this.longitude = longitude;
         this.nx = nx;
         this.ny = ny;
+        this.ageGroup = ageGroup == null ? AgeGroup.NONE : ageGroup;
+        this.gender = gender == null ? GenderType.NONE : gender;
         this.morningEnabled = morningEnabled;
         this.afternoonEnabled = afternoonEnabled;
         this.eveningEnabled = eveningEnabled;
@@ -82,4 +106,31 @@ public class User {
 
     public void unsubscribe() { this.subscribed = false; }
     public void subscribe()   { this.subscribed = true; }
+
+    public AgeGroup getAgeGroup() {
+        return ageGroup == null ? AgeGroup.NONE : ageGroup;
+    }
+
+    public GenderType getGender() {
+        return gender == null ? GenderType.NONE : gender;
+    }
+
+    public void updateLocation(
+            String locationName,
+            Double latitude,
+            Double longitude,
+            int nx,
+            int ny
+    ) {
+        this.locationName = locationName == null || locationName.isBlank() ? this.locationName : locationName;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.nx = nx;
+        this.ny = ny;
+    }
+
+    public void updateStylePreference(AgeGroup ageGroup, GenderType gender) {
+        this.ageGroup = ageGroup == null ? AgeGroup.NONE : ageGroup;
+        this.gender = gender == null ? GenderType.NONE : gender;
+    }
 }

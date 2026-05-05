@@ -33,4 +33,16 @@ public class UserController {
     public ResponseEntity<UserDto.Response> resubscribe(@RequestParam String email) {
         return ResponseEntity.ok(userService.resubscribe(email));
     }
+
+    @PatchMapping("/location")
+    public ResponseEntity<UserDto.Response> updateLocation(@Valid @RequestBody UserDto.UpdateLocationRequest request) {
+        return ResponseEntity.ok(userService.updateLocation(request));
+    }
+
+    @PatchMapping("/style-preference")
+    public ResponseEntity<UserDto.Response> updateStylePreference(
+            @Valid @RequestBody UserDto.UpdateStylePreferenceRequest request
+    ) {
+        return ResponseEntity.ok(userService.updateStylePreference(request));
+    }
 }

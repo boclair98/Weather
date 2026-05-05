@@ -1,0 +1,36 @@
+<svg width="920" height="560" viewBox="0 0 920 560" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="920" height="560" rx="24" fill="#F5F7FB"/>
+  <rect x="40" y="44" width="360" height="120" rx="10" fill="#FFFFFF" stroke="#DFE5EF"/>
+  <text x="64" y="84" fill="#172033" font-family="Arial, sans-serif" font-size="28" font-weight="700">내 위치 날씨 구독</text>
+  <text x="64" y="122" fill="#586276" font-family="Arial, sans-serif" font-size="15">지역, 알림 시간, 스타일 기준을 선택하면</text>
+  <text x="64" y="146" fill="#586276" font-family="Arial, sans-serif" font-size="15">매일 맞춤 날씨 메일을 받을 수 있습니다.</text>
+
+  <rect x="460" y="44" width="420" height="472" rx="10" fill="#FFFFFF" stroke="#DFE5EF"/>
+  <text x="488" y="84" fill="#172033" font-family="Arial, sans-serif" font-size="16" font-weight="700">이름</text>
+  <rect x="488" y="96" width="364" height="44" rx="6" fill="#FFFFFF" stroke="#C9D2E3"/>
+  <text x="504" y="124" fill="#66758D" font-family="Arial, sans-serif" font-size="14">홍길동</text>
+
+  <text x="488" y="170" fill="#172033" font-family="Arial, sans-serif" font-size="16" font-weight="700">이메일</text>
+  <rect x="488" y="182" width="364" height="44" rx="6" fill="#FFFFFF" stroke="#C9D2E3"/>
+  <text x="504" y="210" fill="#66758D" font-family="Arial, sans-serif" font-size="14">user@example.com</text>
+
+  <text x="488" y="256" fill="#172033" font-family="Arial, sans-serif" font-size="16" font-weight="700">연령대</text>
+  <rect x="488" y="268" width="174" height="44" rx="6" fill="#FFFFFF" stroke="#C9D2E3"/>
+  <text x="504" y="296" fill="#172033" font-family="Arial, sans-serif" font-size="14">20대</text>
+
+  <text x="678" y="256" fill="#172033" font-family="Arial, sans-serif" font-size="16" font-weight="700">성별</text>
+  <rect x="678" y="268" width="174" height="44" rx="6" fill="#FFFFFF" stroke="#C9D2E3"/>
+  <text x="694" y="296" fill="#172033" font-family="Arial, sans-serif" font-size="14">여성</text>
+
+  <text x="488" y="342" fill="#172033" font-family="Arial, sans-serif" font-size="16" font-weight="700">위치</text>
+  <rect x="488" y="354" width="260" height="44" rx="6" fill="#FFFFFF" stroke="#C9D2E3"/>
+  <text x="504" y="382" fill="#66758D" font-family="Arial, sans-serif" font-size="14">강남역</text>
+  <rect x="760" y="354" width="92" height="44" rx="6" fill="#E9EEF7"/>
+  <text x="792" y="382" fill="#1F3556" font-family="Arial, sans-serif" font-size="14" font-weight="700">검색</text>
+
+  <rect x="488" y="412" width="364" height="42" rx="6" fill="#EEF4FF" stroke="#2563EB"/>
+  <text x="504" y="438" fill="#1F3556" font-family="Arial, sans-serif" font-size="14" font-weight="700">강남역 (격자 61, 125)</text>
+
+  <rect x="488" y="472" width="364" height="44" rx="6" fill="#2563EB"/>
+  <text x="642" y="500" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="15" font-weight="700">구독하기</text>
+</svg>

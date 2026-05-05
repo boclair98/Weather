@@ -42,6 +42,9 @@ public class MailService {
             context.setVariable("email", user.getEmail());
             context.setVariable("locationName", user.getLocationName());
             context.setVariable("weather", weather);
+            context.setVariable("ageGroupLabel", user.getAgeGroup().getLabel());
+            context.setVariable("genderLabel", user.getGender().getLabel());
+            context.setVariable("styleRecommendation", weather.getStyleRecommendation(user.getAgeGroup(), user.getGender()));
             context.setVariable("unsubscribeUrl", appBaseUrl + "/api/users/unsubscribe?email=" + encode(user.getEmail()));
 
             String html = templateEngine.process("weather-mail", context);

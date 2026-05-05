@@ -40,6 +40,8 @@ public class UserService {
                 .longitude(request.getLongitude())
                 .nx(request.getNx())
                 .ny(request.getNy())
+                .ageGroup(request.getAgeGroup())
+                .gender(request.getGender())
                 .morningEnabled(morningEnabled)
                 .afternoonEnabled(request.isAfternoonEnabled())
                 .eveningEnabled(request.isEveningEnabled())
@@ -55,6 +57,8 @@ public class UserService {
                 .email(saved.getEmail())
                 .subscribed(saved.isSubscribed())
                 .locationName(saved.getLocationName())
+                .ageGroup(saved.getAgeGroup())
+                .gender(saved.getGender())
                 .morningEnabled(saved.isMorningEnabled())
                 .afternoonEnabled(saved.isAfternoonEnabled())
                 .eveningEnabled(saved.isEveningEnabled())
@@ -80,6 +84,8 @@ public class UserService {
                 .email(email)
                 .subscribed(false)
                 .locationName(user.getLocationName())
+                .ageGroup(user.getAgeGroup())
+                .gender(user.getGender())
                 .morningEnabled(user.isMorningEnabled())
                 .afternoonEnabled(user.isAfternoonEnabled())
                 .eveningEnabled(user.isEveningEnabled())
@@ -96,10 +102,62 @@ public class UserService {
                 .email(email)
                 .subscribed(true)
                 .locationName(user.getLocationName())
+                .ageGroup(user.getAgeGroup())
+                .gender(user.getGender())
                 .morningEnabled(user.isMorningEnabled())
                 .afternoonEnabled(user.isAfternoonEnabled())
                 .eveningEnabled(user.isEveningEnabled())
                 .message("구독이 재개되었습니다!")
+                .build();
+    }
+
+    @Transactional
+    public UserDto.Response updateLocation(UserDto.UpdateLocationRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
+
+        user.updateLocation(
+                request.getLocationName(),
+                request.getLatitude(),
+                request.getLongitude(),
+                request.getNx(),
+                request.getNy()
+        );
+
+        return UserDto.Response.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .subscribed(user.isSubscribed())
+                .locationName(user.getLocationName())
+                .ageGroup(user.getAgeGroup())
+                .gender(user.getGender())
+                .morningEnabled(user.isMorningEnabled())
+                .afternoonEnabled(user.isAfternoonEnabled())
+                .eveningEnabled(user.isEveningEnabled())
+                .message("구독 위치가 변경되었습니다.")
+                .build();
+    }
+
+    @Transactional
+    public UserDto.Response updateStylePreference(UserDto.UpdateStylePreferenceRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
+
+        user.updateStylePreference(request.getAgeGroup(), request.getGender());
+
+        return UserDto.Response.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .subscribed(user.isSubscribed())
+                .locationName(user.getLocationName())
+                .ageGroup(user.getAgeGroup())
+                .gender(user.getGender())
+                .morningEnabled(user.isMorningEnabled())
+                .afternoonEnabled(user.isAfternoonEnabled())
+                .eveningEnabled(user.isEveningEnabled())
+                .message("스타일 추천 기준이 변경되었습니다.")
                 .build();
     }
 
