@@ -10,9 +10,25 @@
 
 ![구독 화면 미리보기](docs/images/subscription-form-preview.svg)
 
-메일에서는 날씨 요약, 외출 점수, 미세먼지, 옷차림, 우산, 마스크, 스타일링 추천을 모바일 친화적인 단일 컬럼 레이아웃으로 제공합니다.
+메일에서는 날씨 요약, 외출 점수, 미세먼지, 옷차림, 우산, 마스크, 스타일링 추천을 모바일 친화적인 단일 컬럼 레이아웃으로 제공합니다. Gmail과 네이버 메일에서 보이는 화면을 기준으로 메일 폭, 카드 간격, 텍스트 줄바꿈을 조정했습니다.
 
-![날씨 메일 미리보기](docs/images/weather-mail-preview.svg)
+### Gmail / Naver Mail
+
+| Gmail 모바일 | 네이버 메일 모바일 |
+| --- | --- |
+| ![Gmail 모바일 메일 미리보기](docs/images/gmail-mobile-mail-preview.svg) | ![네이버 메일 모바일 미리보기](docs/images/naver-mobile-mail-preview.svg) |
+
+### 날씨별 화면 테마
+
+날씨에 따라 프론트 화면과 메일의 상세 문구가 달라집니다. 맑은 날은 화창하고 밝게, 비 오는 날은 우산과 방수 신발을 강조하는 식으로 사용자에게 바로 필요한 준비를 안내합니다.
+
+| 맑음 | 비 |
+| --- | --- |
+| ![맑은 날 테마 미리보기](docs/images/weather-theme-sunny-preview.svg) | ![비 오는 날 테마 미리보기](docs/images/weather-theme-rain-preview.svg) |
+
+| 흐림 | 눈 |
+| --- | --- |
+| ![흐린 날 테마 미리보기](docs/images/weather-theme-cloudy-preview.svg) | ![눈 오는 날 테마 미리보기](docs/images/weather-theme-snow-preview.svg) |
 
 ## 주요 기능
 

@@ -1,0 +1,14 @@
+<svg width="920" height="460" viewBox="0 0 920 460" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="920" height="460" fill="#fff7dc"/>
+  <circle cx="690" cy="102" r="54" fill="#f59e0b"/>
+  <circle cx="690" cy="102" r="84" fill="#fbbf24" opacity=".22"/>
+  <rect x="80" y="74" width="760" height="312" rx="26" fill="#ffffff" stroke="#f6d98b"/>
+  <text x="128" y="134" font-family="Arial, sans-serif" font-size="30" font-weight="800" fill="#92400e">화창한 날씨</text>
+  <text x="128" y="174" font-family="Arial, sans-serif" font-size="18" fill="#78350f">산책이나 가벼운 외출에 잘 어울리는 날이에요.</text>
+  <rect x="128" y="218" width="188" height="96" rx="14" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="152" y="254" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#92400e">외출 점수</text>
+  <text x="152" y="294" font-family="Arial, sans-serif" font-size="34" font-weight="800" fill="#d97706">92점</text>
+  <rect x="346" y="218" width="332" height="96" rx="14" fill="#fff7ed" stroke="#fdba74"/>
+  <text x="370" y="254" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#9a3412">추천 준비</text>
+  <text x="370" y="286" font-family="Arial, sans-serif" font-size="16" fill="#7c2d12">가벼운 겉옷, 선크림, 산책하기 좋은 신발</text>
+</svg>
