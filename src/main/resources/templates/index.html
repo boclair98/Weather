@@ -14,7 +14,25 @@
             min-height: 100vh;
             font-family: Arial, "Noto Sans KR", sans-serif;
             color: #172033;
-            background: #f5f7fb;
+            background: #eef4ff;
+            transition: background 240ms ease, color 240ms ease;
+        }
+
+        body.weather-sunny {
+            background: #fff7dc;
+        }
+
+        body.weather-rain {
+            background: #e8eef7;
+        }
+
+        body.weather-snow {
+            background: #eef8ff;
+        }
+
+        body.weather-cloudy,
+        body.weather-mild {
+            background: #eef2f7;
         }
 
         main {
@@ -42,6 +60,112 @@
             color: #586276;
             font-size: 18px;
             line-height: 1.7;
+        }
+
+        .weather-preview {
+            margin-top: 24px;
+            border: 1px solid #dfe5ef;
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 0 12px 32px rgba(30, 45, 75, 0.08);
+            overflow: hidden;
+        }
+
+        .weather-preview-header {
+            padding: 18px 20px;
+            background: #1e3a8a;
+            color: #ffffff;
+        }
+
+        .weather-preview.weather-sunny .weather-preview-header {
+            background: #f59e0b;
+        }
+
+        .weather-preview.weather-rain .weather-preview-header {
+            background: #1f4f7a;
+        }
+
+        .weather-preview.weather-snow .weather-preview-header {
+            background: #2f6f9f;
+        }
+
+        .weather-preview.weather-cloudy .weather-preview-header {
+            background: #475569;
+        }
+
+        .weather-preview-title {
+            margin: 0;
+            font-size: 14px;
+            line-height: 20px;
+            opacity: 0.86;
+        }
+
+        .weather-preview-main {
+            margin: 5px 0 0;
+            font-size: 28px;
+            line-height: 1.25;
+            font-weight: 800;
+        }
+
+        .weather-preview-body {
+            padding: 18px 20px 20px;
+        }
+
+        .weather-score {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .weather-score strong {
+            font-size: 30px;
+            line-height: 1;
+            color: #0f766e;
+        }
+
+        .weather-score span {
+            color: #115e59;
+            font-weight: 700;
+        }
+
+        .weather-detail {
+            margin: 0;
+            color: #35435a;
+            font-size: 15px;
+            line-height: 1.65;
+        }
+
+        .weather-chip-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .weather-chip {
+            padding: 10px;
+            border: 1px solid #e0e7f2;
+            border-radius: 6px;
+            background: #f8fafc;
+        }
+
+        .weather-chip span {
+            display: block;
+            color: #718096;
+            font-size: 12px;
+            line-height: 18px;
+        }
+
+        .weather-chip strong {
+            display: block;
+            color: #172033;
+            font-size: 14px;
+            line-height: 20px;
+        }
+
+        .weather-preview[hidden] {
+            display: none;
         }
 
         .panel {
@@ -229,6 +353,10 @@
             .split-fields {
                 grid-template-columns: 1fr;
             }
+
+            .weather-chip-row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -238,6 +366,33 @@
         <section>
             <h1>내 위치 날씨를 이메일로 받아보세요</h1>
             <p class="intro">이름과 이메일을 입력하고 지역을 검색하면 오늘 날씨 메일이 바로 발송됩니다. 이후에는 선택한 시간대에 같은 주소로 날씨 알림을 보내드립니다.</p>
+            <div class="weather-preview" id="weatherPreview" hidden>
+                <div class="weather-preview-header">
+                    <p class="weather-preview-title" id="weatherPreviewTitle">선택 위치 날씨</p>
+                    <div class="weather-preview-main" id="weatherPreviewMain">날씨를 불러오는 중</div>
+                </div>
+                <div class="weather-preview-body">
+                    <div class="weather-score">
+                        <strong id="outingScore">-점</strong>
+                        <span id="outingScoreLabel">-</span>
+                    </div>
+                    <p class="weather-detail" id="weatherDetail">위치를 선택하면 날씨에 맞는 외출 조언을 보여드립니다.</p>
+                    <div class="weather-chip-row">
+                        <div class="weather-chip">
+                            <span>기온</span>
+                            <strong id="weatherTemp">-</strong>
+                        </div>
+                        <div class="weather-chip">
+                            <span>강수</span>
+                            <strong id="weatherRain">-</strong>
+                        </div>
+                        <div class="weather-chip">
+                            <span>대기질</span>
+                            <strong id="weatherAir">-</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <section class="panel" aria-label="날씨 구독 신청">
@@ -327,6 +482,15 @@
     const result = document.getElementById("result");
     const submitButton = document.getElementById("submitButton");
     const searchButton = document.getElementById("searchLocation");
+    const weatherPreview = document.getElementById("weatherPreview");
+    const weatherPreviewTitle = document.getElementById("weatherPreviewTitle");
+    const weatherPreviewMain = document.getElementById("weatherPreviewMain");
+    const outingScore = document.getElementById("outingScore");
+    const outingScoreLabel = document.getElementById("outingScoreLabel");
+    const weatherDetail = document.getElementById("weatherDetail");
+    const weatherTemp = document.getElementById("weatherTemp");
+    const weatherRain = document.getElementById("weatherRain");
+    const weatherAir = document.getElementById("weatherAir");
     let selectedLocation = null;
 
     searchButton.addEventListener("click", searchLocations);
@@ -438,11 +602,57 @@
             element.classList.toggle("selected", elementIndex === index);
         });
         locationMeta.textContent = `선택 위치: ${location.locationName} (격자 ${location.nx}, ${location.ny})`;
+        loadWeatherPreview(location);
     }
 
     function showResult(message, ok) {
         result.textContent = message;
         result.className = ok ? "result ok" : "result error";
+    }
+
+    async function loadWeatherPreview(location) {
+        weatherPreview.hidden = false;
+        weatherPreview.className = "weather-preview";
+        weatherPreviewTitle.textContent = `${location.locationName} 날씨 미리보기`;
+        weatherPreviewMain.textContent = "날씨를 불러오는 중";
+        weatherDetail.textContent = "선택한 위치의 날씨를 분석하고 있어요.";
+        outingScore.textContent = "-점";
+        outingScoreLabel.textContent = "-";
+        weatherTemp.textContent = "-";
+        weatherRain.textContent = "-";
+        weatherAir.textContent = "-";
+
+        try {
+            const params = new URLSearchParams({
+                nx: location.nx,
+                ny: location.ny,
+                period: "MORNING",
+                locationName: location.locationName
+            });
+            const response = await fetch(`/api/weather?${params.toString()}`);
+            const weather = await response.json();
+            if (!response.ok) {
+                throw new Error(weather.message || "날씨를 불러오지 못했습니다.");
+            }
+            renderWeatherPreview(location, weather);
+        } catch (error) {
+            weatherPreviewMain.textContent = "날씨 확인 실패";
+            weatherDetail.textContent = error.message;
+        }
+    }
+
+    function renderWeatherPreview(location, weather) {
+        const theme = weather.weatherTheme || "mild";
+        document.body.className = `weather-${theme}`;
+        weatherPreview.className = `weather-preview weather-${theme}`;
+        weatherPreviewTitle.textContent = `${location.locationName} · ${weather.forecastLabel || "날씨 예보"}`;
+        weatherPreviewMain.textContent = `${weather.weatherMood || "오늘"} · ${weather.skyDescription || "날씨 정보"}`;
+        outingScore.textContent = `${weather.outingScore || "-"}점`;
+        outingScoreLabel.textContent = weather.outingScoreLabel || "-";
+        weatherDetail.textContent = weather.detailedWeatherMessage || weather.summaryMessage || "오늘 날씨를 확인해보세요.";
+        weatherTemp.textContent = `${weather.tmp || "-"}°C`;
+        weatherRain.textContent = `강수 ${weather.pop || "-"}%`;
+        weatherAir.textContent = weather.airQualitySummary || "-";
     }
 </script>
 </body>

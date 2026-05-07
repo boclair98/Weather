@@ -2,6 +2,7 @@ package com.example.WebSideProject.service;
 
 import com.example.WebSideProject.dto.UserDto;
 import com.example.WebSideProject.dto.WeatherDto;
+import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.entity.User;
 import com.example.WebSideProject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +69,7 @@ public class UserService {
 
     private void sendWelcomeWeatherMail(User user) {
         try {
-            WeatherDto weather = weatherService.getWeather(user.getNx(), user.getNy());
+            WeatherDto weather = weatherService.getWeather(user.getNx(), user.getNy(), WeatherPeriod.MORNING, user.getLocationName());
             mailService.sendWeatherMail(user, weather);
         } catch (Exception e) {
             log.error("구독 직후 날씨 메일 발송 준비 실패: {}", user.getEmail(), e);
@@ -80,17 +81,15 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
         user.unsubscribe();
-        return UserDto.Response.builder()
-                .email(email)
-                .subscribed(false)
-                .locationName(user.getLocationName())
-                .ageGroup(user.getAgeGroup())
-                .gender(user.getGender())
-                .morningEnabled(user.isMorningEnabled())
-                .afternoonEnabled(user.isAfternoonEnabled())
-                .eveningEnabled(user.isEveningEnabled())
-                .message("구독이 취소되었습니다.")
-                .build();
+        return toResponse(user, "구독이 취소되었습니다.");
+    }
+
+    @Transactional
+    public UserDto.Response unsubscribeByToken(String token) {
+        User user = userRepository.findByUnsubscribeToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 수신 거부 링크입니다."));
+        user.unsubscribe();
+        return toResponse(user, "구독이 취소되었습니다.");
     }
 
     @Transactional
@@ -98,17 +97,7 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
         user.subscribe();
-        return UserDto.Response.builder()
-                .email(email)
-                .subscribed(true)
-                .locationName(user.getLocationName())
-                .ageGroup(user.getAgeGroup())
-                .gender(user.getGender())
-                .morningEnabled(user.isMorningEnabled())
-                .afternoonEnabled(user.isAfternoonEnabled())
-                .eveningEnabled(user.isEveningEnabled())
-                .message("구독이 재개되었습니다!")
-                .build();
+        return toResponse(user, "구독이 재개되었습니다!");
     }
 
     @Transactional
@@ -124,19 +113,7 @@ public class UserService {
                 request.getNy()
         );
 
-        return UserDto.Response.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .subscribed(user.isSubscribed())
-                .locationName(user.getLocationName())
-                .ageGroup(user.getAgeGroup())
-                .gender(user.getGender())
-                .morningEnabled(user.isMorningEnabled())
-                .afternoonEnabled(user.isAfternoonEnabled())
-                .eveningEnabled(user.isEveningEnabled())
-                .message("구독 위치가 변경되었습니다.")
-                .build();
+        return toResponse(user, "구독 위치가 변경되었습니다.");
     }
 
     @Transactional
@@ -146,6 +123,17 @@ public class UserService {
 
         user.updateStylePreference(request.getAgeGroup(), request.getGender());
 
+        return toResponse(user, "스타일 추천 기준이 변경되었습니다.");
+    }
+
+    @Transactional
+    public List<User> getSubscribedUsers() {
+        List<User> users = userRepository.findAllBySubscribedTrue();
+        users.forEach(User::ensureUnsubscribeToken);
+        return users;
+    }
+
+    private UserDto.Response toResponse(User user, String message) {
         return UserDto.Response.builder()
                 .id(user.getId())
                 .name(user.getName())
@@ -157,11 +145,7 @@ public class UserService {
                 .morningEnabled(user.isMorningEnabled())
                 .afternoonEnabled(user.isAfternoonEnabled())
                 .eveningEnabled(user.isEveningEnabled())
-                .message("스타일 추천 기준이 변경되었습니다.")
+                .message(message)
                 .build();
-    }
-
-    public List<User> getSubscribedUsers() {
-        return userRepository.findAllBySubscribedTrue();
     }
 }

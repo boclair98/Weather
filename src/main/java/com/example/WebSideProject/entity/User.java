@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -30,6 +31,9 @@ public class User {
 
     @Column(nullable = false)
     private boolean subscribed = true;
+
+    @Column(unique = true, length = 64)
+    private String unsubscribeToken;
 
     @Column(nullable = false)
     private String locationName = "서울특별시 중구";
@@ -61,12 +65,14 @@ public class User {
     @PrePersist
     protected void onCreate() {
         normalizeStylePreference();
+        ensureUnsubscribeToken();
         this.createdAt = LocalDateTime.now();
     }
 
     @PreUpdate
     @PostLoad
     protected void normalizeStylePreference() {
+        ensureUnsubscribeToken();
         if (this.ageGroup == null) {
             this.ageGroup = AgeGroup.NONE;
         }
@@ -102,6 +108,7 @@ public class User {
         this.morningEnabled = morningEnabled;
         this.afternoonEnabled = afternoonEnabled;
         this.eveningEnabled = eveningEnabled;
+        ensureUnsubscribeToken();
     }
 
     public void unsubscribe() { this.subscribed = false; }
@@ -132,5 +139,11 @@ public class User {
     public void updateStylePreference(AgeGroup ageGroup, GenderType gender) {
         this.ageGroup = ageGroup == null ? AgeGroup.NONE : ageGroup;
         this.gender = gender == null ? GenderType.NONE : gender;
+    }
+
+    public void ensureUnsubscribeToken() {
+        if (this.unsubscribeToken == null || this.unsubscribeToken.isBlank()) {
+            this.unsubscribeToken = UUID.randomUUID().toString().replace("-", "");
+        }
     }
 }

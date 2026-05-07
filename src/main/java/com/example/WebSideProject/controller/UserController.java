@@ -25,7 +25,13 @@ public class UserController {
     }
 
     @GetMapping("/unsubscribe")
-    public ResponseEntity<UserDto.Response> unsubscribeFromMail(@RequestParam String email) {
+    public ResponseEntity<UserDto.Response> unsubscribeFromMail(
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String token
+    ) {
+        if (token != null && !token.isBlank()) {
+            return ResponseEntity.ok(userService.unsubscribeByToken(token));
+        }
         return ResponseEntity.ok(userService.unsubscribe(email));
     }
 

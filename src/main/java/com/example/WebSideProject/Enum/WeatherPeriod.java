@@ -32,4 +32,13 @@ public enum WeatherPeriod {
     public int getTargetHour() {
         return Integer.parseInt(targetTime.substring(0, 2));
     }
+
+    public static WeatherPeriod fromLabel(String label) {
+        for (WeatherPeriod period : values()) {
+            if (period.label.equals(label)) {
+                return period;
+            }
+        }
+        return MORNING;
+    }
 }

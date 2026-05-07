@@ -41,6 +41,12 @@ public class WeatherMailScheduler {
         sendWeatherMailByPeriod(WeatherPeriod.MORNING);
     }
 
+    public void sendAllWeatherMails() {
+        for (WeatherPeriod period : WeatherPeriod.values()) {
+            sendWeatherMailByPeriod(period);
+        }
+    }
+
     public void sendWeatherMailByPeriod(WeatherPeriod period) {
         log.info("=== {} 날씨 메일 발송 시작 ===", period.getLabel());
 
@@ -53,7 +59,7 @@ public class WeatherMailScheduler {
             }
 
             try {
-                WeatherDto weather = weatherService.getWeather(user.getNx(), user.getNy(), period);
+                WeatherDto weather = weatherService.getWeather(user.getNx(), user.getNy(), period, user.getLocationName());
                 mailService.sendWeatherMail(user, weather);
             } catch (Exception e) {
                 log.error("사용자 {} 처리 중 오류 발생", user.getEmail(), e);

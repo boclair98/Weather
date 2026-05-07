@@ -20,8 +20,9 @@ public class WeatherController {
     public WeatherDto getWeather(
             @RequestParam(defaultValue = "60") int nx,
             @RequestParam(defaultValue = "127") int ny,
-            @RequestParam(defaultValue = "MORNING") WeatherPeriod period
+            @RequestParam(defaultValue = "MORNING") WeatherPeriod period,
+            @RequestParam(required = false) String locationName
     ) {
-        return weatherService.getWeather(nx, ny, period);
+        return weatherService.getWeather(nx, ny, period, locationName);
     }
 }

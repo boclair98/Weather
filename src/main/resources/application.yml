@@ -39,6 +39,11 @@ weather:
     key: ${WEATHER_API_KEY:}
     base-url: ${WEATHER_API_BASE_URL:https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0}
 
+air-quality:
+  api:
+    key: ${AIR_QUALITY_API_KEY:${WEATHER_API_KEY:}}
+    base-url: ${AIR_QUALITY_API_BASE_URL:https://apis.data.go.kr/B552584/ArpltnInforInqireSvc}
+
 location:
   kakao:
     rest-api-key: ${KAKAO_REST_API_KEY:}

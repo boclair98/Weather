@@ -31,6 +31,12 @@ public class WeatherService {
     @Value("${weather.api.base-url}")
     private String baseUrl;
 
+    @Value("${air-quality.api.key:${weather.api.key:}}")
+    private String airQualityApiKey;
+
+    @Value("${air-quality.api.base-url:https://apis.data.go.kr/B552584/ArpltnInforInqireSvc}")
+    private String airQualityBaseUrl;
+
     private final RestTemplate restTemplate;
 
     public WeatherDto getWeather(int nx, int ny) {
@@ -38,6 +44,10 @@ public class WeatherService {
     }
 
     public WeatherDto getWeather(int nx, int ny, WeatherPeriod period) {
+        return getWeather(nx, ny, period, null);
+    }
+
+    public WeatherDto getWeather(int nx, int ny, WeatherPeriod period, String locationName) {
         ForecastBase forecastBase = getForecastBase();
         String targetDate = getForecastDate(period).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String targetTime = period.getTargetTime();
@@ -60,11 +70,81 @@ public class WeatherService {
         try {
             String response = restTemplate.getForObject(uri, String.class);
             log.debug("기상청 API 응답: {}", response);
-            return parseWeatherResponse(response, targetDate, period);
+            WeatherDto weather = parseWeatherResponse(response, targetDate, period);
+            return enrichAirQuality(weather, locationName);
         } catch (Exception e) {
             log.error("기상청 API 호출 실패", e);
             throw new RuntimeException("날씨 정보를 가져오는데 실패했습니다.", e);
         }
+    }
+
+    private WeatherDto enrichAirQuality(WeatherDto weather, String locationName) {
+        try {
+            AirQualityInfo airQualityInfo = getAirQuality(locationName);
+            return weather.toBuilder()
+                    .pm10Value(airQualityInfo.pm10Value())
+                    .pm10Grade(airQualityInfo.pm10Grade())
+                    .pm25Value(airQualityInfo.pm25Value())
+                    .pm25Grade(airQualityInfo.pm25Grade())
+                    .airQualityStation(airQualityInfo.stationName())
+                    .build();
+        } catch (Exception e) {
+            log.warn("미세먼지 API 호출 실패. 날씨 정보만 반환합니다. locationName={}", locationName, e);
+            return weather;
+        }
+    }
+
+    private AirQualityInfo getAirQuality(String locationName) {
+        String sidoName = extractSidoName(locationName);
+        String serviceKey = airQualityApiKey == null || airQualityApiKey.isBlank() ? apiKey : airQualityApiKey;
+        String encodedApiKey = UriUtils.encode(serviceKey, StandardCharsets.UTF_8);
+
+        URI uri = UriComponentsBuilder.fromHttpUrl(airQualityBaseUrl + "/getCtprvnRltmMesureDnsty")
+                .queryParam("serviceKey", encodedApiKey)
+                .queryParam("returnType", "json")
+                .queryParam("numOfRows", 100)
+                .queryParam("pageNo", 1)
+                .queryParam("sidoName", UriUtils.encode(sidoName, StandardCharsets.UTF_8))
+                .queryParam("ver", "1.0")
+                .build(true)
+                .toUri();
+
+        log.debug("미세먼지 API 요청: {}", uri);
+
+        String response = restTemplate.getForObject(uri, String.class);
+        log.debug("미세먼지 API 응답: {}", response);
+        return parseAirQualityResponse(response, locationName);
+    }
+
+    private AirQualityInfo parseAirQualityResponse(String response, String locationName) {
+        JSONObject json = new JSONObject(response);
+        JSONArray items = json
+                .getJSONObject("response")
+                .getJSONObject("body")
+                .getJSONArray("items");
+
+        if (items.length() == 0) {
+            return AirQualityInfo.empty();
+        }
+
+        JSONObject selected = items.getJSONObject(0);
+        String normalizedLocationName = locationName == null ? "" : locationName.replace(" ", "");
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject item = items.getJSONObject(i);
+            String stationName = item.optString("stationName", "");
+            if (!stationName.isBlank() && normalizedLocationName.contains(stationName.replace(" ", ""))) {
+                selected = item;
+                break;
+            }
+        }
+
+        return new AirQualityInfo(
+                selected.optString("stationName", "-"),
+                selected.optString("pm10Value", "-"),
+                selected.optString("pm10Grade", ""),
+                selected.optString("pm25Value", "-"),
+                selected.optString("pm25Grade", "")
+        );
     }
 
     private WeatherDto parseWeatherResponse(String response, String targetDate, WeatherPeriod period) {
@@ -173,9 +253,45 @@ public class WeatherService {
         return LocalDate.now();
     }
 
+    private String extractSidoName(String locationName) {
+        if (locationName == null || locationName.isBlank()) {
+            return "서울";
+        }
+        if (locationName.contains("서울")) return "서울";
+        if (locationName.contains("부산")) return "부산";
+        if (locationName.contains("대구")) return "대구";
+        if (locationName.contains("인천")) return "인천";
+        if (locationName.contains("광주")) return "광주";
+        if (locationName.contains("대전")) return "대전";
+        if (locationName.contains("울산")) return "울산";
+        if (locationName.contains("세종")) return "세종";
+        if (locationName.contains("경기")) return "경기";
+        if (locationName.contains("강원")) return "강원";
+        if (locationName.contains("충북")) return "충북";
+        if (locationName.contains("충남")) return "충남";
+        if (locationName.contains("전북")) return "전북";
+        if (locationName.contains("전남")) return "전남";
+        if (locationName.contains("경북")) return "경북";
+        if (locationName.contains("경남")) return "경남";
+        if (locationName.contains("제주")) return "제주";
+        return "서울";
+    }
+
     private record ForecastBase(String date, String time) {
     }
 
     private record ForecastValue(String value, int distance) {
+    }
+
+    private record AirQualityInfo(
+            String stationName,
+            String pm10Value,
+            String pm10Grade,
+            String pm25Value,
+            String pm25Grade
+    ) {
+        private static AirQualityInfo empty() {
+            return new AirQualityInfo("-", "-", "", "-", "");
+        }
     }
 }
