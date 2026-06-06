@@ -25,4 +25,16 @@ public class WeatherController {
     ) {
         return weatherService.getWeather(nx, ny, period, locationName);
     }
+
+    @GetMapping("/test")
+    public WeatherDto getWeatherForBase(
+            @RequestParam(defaultValue = "60") int nx,
+            @RequestParam(defaultValue = "127") int ny,
+            @RequestParam(defaultValue = "MORNING") WeatherPeriod period,
+            @RequestParam(required = false) String locationName,
+            @RequestParam String baseDate,
+            @RequestParam String baseTime
+    ) {
+        return weatherService.getWeatherForBase(nx, ny, period, locationName, baseDate, baseTime);
+    }
 }

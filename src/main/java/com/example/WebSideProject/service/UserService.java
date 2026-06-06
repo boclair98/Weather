@@ -133,6 +133,11 @@ public class UserService {
         return users;
     }
 
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
+    }
+
     private UserDto.Response toResponse(User user, String message) {
         return UserDto.Response.builder()
                 .id(user.getId())

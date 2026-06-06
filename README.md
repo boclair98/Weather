@@ -57,6 +57,8 @@
 - 아침/점심/저녁 알림 시간 선택
 - 스케줄러를 통한 시간대별 자동 발송
 - 전체 구독자 수동 발송 API
+- 특정 사용자 대상 지정 발표시각 테스트 발송 API
+- 선택적 관리자 키 기반 운영 API 보호
 - 메일 발송 성공/실패 이력 저장
 - 최근 발송 이력 조회 API
 - 구독 위치 변경 API
@@ -258,10 +260,28 @@ POST /api/weather-mails/send-now?period=AFTERNOON
 POST /api/weather-mails/send-now?period=EVENING
 ```
 
+`ADMIN_API_KEY`를 설정한 환경에서는 운영성 API 호출 시 `X-Admin-Key` 헤더가 필요합니다.
+
+```http
+X-Admin-Key: your_optional_admin_key
+```
+
 아침/점심/저녁 전체 시간대 발송을 한 번에 실행할 수도 있습니다. 이 기능은 테스트 및 운영 확인용입니다.
 
 ```http
 POST /api/weather-mails/send-all
+```
+
+특정 구독자 1명에게 기상청 발표시각을 직접 지정해 테스트 메일을 보낼 수 있습니다.
+
+```http
+POST /api/weather-mails/send-test?email=user@example.com&period=EVENING&baseDate=20260504&baseTime=1700
+```
+
+메일 없이 날씨 데이터만 확인하고 싶다면 아래 API를 사용합니다.
+
+```http
+GET /api/weather/test?nx=61&ny=125&period=EVENING&locationName=강남역&baseDate=20260504&baseTime=1700
 ```
 
 ### 메일 발송 이력 조회
@@ -326,6 +346,7 @@ AIR_QUALITY_API_BASE_URL=https://apis.data.go.kr/B552584/ArpltnInforInqireSvc
 
 KAKAO_REST_API_KEY=your_kakao_rest_api_key
 APP_BASE_URL=http://localhost:8080
+ADMIN_API_KEY=your_optional_admin_key
 ```
 
 `AIR_QUALITY_API_KEY`를 따로 지정하지 않으면 `WEATHER_API_KEY` 값을 사용하도록 설정되어 있습니다.

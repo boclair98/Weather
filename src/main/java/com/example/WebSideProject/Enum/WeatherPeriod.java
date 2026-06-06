@@ -5,7 +5,7 @@ import java.time.LocalTime;
 public enum WeatherPeriod {
     MORNING("아침", "0900", LocalTime.of(6, 30)),
     AFTERNOON("점심", "1200", LocalTime.of(11, 30)),
-    EVENING("저녁", "1800", LocalTime.of(18, 30));
+    EVENING("저녁", "2100", LocalTime.of(18, 30));
 
     private final String label;
     private final String targetTime;

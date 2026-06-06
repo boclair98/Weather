@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -50,16 +51,40 @@ public class WeatherService {
     public WeatherDto getWeather(int nx, int ny, WeatherPeriod period, String locationName) {
         ForecastBase forecastBase = getForecastBase();
         String targetDate = getForecastDate(period).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        return getWeather(nx, ny, period, locationName, forecastBase.date(), forecastBase.time(), targetDate);
+    }
+
+    public WeatherDto getWeatherForBase(
+            int nx,
+            int ny,
+            WeatherPeriod period,
+            String locationName,
+            String baseDate,
+            String baseTime
+    ) {
+        validateForecastBase(baseDate, baseTime);
+        return getWeather(nx, ny, period, locationName, baseDate, baseTime, baseDate);
+    }
+
+    private WeatherDto getWeather(
+            int nx,
+            int ny,
+            WeatherPeriod period,
+            String locationName,
+            String baseDate,
+            String baseTime,
+            String targetDate
+    ) {
         String targetTime = period.getTargetTime();
         String encodedApiKey = UriUtils.encode(apiKey, StandardCharsets.UTF_8);
 
         URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl + "/getVilageFcst")
                 .queryParam("serviceKey", encodedApiKey)
                 .queryParam("pageNo", 1)
-                .queryParam("numOfRows", 100)
+                .queryParam("numOfRows", 1000)
                 .queryParam("dataType", "JSON")
-                .queryParam("base_date", forecastBase.date())
-                .queryParam("base_time", forecastBase.time())
+                .queryParam("base_date", baseDate)
+                .queryParam("base_time", baseTime)
                 .queryParam("nx", nx)
                 .queryParam("ny", ny)
                 .build(true)
@@ -75,6 +100,21 @@ public class WeatherService {
         } catch (Exception e) {
             log.error("기상청 API 호출 실패", e);
             throw new RuntimeException("날씨 정보를 가져오는데 실패했습니다.", e);
+        }
+    }
+
+    private void validateForecastBase(String baseDate, String baseTime) {
+        if (baseDate == null || !baseDate.matches("\\d{8}")) {
+            throw new IllegalArgumentException("baseDate는 yyyyMMdd 형식이어야 합니다.");
+        }
+        if (baseTime == null || !baseTime.matches("\\d{4}")) {
+            throw new IllegalArgumentException("baseTime은 HHmm 형식이어야 합니다.");
+        }
+
+        int hour = Integer.parseInt(baseTime.substring(0, 2));
+        int minute = Integer.parseInt(baseTime.substring(2, 4));
+        if (minute != 0 || !List.of(2, 5, 8, 11, 14, 17, 20, 23).contains(hour)) {
+            throw new IllegalArgumentException("baseTime은 0200, 0500, 0800, 1100, 1400, 1700, 2000, 2300 중 하나여야 합니다.");
         }
     }
 
