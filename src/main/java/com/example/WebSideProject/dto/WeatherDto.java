@@ -28,6 +28,8 @@ public class WeatherDto {
     private String pm25Value;
     private String pm25Grade;
     private String airQualityStation;
+    private String styleHeadline;
+    private String styleRecommendation;
 
     public String getDate() {
         return valueOrDash(date);
@@ -75,6 +77,14 @@ public class WeatherDto {
 
     public String getAirQualityStation() {
         return valueOrDash(airQualityStation);
+    }
+
+    public String getStyleHeadline() {
+        return valueOrDash(styleHeadline);
+    }
+
+    public String getStyleRecommendation() {
+        return valueOrDash(styleRecommendation);
     }
 
     public String getPm10Display() {
@@ -314,12 +324,199 @@ public class WeatherDto {
         AgeGroup selectedAgeGroup = ageGroup == null ? AgeGroup.NONE : ageGroup;
         GenderType selectedGender = gender == null ? GenderType.NONE : gender;
 
-        String weatherPoint = getWeatherStylePoint();
-        String baseStyle = getBaseStyleByTemperature();
-        String demographicStyle = getDemographicStyle(selectedAgeGroup, selectedGender);
-        String rainPoint = getRainStylePoint();
+        return getStyleHeadline(selectedAgeGroup, selectedGender) + " "
+                + getLayeringAdvice() + " "
+                + getMaterialAdvice() + " "
+                + getStyleCaution();
+    }
 
-        return weatherPoint + " " + baseStyle + " " + demographicStyle + rainPoint;
+    public WeatherDto withStylePreference(AgeGroup ageGroup, GenderType gender) {
+        AgeGroup selectedAgeGroup = ageGroup == null ? AgeGroup.NONE : ageGroup;
+        GenderType selectedGender = gender == null ? GenderType.NONE : gender;
+        return toBuilder()
+                .styleHeadline(getStyleHeadline(selectedAgeGroup, selectedGender))
+                .styleRecommendation(getStyleRecommendation(selectedAgeGroup, selectedGender))
+                .build();
+    }
+
+    public String getStyleHeadline(AgeGroup ageGroup, GenderType gender) {
+        AgeGroup selectedAgeGroup = ageGroup == null ? AgeGroup.NONE : ageGroup;
+        GenderType selectedGender = gender == null ? GenderType.NONE : gender;
+        String audience = getAudienceLabel(selectedAgeGroup, selectedGender);
+
+        if (isSnowy()) {
+            return audience + " 오늘은 보온형 시티룩이 좋아요.";
+        }
+        if (isRainy() || getPopValue() >= 60) {
+            return audience + " 오늘은 비에 강한 깔끔한 룩이 좋아요.";
+        }
+        if (isBadAirQuality()) {
+            return audience + " 오늘은 세탁 쉬운 소재와 마스크 조합이 좋아요.";
+        }
+        if (getTmpValue() >= 30) {
+            return audience + " 오늘은 통풍이 핵심인 가벼운 룩이 좋아요.";
+        }
+        if (getTmpValue() <= 5) {
+            return audience + " 오늘은 레이어드와 보온 액세서리가 핵심이에요.";
+        }
+        if ("1".equals(sky)) {
+            return audience + " 오늘은 밝은 포인트를 주기 좋은 날이에요.";
+        }
+        return audience + " 오늘은 단정한 데일리룩으로 안정감 있게 가면 좋아요.";
+    }
+
+    public String getTopAdvice() {
+        int temperature = getTmpValue();
+        if (temperature >= 30) {
+            return "얇은 반팔, 린넨 셔츠, 통풍 좋은 니트";
+        }
+        if (temperature >= 24) {
+            return "반팔 위 가벼운 셔츠, 얇은 카디건";
+        }
+        if (temperature >= 18) {
+            return "긴팔 티셔츠, 셔츠, 얇은 니트";
+        }
+        if (temperature >= 10) {
+            return "니트, 스웨트셔츠, 셔츠 위 자켓";
+        }
+        if (temperature >= 4) {
+            return "두께감 있는 니트, 기모 이너, 보온 셔츠";
+        }
+        return "히트텍 계열 이너, 두꺼운 니트, 보온 베이스";
+    }
+
+    public String getBottomAdvice() {
+        int temperature = getTmpValue();
+        if (isRainy() || isSnowy()) {
+            return "물 튐이 덜 보이는 어두운 팬츠나 발목이 편한 하의";
+        }
+        if (temperature >= 28) {
+            return "와이드 팬츠, 쇼츠, 얇은 코튼 팬츠";
+        }
+        if (temperature <= 5) {
+            return "기모 팬츠, 두께감 있는 데님, 울 혼방 팬츠";
+        }
+        return "데님, 슬랙스, 치노 팬츠처럼 활동성 있는 하의";
+    }
+
+    public String getOuterAdvice() {
+        int temperature = getTmpValue();
+        if (temperature >= 26) {
+            return "실내 냉방 대비 얇은 셔츠 하나면 충분해요.";
+        }
+        if (temperature >= 18) {
+            return "가벼운 자켓이나 카디건을 손에 들기 좋습니다.";
+        }
+        if (temperature >= 10) {
+            return "자켓, 트렌치, 블루종처럼 바람을 막는 겉옷이 좋아요.";
+        }
+        if (temperature >= 4) {
+            return "울 코트나 패딩 베스트로 체온을 잡아주세요.";
+        }
+        return "패딩, 두꺼운 코트, 머플러까지 묶어서 준비하세요.";
+    }
+
+    public String getFootwearAdvice() {
+        if (isSnowy()) {
+            return "미끄럼 적은 러버솔 부츠나 방수 스니커즈";
+        }
+        if (isRainy() || getPopValue() >= 60) {
+            return "방수 스니커즈, 레인부츠, 어두운 색 신발";
+        }
+        if (getWsdValue() >= 8.0) {
+            return "발을 안정적으로 잡아주는 스니커즈나 로퍼";
+        }
+        if (getTmpValue() >= 28) {
+            return "통풍 좋은 스니커즈나 샌들";
+        }
+        return "걷기 편한 스니커즈, 로퍼, 데일리 슈즈";
+    }
+
+    public String getColorPalette() {
+        if (isSnowy()) {
+            return "차콜, 아이보리, 딥그린";
+        }
+        if (isRainy() || getPopValue() >= 60) {
+            return "네이비, 그레이, 블랙";
+        }
+        if (isBadAirQuality()) {
+            return "라이트그레이, 카키, 워시드블루";
+        }
+        if (getTmpValue() >= 28) {
+            return "화이트, 스카이블루, 라이트베이지";
+        }
+        if (getTmpValue() <= 5) {
+            return "카멜, 버건디, 다크브라운";
+        }
+        if ("1".equals(sky)) {
+            return "크림, 민트, 데님블루";
+        }
+        return "오트밀, 네이비, 세이지";
+    }
+
+    public String getMaterialAdvice() {
+        if (isSnowy()) {
+            return "겉감은 물기를 털기 쉬운 소재, 안쪽은 플리스나 울처럼 열을 잡는 소재가 안정적이에요.";
+        }
+        if (isRainy() || getPopValue() >= 60) {
+            return "나일론, 코팅 코튼, 폴리 혼방처럼 젖어도 빨리 마르는 소재를 추천해요.";
+        }
+        if (getTmpValue() >= 28 || getRehValue() >= 80) {
+            return "린넨, 얇은 코튼, 기능성 드라이 소재처럼 몸에 달라붙지 않는 소재가 좋아요.";
+        }
+        if (getTmpValue() <= 5) {
+            return "울, 플리스, 기모 소재처럼 공기층을 만드는 소재가 체감 온도를 올려줘요.";
+        }
+        return "코튼, 니트, 가벼운 울 혼방처럼 구김이 적고 움직이기 편한 소재가 좋아요.";
+    }
+
+    public String getLayeringAdvice() {
+        int temperature = getTmpValue();
+        if (temperature >= 28) {
+            return "상의는 짧고 가볍게, 실내 냉방용 얇은 겉옷만 더하세요.";
+        }
+        if (temperature >= 18) {
+            return "얇은 상의와 벗기 쉬운 겉옷 조합이 온도 변화에 강해요.";
+        }
+        if (temperature >= 8) {
+            return "이너, 니트, 자켓 3단 구성이 아침저녁 체감에 안정적이에요.";
+        }
+        return "보온 이너와 두꺼운 아우터를 분리해 실내외 온도 차에 대응하세요.";
+    }
+
+    public String getStyleCaution() {
+        if (isSnowy()) {
+            return "긴 밑단이나 매끄러운 밑창은 피하는 편이 안전합니다.";
+        }
+        if (isRainy() || getPopValue() >= 60) {
+            return "밝은 스웨이드, 긴 와이드 팬츠처럼 물 얼룩이 남기 쉬운 아이템은 피해주세요.";
+        }
+        if (isBadAirQuality()) {
+            return "먼지가 붙기 쉬운 퍼 소재보다 세탁 쉬운 겉옷이 좋습니다.";
+        }
+        if (getWsdValue() >= 8.0) {
+            return "가벼운 모자나 날리는 스카프는 고정감 있게 매치하세요.";
+        }
+        if (getTmpValue() >= 30) {
+            return "두꺼운 데님이나 어두운 긴팔은 한낮 체감 온도를 크게 올릴 수 있어요.";
+        }
+        return "큰 변수는 적지만 오래 걷는 일정이면 신발 착화감을 우선하세요.";
+    }
+
+    public String getMailHeroColor() {
+        if (isSnowy()) {
+            return "#2f6f9f";
+        }
+        if (isRainy() || getPopValue() >= 60) {
+            return "#1f4f7a";
+        }
+        if ("1".equals(sky)) {
+            return "#d97706";
+        }
+        if ("4".equals(sky)) {
+            return "#475569";
+        }
+        return "#0f766e";
     }
 
     public String getOutdoorAdvice() {
@@ -344,87 +541,11 @@ public class WeatherDto {
         return "야외 활동에 큰 무리는 없어 보여요.";
     }
 
-    private String getWeatherStylePoint() {
-        if (isSnowy()) {
-            return "눈 예보가 있어 보온성과 미끄럼 방지를 우선으로 잡아보세요.";
-        }
-        if (isRainy()) {
-            return "비 예보가 있어 젖어도 관리가 쉬운 소재와 어두운 톤이 좋아요.";
-        }
-        if (getTmpValue() >= 28) {
-            return "더운 날씨라 통풍과 가벼운 소재가 스타일의 핵심이에요.";
-        }
-        if (getTmpValue() <= 5) {
-            return "추운 날씨라 레이어드와 보온 액세서리를 중심으로 잡아보세요.";
-        }
-        return "날씨 변수가 크지 않아 깔끔한 데일리룩으로 맞추기 좋아요.";
-    }
-
-    private String getBaseStyleByTemperature() {
-        int temperature = getTmpValue();
-        if (temperature >= 28) {
-            return "린넨 셔츠, 반팔 니트, 와이드 팬츠처럼 몸에 붙지 않는 조합을 추천해요.";
-        }
-        if (temperature >= 20) {
-            return "얇은 셔츠나 긴팔 티셔츠에 가벼운 아우터를 더하면 온도 변화에 대응하기 좋아요.";
-        }
-        if (temperature >= 12) {
-            return "니트, 가디건, 자켓을 활용한 레이어드가 안정적이에요.";
-        }
-        if (temperature >= 6) {
-            return "코트나 두께감 있는 자켓 안에 니트 또는 맨투맨을 받쳐 입어보세요.";
-        }
-        return "패딩이나 울 코트에 머플러, 장갑을 더해 체온을 지키는 쪽이 좋아요.";
-    }
-
-    private String getDemographicStyle(AgeGroup ageGroup, GenderType gender) {
-        if (gender == GenderType.FEMALE) {
-            return getFemaleStyle(ageGroup);
-        }
-        if (gender == GenderType.MALE) {
-            return getMaleStyle(ageGroup);
-        }
-        return getNeutralStyle(ageGroup);
-    }
-
-    private String getFemaleStyle(AgeGroup ageGroup) {
-        return switch (ageGroup) {
-            case TEENS -> "10대 여성 스타일로는 컬러감 있는 스웨트셔츠, 데님, 스니커즈 조합이 잘 어울려요.";
-            case TWENTIES -> "20대 여성 스타일로는 크롭 자켓, 셔츠, 슬랙스나 롱스커트로 가볍게 포인트를 주세요.";
-            case THIRTIES -> "30대 여성 스타일로는 차분한 톤의 블라우스, 니트, 테일러드 자켓 조합이 깔끔해요.";
-            case FORTIES -> "40대 여성 스타일로는 고급스러운 니트, 트렌치, 스트레이트 팬츠처럼 선이 정돈된 룩을 추천해요.";
-            case FIFTIES_PLUS -> "50대 이상 여성 스타일로는 편안한 핏의 코트, 니트, 스카프 포인트가 잘 맞아요.";
-            case NONE -> "여성 스타일로는 실루엣이 깔끔한 상의와 편한 하의를 맞추면 좋아요.";
-        };
-    }
-
-    private String getMaleStyle(AgeGroup ageGroup) {
-        return switch (ageGroup) {
-            case TEENS -> "10대 남성 스타일로는 후드, 데님, 조거 팬츠와 스니커즈 조합이 활동적이에요.";
-            case TWENTIES -> "20대 남성 스타일로는 오버핏 셔츠, 미니멀 자켓, 와이드 팬츠로 캐주얼하게 잡아보세요.";
-            case THIRTIES -> "30대 남성 스타일로는 셔츠, 니트, 슬랙스, 블루종 조합이 단정하면서 실용적이에요.";
-            case FORTIES -> "40대 남성 스타일로는 카라 니트, 치노 팬츠, 코트처럼 차분한 기본템이 좋아요.";
-            case FIFTIES_PLUS -> "50대 이상 남성 스타일로는 가벼운 니트, 점퍼, 편한 팬츠로 보온과 활동성을 챙겨보세요.";
-            case NONE -> "남성 스타일로는 기본 셔츠나 니트에 편한 팬츠를 맞추면 안정적이에요.";
-        };
-    }
-
-    private String getNeutralStyle(AgeGroup ageGroup) {
-        return switch (ageGroup) {
-            case TEENS -> "10대 스타일로는 스웨트셔츠, 데님, 스니커즈처럼 활동적인 조합이 좋아요.";
-            case TWENTIES -> "20대 스타일로는 셔츠, 가벼운 아우터, 와이드 팬츠로 트렌디하게 맞춰보세요.";
-            case THIRTIES -> "30대 스타일로는 니트, 셔츠, 자켓을 활용한 단정한 데일리룩이 좋아요.";
-            case FORTIES -> "40대 스타일로는 차분한 컬러와 좋은 소재감이 드러나는 기본템을 추천해요.";
-            case FIFTIES_PLUS -> "50대 이상 스타일로는 편한 핏과 보온성을 중심으로, 스카프나 모자로 포인트를 주세요.";
-            case NONE -> "선호 스타일을 따로 고르지 않았다면, 편한 핏의 기본템 위주로 준비해보세요.";
-        };
-    }
-
-    private String getRainStylePoint() {
-        if (isRainy() || getPopValue() >= 60) {
-            return " 신발은 방수 소재나 어두운 색을 고르면 관리가 편합니다.";
-        }
-        return "";
+    private String getAudienceLabel(AgeGroup ageGroup, GenderType gender) {
+        String age = ageGroup == AgeGroup.NONE ? "" : ageGroup.getLabel() + " ";
+        String genderLabel = gender == GenderType.NONE ? "" : gender.getLabel() + " ";
+        String label = (age + genderLabel).trim();
+        return label.isBlank() ? "당신에게는" : label + "에게는";
     }
 
     private boolean hasAirQuality() {

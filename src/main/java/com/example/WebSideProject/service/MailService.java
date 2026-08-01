@@ -32,20 +32,23 @@ public class MailService {
     @Async
     public void sendWeatherMail(User user, WeatherDto weather) {
         try {
+            WeatherDto styledWeather = weather.withStylePreference(user.getAgeGroup(), user.getGender());
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(user.getEmail());
-            helper.setSubject(weather.getForecastLabel() + " 날씨 알림");
+            helper.setSubject(styledWeather.getForecastLabel() + " 날씨 알림");
 
             Context context = new Context();
             context.setVariable("name", valueOrDash(user.getName()));
             context.setVariable("email", user.getEmail());
             context.setVariable("locationName", valueOrDash(user.getLocationName()));
-            context.setVariable("weather", weather);
+            context.setVariable("weather", styledWeather);
+            context.setVariable("ageGroup", user.getAgeGroup());
+            context.setVariable("gender", user.getGender());
             context.setVariable("ageGroupLabel", user.getAgeGroup().getLabel());
             context.setVariable("genderLabel", user.getGender().getLabel());
-            context.setVariable("styleRecommendation", weather.getStyleRecommendation(user.getAgeGroup(), user.getGender()));
+            context.setVariable("styleRecommendation", styledWeather.getStyleRecommendation());
             context.setVariable("unsubscribeUrl", appBaseUrl + "/api/users/unsubscribe?token=" + encode(user.getUnsubscribeToken()));
 
             String html = templateEngine.process("weather-mail", context);

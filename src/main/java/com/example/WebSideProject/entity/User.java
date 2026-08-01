@@ -133,6 +133,12 @@ public class User {
         return gender == null ? GenderType.NONE : gender;
     }
 
+    public void updateName(String name) {
+        if (name != null && !name.isBlank()) {
+            this.name = name;
+        }
+    }
+
     public void updateLocation(
             String locationName,
             Double latitude,

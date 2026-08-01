@@ -22,7 +22,7 @@ spring:
       connect-timeout: 2s
 coders:
   identity:
-    required: true
+    required: false
 
 admin:
   require-key: true

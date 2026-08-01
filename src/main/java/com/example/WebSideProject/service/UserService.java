@@ -31,8 +31,27 @@ public class UserService {
     public UserDto.Response register(UserDto.RegisterRequest request, String codersUserId) {
         requireCodersIdentity(codersUserId);
         String email = normalizeEmail(request.getEmail());
-        if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("이미 등록된 이메일입니다: " + email);
+        Optional<User> existingUser = userRepository.findByEmail(email);
+        if (existingUser.isPresent()) {
+            User user = existingUser.get();
+            user.updateName(request.getName());
+            user.claimCodersIdentity(normalizeCodersUserId(codersUserId));
+            user.updateLocation(
+                    request.getLocationName(),
+                    request.getLatitude(),
+                    request.getLongitude(),
+                    request.getNx(),
+                    request.getNy()
+            );
+            user.updateStylePreference(request.getAgeGroup(), request.getGender());
+            user.updateNotificationTimes(
+                    request.isMorningEnabled(),
+                    request.isAfternoonEnabled(),
+                    request.isEveningEnabled()
+            );
+            user.subscribe();
+            sendWelcomeWeatherMail(user);
+            return toResponse(user, "구독 정보가 새롭게 업데이트되었습니다.");
         }
 
         boolean hasNotificationTime = request.isMorningEnabled()

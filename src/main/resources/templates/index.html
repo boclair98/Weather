@@ -19,6 +19,13 @@
             transition: background 240ms ease, color 240ms ease;
         }
 
+        [aria-label="Open support chat"],
+        [data-testid*="donate"],
+        [class*="donate"],
+        [class*="sponsor"] {
+            display: none !important;
+        }
+
         body.weather-sunny {
             background: #fff7dc;
         }
@@ -220,6 +227,60 @@
             color: #172033;
             font-size: 14px;
             line-height: 20px;
+        }
+
+        .style-preview {
+            margin-top: 14px;
+            padding: 14px;
+            border: 1px solid #fed7aa;
+            border-radius: 8px;
+            background: #fff7ed;
+        }
+
+        .style-preview-title {
+            margin: 0;
+            color: #431407;
+            font-size: 14px;
+            line-height: 21px;
+            font-weight: 800;
+        }
+
+        .style-preview-detail {
+            margin: 6px 0 0;
+            color: #5f370e;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .style-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .style-item {
+            min-height: 58px;
+            padding: 9px;
+            border: 1px solid #fed7aa;
+            border-radius: 6px;
+            background: #ffffff;
+        }
+
+        .style-item span {
+            display: block;
+            color: #9a3412;
+            font-size: 11px;
+            line-height: 16px;
+            font-weight: 800;
+        }
+
+        .style-item strong {
+            display: block;
+            margin-top: 3px;
+            color: #431407;
+            font-size: 12px;
+            line-height: 17px;
         }
 
         .weather-preview[hidden] {
@@ -517,12 +578,6 @@
     </style>
 </head>
 <body>
-<div class="account-bar" th:if="${codersPlatform}">
-    <span th:text="${signedIn ? 'coders.kr 로그인됨' : '구독하려면 로그인이 필요합니다'}"></span>
-    <a class="account-link"
-       th:href="${signedIn ? logoutUrl : loginUrl}"
-       th:text="${signedIn ? '로그아웃' : '로그인'}">로그인</a>
-</div>
 <main>
     <div class="layout">
         <section>
@@ -562,6 +617,28 @@
                         <div class="weather-chip">
                             <span>대기질</span>
                             <strong id="weatherAir">-</strong>
+                        </div>
+                    </div>
+                    <div class="style-preview" id="stylePreview">
+                        <p class="style-preview-title" id="styleHeadline">스타일 추천을 준비 중입니다.</p>
+                        <p class="style-preview-detail" id="styleSummary">연령대와 성별 선택에 맞춰 날씨별 코디를 조합합니다.</p>
+                        <div class="style-grid">
+                            <div class="style-item">
+                                <span>상의</span>
+                                <strong id="styleTop">-</strong>
+                            </div>
+                            <div class="style-item">
+                                <span>하의</span>
+                                <strong id="styleBottom">-</strong>
+                            </div>
+                            <div class="style-item">
+                                <span>신발</span>
+                                <strong id="styleFootwear">-</strong>
+                            </div>
+                            <div class="style-item">
+                                <span>컬러</span>
+                                <strong id="styleColor">-</strong>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -687,7 +764,7 @@
         </div>
         <div class="benefit-card">
             <strong>간편한 구독 관리</strong>
-            <span>로그인한 계정에서 알림 변경과 구독 해지를 바로 처리합니다.</span>
+            <span>같은 이메일로 다시 등록하면 위치, 스타일, 알림 시간이 새롭게 반영됩니다.</span>
         </div>
     </section>
     <p class="site-footer">날씨한편 · 데이터 제공: 기상청 · 예보는 실제 관측과 다를 수 있습니다.</p>
@@ -710,6 +787,12 @@
     const weatherTemp = document.getElementById("weatherTemp");
     const weatherRain = document.getElementById("weatherRain");
     const weatherAir = document.getElementById("weatherAir");
+    const styleHeadline = document.getElementById("styleHeadline");
+    const styleSummary = document.getElementById("styleSummary");
+    const styleTop = document.getElementById("styleTop");
+    const styleBottom = document.getElementById("styleBottom");
+    const styleFootwear = document.getElementById("styleFootwear");
+    const styleColor = document.getElementById("styleColor");
     let selectedLocation = null;
     let previewPeriod = "MORNING";
 
@@ -732,6 +815,8 @@
             searchLocations();
         }
     });
+    document.getElementById("ageGroup").addEventListener("change", reloadPreviewIfReady);
+    document.getElementById("gender").addEventListener("change", reloadPreviewIfReady);
 
     document.getElementById("subscribeForm").addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -766,11 +851,6 @@
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(payload)
             });
-
-            if (response.redirected && response.url.includes("mcp.coders.kr")) {
-                window.location.assign(response.url);
-                return;
-            }
 
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(getApiError(data, "구독 처리에 실패했습니다."));
@@ -890,13 +970,21 @@
         weatherTemp.textContent = "-";
         weatherRain.textContent = "-";
         weatherAir.textContent = "-";
+        styleHeadline.textContent = "스타일 추천을 준비 중입니다.";
+        styleSummary.textContent = "날씨와 취향 정보를 조합하고 있어요.";
+        styleTop.textContent = "-";
+        styleBottom.textContent = "-";
+        styleFootwear.textContent = "-";
+        styleColor.textContent = "-";
 
         try {
             const params = new URLSearchParams({
                 nx: location.nx,
                 ny: location.ny,
                 period: previewPeriod,
-                locationName: location.locationName
+                locationName: location.locationName,
+                ageGroup: document.getElementById("ageGroup").value,
+                gender: document.getElementById("gender").value
             });
             const response = await fetch(`/api/weather?${params.toString()}`);
             const weather = await response.json();
@@ -920,6 +1008,18 @@
         weatherTemp.textContent = `${weather.tmp || "-"}°C`;
         weatherRain.textContent = `강수 ${weather.pop || "-"}%`;
         weatherAir.textContent = weather.airQualitySummary || "-";
+        styleHeadline.textContent = weather.styleHeadline || "오늘의 스타일 추천";
+        styleSummary.textContent = weather.styleRecommendation || weather.materialAdvice || "날씨에 맞는 코디를 추천해드려요.";
+        styleTop.textContent = weather.topAdvice || "-";
+        styleBottom.textContent = weather.bottomAdvice || "-";
+        styleFootwear.textContent = weather.footwearAdvice || "-";
+        styleColor.textContent = weather.colorPalette || "-";
+    }
+
+    function reloadPreviewIfReady() {
+        if (selectedLocation) {
+            loadWeatherPreview(selectedLocation);
+        }
     }
 
     const managerControls = document.getElementById("managerControls");
