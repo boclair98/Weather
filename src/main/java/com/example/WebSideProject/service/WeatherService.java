@@ -33,7 +33,7 @@ public class WeatherService {
     @Value("${weather.api.base-url}")
     private String baseUrl;
 
-    @Value("${air-quality.api.key:${weather.api.key:}}")
+    @Value("${air-quality.api.key:}")
     private String airQualityApiKey;
 
     @Value("${air-quality.api.base-url:https://apis.data.go.kr/B552584/ArpltnInforInqireSvc}")
@@ -127,6 +127,11 @@ public class WeatherService {
     }
 
     private WeatherDto enrichAirQuality(WeatherDto weather, String locationName) {
+        if (airQualityApiKey == null || airQualityApiKey.isBlank()) {
+            log.debug("AIR_QUALITY_API_KEY가 없어 대기질 조회를 건너뜁니다.");
+            return weather;
+        }
+
         try {
             AirQualityInfo airQualityInfo = getAirQuality(locationName);
             return weather.toBuilder()
@@ -137,15 +142,18 @@ public class WeatherService {
                     .airQualityStation(airQualityInfo.stationName())
                     .build();
         } catch (Exception e) {
-            log.warn("미세먼지 API 호출 실패. 날씨 정보만 반환합니다. locationName={}", locationName, e);
+            log.warn(
+                    "미세먼지 API 호출 실패. 날씨 정보만 반환합니다. locationName={}, reason={}",
+                    locationName,
+                    e.getMessage()
+            );
             return weather;
         }
     }
 
     private AirQualityInfo getAirQuality(String locationName) {
         String sidoName = extractSidoName(locationName);
-        String serviceKey = airQualityApiKey == null || airQualityApiKey.isBlank() ? apiKey : airQualityApiKey;
-        String encodedApiKey = UriUtils.encode(serviceKey, StandardCharsets.UTF_8);
+        String encodedApiKey = UriUtils.encode(airQualityApiKey, StandardCharsets.UTF_8);
 
         URI uri = UriComponentsBuilder.fromHttpUrl(airQualityBaseUrl + "/getCtprvnRltmMesureDnsty")
                 .queryParam("serviceKey", encodedApiKey)
