@@ -33,7 +33,7 @@
 ## 주요 기능
 
 - 지역명 검색 또는 브라우저 현재 위치 기반 위치 선택
-- Kakao Local API를 통한 주소/장소 검색
+- Kakao Local API를 통한 주소/장소 검색(최대 15개 결과)과 키·외부 API 장애 시 대체 지역 제안
 - 위도/경도 좌표를 기상청 격자 좌표로 변환
 - 기상청 단기예보 API 연동
 - 한국환경공단 에어코리아 미세먼지 API 연동
@@ -55,7 +55,7 @@
 - 미세먼지/초미세먼지 상태에 따른 마스크 추천
 - 구독 등록 시 웰컴 날씨 메일 즉시 발송
 - 아침/점심/저녁 알림 시간 선택
-- 같은 이메일 재등록 기반 구독 정보 업데이트와 토큰 기반 안전한 구독 해지
+- 같은 이메일 재등록 기반 구독 정보 업데이트, 최대 10개 이메일 동시 등록, 토큰 기반 안전한 구독 해지
 - 스케줄러를 통한 시간대별 자동 발송
 - 전체 구독자 수동 발송 API
 - 특정 사용자 대상 지정 발표시각 테스트 발송 API
@@ -169,7 +169,7 @@ src/main/java/com/example/WebSideProject
 GET /api/locations/search?query=강남역
 ```
 
-Kakao Local API로 장소 또는 주소를 검색하고, 기상청 격자 좌표까지 변환해 반환합니다.
+Kakao Local API로 장소 또는 주소를 최대 15개까지 검색하고, 기상청 격자 좌표까지 변환해 반환합니다. `KAKAO_REST_API_KEY`가 비어 있거나 카카오 응답이 일시적으로 실패해도 500 오류 대신 국내 주요 지역 제안을 반환합니다.
 
 ```json
 [
@@ -217,6 +217,20 @@ GET /api/weather?nx=61&ny=125&period=MORNING&locationName=강남역
 ```http
 POST /api/users/subscribe
 Content-Type: application/json
+```
+
+한 사람이 여러 메일함으로 받고 싶다면 `email`에 쉼표/줄바꿈으로 입력하거나 `emails` 배열을 함께 전달할 수 있습니다. 중복 주소는 한 번만 처리하며 한 번에 최대 10개까지 지원합니다.
+
+```json
+{
+  "name": "홍길동",
+  "email": "me@example.com",
+  "emails": ["me@example.com", "family@example.com"],
+  "locationName": "강남역",
+  "nx": 61,
+  "ny": 125,
+  "morningEnabled": true
+}
 ```
 
 ```json
@@ -464,7 +478,7 @@ APP_BASE_URL=https://weather.coders.kr
 
 이 서비스는 일반 사용자가 GitHub 계정으로 로그인할 필요가 없도록 `coders.identity.required=false`로 운영합니다. 같은 이메일로 다시 구독하면 기존 구독의 위치, 알림 시간, 스타일 취향이 업데이트됩니다. 목표 배포 도메인은 `https://weather.coders.kr`입니다.
 
-처음 배포할 때는 `coders.kr/llms.txt`의 Path A 인증 후 이 GitHub 저장소와 프로젝트 이름을 전달합니다. 실제 API 키와 SMTP 비밀번호는 GitHub에 커밋하지 않습니다.
+처음 배포할 때는 [coders.kr/llms.txt](https://coders.kr/llms.txt)의 Path A 인증 후 이 GitHub 저장소와 프로젝트 이름을 전달합니다. 실제 API 키와 SMTP 비밀번호는 GitHub에 커밋하지 않습니다. 해당 안내에 따라 coders MCP의 배포·상태·로그 도구를 사용하며, 비공개 REST 배포 엔드포인트는 사용하지 않습니다.
 
 > coders.kr는 유휴 서비스를 scale-to-zero로 전환합니다. 오전 06:30, 11:30, 18:30 예약 메일을 정확하게 발송하려면 배포 후 프로젝트 정책에서 `always_warm`을 활성화하고 사이트 예산을 충전해야 합니다. 사용하지 않으면 웹 요청이 없어 pod가 내려간 시간의 스케줄은 실행되지 않을 수 있습니다.
 

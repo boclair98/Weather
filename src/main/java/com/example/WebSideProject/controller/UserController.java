@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -17,11 +18,19 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/subscribe")
-    public ResponseEntity<UserDto.Response> subscribe(
+    public ResponseEntity<?> subscribe(
             @Valid @RequestBody UserDto.RegisterRequest request,
             @RequestHeader(value = "X-Coders-User", required = false) String codersUserId
     ) {
-        UserDto.Response response = userService.register(request, codersUserId);
+        List<UserDto.Response> responses = userService.registerAll(request, codersUserId);
+        if (responses.size() == 1) {
+            return ResponseEntity.created(URI.create("/api/users/me")).body(responses.get(0));
+        }
+        UserDto.BatchResponse response = UserDto.BatchResponse.builder()
+                .successCount(responses.size())
+                .recipients(responses.stream().map(UserDto.Response::getEmail).toList())
+                .message(responses.size() + "개의 이메일 구독이 완료되었습니다! 각 메일함을 확인해주세요.")
+                .build();
         return ResponseEntity.created(URI.create("/api/users/me")).body(response);
     }
 

@@ -316,7 +316,8 @@
         }
 
         input,
-        select {
+        select,
+        textarea {
             width: 100%;
             height: 46px;
             border: 1px solid #c9d2e3;
@@ -328,6 +329,14 @@
 
         select {
             color: #172033;
+        }
+
+        textarea {
+            height: 76px;
+            padding: 12px;
+            resize: vertical;
+            line-height: 1.45;
+            font-family: inherit;
         }
 
         input[type="checkbox"] {
@@ -655,8 +664,9 @@
                 </div>
 
                 <div class="field">
-                    <label for="email">이메일</label>
-                    <input id="email" name="email" type="email" autocomplete="email" required>
+                    <label for="emails">받는 이메일</label>
+                    <textarea id="emails" name="emails" autocomplete="email" required maxlength="2048" placeholder="me@example.com&#10;family@example.com"></textarea>
+                    <small>쉼표 또는 줄바꿈으로 최대 10개까지 등록할 수 있어요.</small>
                 </div>
 
                 <div class="split-fields">
@@ -814,6 +824,7 @@
             event.preventDefault();
             searchLocations();
         }
+
     });
     document.getElementById("ageGroup").addEventListener("change", reloadPreviewIfReady);
     document.getElementById("gender").addEventListener("change", reloadPreviewIfReady);
@@ -832,7 +843,7 @@
 
         const payload = {
             name: document.getElementById("name").value.trim(),
-            email: document.getElementById("email").value.trim(),
+            email: "",
             locationName: selectedLocation.locationName,
             latitude: selectedLocation.latitude,
             longitude: selectedLocation.longitude,
@@ -845,6 +856,25 @@
             eveningEnabled: document.getElementById("eveningEnabled").checked
         };
 
+        const recipients = [...new Set(document.getElementById("emails").value
+            .split(/[,;\s]+/)
+            .map((email) => email.trim().toLowerCase())
+            .filter(Boolean))];
+        if (!recipients.length) {
+            showResult("받을 이메일을 하나 이상 입력해주세요.", false);
+            submitButton.disabled = false;
+            submitButton.textContent = "구독하기";
+            return;
+        }
+        if (recipients.length > 10) {
+            showResult("한 번에 최대 10개의 이메일을 등록할 수 있습니다.", false);
+            submitButton.disabled = false;
+            submitButton.textContent = "구독하기";
+            return;
+        }
+        payload.email = recipients[0];
+        payload.emails = recipients;
+
         try {
             const response = await fetch("/api/users/subscribe", {
                 method: "POST",
@@ -855,7 +885,7 @@
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(getApiError(data, "구독 처리에 실패했습니다."));
 
-            showResult(`${data.message} 메일함을 확인해주세요.`, true);
+            showResult(data.message || `${recipients.length}개의 이메일 구독이 완료되었습니다. 메일함을 확인해주세요.`, true);
             if (managerControls) {
                 await loadCurrentSubscription();
             }
