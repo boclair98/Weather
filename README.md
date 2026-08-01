@@ -476,6 +476,8 @@ ADMIN_API_KEY
 APP_BASE_URL=https://weather.coders.kr
 ```
 
+`DB_URL`을 설정하지 않아도 로컬에서는 내장 H2 DB로 즉시 실행됩니다. MySQL을 쓰고 싶을 때만 위의 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DRIVER=com.mysql.cj.jdbc.Driver`를 설정하세요.
+
 이 서비스는 일반 사용자가 GitHub 계정으로 로그인할 필요가 없도록 `coders.identity.required=false`로 운영합니다. 같은 이메일로 다시 구독하면 기존 구독의 위치, 알림 시간, 스타일 취향이 업데이트됩니다. 목표 배포 도메인은 `https://weather.coders.kr`입니다.
 
 처음 배포할 때는 [coders.kr/llms.txt](https://coders.kr/llms.txt)의 Path A 인증 후 이 GitHub 저장소와 프로젝트 이름을 전달합니다. 실제 API 키와 SMTP 비밀번호는 GitHub에 커밋하지 않습니다. 해당 안내에 따라 coders MCP의 배포·상태·로그 도구를 사용하며, 비공개 REST 배포 엔드포인트는 사용하지 않습니다.
