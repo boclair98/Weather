@@ -23,6 +23,8 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: gradle
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
       - name: Test and package
         run: ./gradlew clean test bootJar --no-daemon
       - name: Upload test report
