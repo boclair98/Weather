@@ -32,8 +32,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'com.github.ben-manes.caffeine:caffeine'
     implementation 'org.apache.httpcomponents.client5:httpclient5'
-    implementation 'net.javacrumbs.shedlock:shedlock-spring:5.13.0'
-    implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.13.0'
+    implementation 'net.javacrumbs.shedlock:shedlock-spring:7.7.0'
+    implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0'
     implementation 'org.json:json:20240303'
 
     compileOnly 'org.projectlombok:lombok'
