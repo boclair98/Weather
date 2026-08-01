@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 @RestController
 @RequestMapping("/api/weather-mails")
@@ -35,6 +37,9 @@ public class WeatherMailController {
 
     @Value("${admin.api-key:}")
     private String adminApiKey;
+
+    @Value("${admin.require-key:false}")
+    private boolean adminRequireKey;
 
     @PostMapping("/send-now")
     public ResponseEntity<Map<String, String>> sendNow(
@@ -88,10 +93,16 @@ public class WeatherMailController {
 
     private void validateAdminKey(String adminKey) {
         if (adminApiKey == null || adminApiKey.isBlank()) {
+            if (adminRequireKey) {
+                throw new SecurityException("관리자 API가 비활성화되어 있습니다.");
+            }
             return;
         }
-        if (!adminApiKey.equals(adminKey)) {
-            throw new IllegalArgumentException("관리자 키가 올바르지 않습니다.");
+        if (adminKey == null || !MessageDigest.isEqual(
+                adminApiKey.getBytes(StandardCharsets.UTF_8),
+                adminKey.getBytes(StandardCharsets.UTF_8)
+        )) {
+            throw new SecurityException("관리자 키가 올바르지 않습니다.");
         }
     }
 }

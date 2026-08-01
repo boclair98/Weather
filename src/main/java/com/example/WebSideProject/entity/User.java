@@ -11,7 +11,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users")
+@Table(
+        name = "users",
+        indexes = {
+                @Index(name = "idx_users_subscribed", columnList = "subscribed"),
+                @Index(name = "idx_users_coders_user", columnList = "codersUserId")
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
@@ -28,6 +34,9 @@ public class User {
     @NotBlank
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(unique = true, length = 64)
+    private String codersUserId;
 
     @Column(nullable = false)
     private boolean subscribed = true;
@@ -85,6 +94,7 @@ public class User {
     public User(
             String name,
             String email,
+            String codersUserId,
             String locationName,
             Double latitude,
             Double longitude,
@@ -98,6 +108,7 @@ public class User {
     ) {
         this.name = name;
         this.email = email;
+        this.codersUserId = codersUserId;
         this.locationName = locationName == null || locationName.isBlank() ? "서울특별시 중구" : locationName;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -139,6 +150,23 @@ public class User {
     public void updateStylePreference(AgeGroup ageGroup, GenderType gender) {
         this.ageGroup = ageGroup == null ? AgeGroup.NONE : ageGroup;
         this.gender = gender == null ? GenderType.NONE : gender;
+    }
+
+    public void updateNotificationTimes(
+            boolean morningEnabled,
+            boolean afternoonEnabled,
+            boolean eveningEnabled
+    ) {
+        boolean noTimeSelected = !morningEnabled && !afternoonEnabled && !eveningEnabled;
+        this.morningEnabled = morningEnabled || noTimeSelected;
+        this.afternoonEnabled = afternoonEnabled;
+        this.eveningEnabled = eveningEnabled;
+    }
+
+    public void claimCodersIdentity(String codersUserId) {
+        if (this.codersUserId == null || this.codersUserId.isBlank()) {
+            this.codersUserId = codersUserId;
+        }
     }
 
     public void ensureUnsubscribeToken() {

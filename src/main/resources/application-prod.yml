@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:20}
+      minimum-idle: ${DB_POOL_MIN_IDLE:2}
+      connection-timeout: 3000
+      validation-timeout: 2000
+      idle-timeout: 300000
+      max-lifetime: 1500000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  thymeleaf:
+    cache: true
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
+      timeout: 2s
+      connect-timeout: 2s
+coders:
+  identity:
+    required: true
+
+admin:
+  require-key: true
+
+logging:
+  level:
+    root: INFO
+    com.example.WebSideProject: INFO

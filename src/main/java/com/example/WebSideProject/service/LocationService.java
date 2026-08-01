@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -25,6 +26,12 @@ public class LocationService {
 
     private final RestTemplate restTemplate;
 
+    @Cacheable(
+            cacheNames = "locations",
+            key = "#query == null ? '' : #query.trim().toLowerCase()",
+            condition = "#query != null && !#query.isBlank()",
+            sync = true
+    )
     public List<LocationDto.Response> search(String query) {
         if (query == null || query.isBlank()) {
             throw new IllegalArgumentException("검색할 지역명을 입력해주세요.");
@@ -45,6 +52,23 @@ public class LocationService {
                 "https://dapi.kakao.com/v2/local/search/address.json",
                 query.trim()
         );
+    }
+
+    public LocationDto.Response resolveCoordinates(double latitude, double longitude) {
+        if (!Double.isFinite(latitude) || !Double.isFinite(longitude)
+                || latitude < 33.0 || latitude > 39.5
+                || longitude < 124.0 || longitude > 132.0) {
+            throw new IllegalArgumentException("대한민국 범위의 위치 정보만 사용할 수 있습니다.");
+        }
+
+        Grid grid = convertToGrid(latitude, longitude);
+        return LocationDto.Response.builder()
+                .locationName("현재 위치")
+                .latitude(latitude)
+                .longitude(longitude)
+                .nx(grid.nx())
+                .ny(grid.ny())
+                .build();
     }
 
     private List<LocationDto.Response> requestKakao(String url, String query) {
