@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>날씨 구독</title>
+    <title>날씨한편 | 내 위치 맞춤 날씨 알림</title>
     <style>
         * {
             box-sizing: border-box;
@@ -12,7 +12,7 @@
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: Arial, "Noto Sans KR", sans-serif;
+            font-family: Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             color: #172033;
             background: #eef4ff;
             transition: background 240ms ease, color 240ms ease;
@@ -53,6 +53,43 @@
             font-size: 42px;
             line-height: 1.15;
             letter-spacing: 0;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin: 0 0 14px;
+            color: #1d4ed8;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: .04em;
+        }
+
+        .eyebrow::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, .14);
+        }
+
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .hero-badge {
+            padding: 7px 10px;
+            border: 1px solid #d9e4f5;
+            border-radius: 999px;
+            color: #42526b;
+            background: rgba(255, 255, 255, .72);
+            font-size: 12px;
+            font-weight: 700;
         }
 
         .intro {
@@ -194,6 +231,19 @@
             border-radius: 8px;
             padding: 24px;
             box-shadow: 0 12px 32px rgba(30, 45, 75, 0.08);
+        }
+
+        .panel-heading {
+            margin: 0 0 6px;
+            font-size: 22px;
+            letter-spacing: -.02em;
+        }
+
+        .panel-description {
+            margin: 0 0 22px;
+            color: #66758d;
+            font-size: 14px;
+            line-height: 1.55;
         }
 
         label {
@@ -381,6 +431,39 @@
             margin-top: 28px;
         }
 
+        .benefit-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .benefit-card {
+            padding: 17px;
+            border: 1px solid #dfe5ef;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .8);
+        }
+
+        .benefit-card strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .benefit-card span {
+            color: #66758d;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .site-footer {
+            margin-top: 26px;
+            color: #718096;
+            font-size: 12px;
+            text-align: center;
+        }
+
         .subscription-manager h2 {
             margin: 0 0 8px;
             font-size: 22px;
@@ -425,6 +508,10 @@
             .weather-chip-row {
                 grid-template-columns: 1fr;
             }
+
+            .benefit-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -438,8 +525,14 @@
 <main>
     <div class="layout">
         <section>
-            <h1>내 위치 날씨를 이메일로 받아보세요</h1>
-            <p class="intro">이름과 이메일을 입력하고 지역을 검색하면 오늘 날씨 메일이 바로 발송됩니다. 이후에는 선택한 시간대에 같은 주소로 날씨 알림을 보내드립니다.</p>
+            <p class="eyebrow">실시간 위치 기반 날씨 브리핑</p>
+            <h1>날씨를 확인하는 대신,<br>필요할 때 받아보세요</h1>
+            <p class="intro">내 위치의 기온·강수·외출 점수를 한눈에 확인하고, 선택한 시간에 맞춤 날씨 브리핑을 이메일로 받아보세요.</p>
+            <div class="hero-badges" aria-label="서비스 특징">
+                <span class="hero-badge">기상청 단기예보</span>
+                <span class="hero-badge">전국 위치 검색</span>
+                <span class="hero-badge">하루 최대 3회 알림</span>
+            </div>
             <div class="weather-preview" id="weatherPreview" hidden>
                 <div class="weather-preview-header">
                     <p class="weather-preview-title" id="weatherPreviewTitle">선택 위치 날씨</p>
@@ -476,6 +569,8 @@
 
         <section class="panel" aria-label="날씨 구독 신청">
             <form id="subscribeForm">
+                <h2 class="panel-heading">무료 날씨 알림 시작하기</h2>
+                <p class="panel-description">가입비 없이 언제든 알림 시간을 바꾸거나 구독을 해지할 수 있습니다.</p>
                 <div class="field">
                     <label for="name">이름</label>
                     <input id="name" name="name" autocomplete="name" required>
@@ -579,6 +674,22 @@
         </div>
         <div class="result" id="managerResult" role="status"></div>
     </section>
+
+    <section class="benefit-grid" aria-label="서비스 안내">
+        <div class="benefit-card">
+            <strong>내 일정에 맞춘 알림</strong>
+            <span>아침·점심·저녁 중 필요한 시간만 골라 받아보세요.</span>
+        </div>
+        <div class="benefit-card">
+            <strong>외출 판단을 한눈에</strong>
+            <span>강수 확률과 체감 정보를 종합한 외출 점수를 제공합니다.</span>
+        </div>
+        <div class="benefit-card">
+            <strong>간편한 구독 관리</strong>
+            <span>로그인한 계정에서 알림 변경과 구독 해지를 바로 처리합니다.</span>
+        </div>
+    </section>
+    <p class="site-footer">날씨한편 · 데이터 제공: 기상청 · 예보는 실제 관측과 다를 수 있습니다.</p>
 </main>
 
 <script>
@@ -661,11 +772,12 @@
             }
 
             const data = await response.json().catch(() => ({}));
-            if (!response.ok) {
-                throw new Error(data.message || "구독 처리에 실패했습니다.");
-            }
+            if (!response.ok) throw new Error(getApiError(data, "구독 처리에 실패했습니다."));
 
             showResult(`${data.message} 메일함을 확인해주세요.`, true);
+            if (managerControls) {
+                await loadCurrentSubscription();
+            }
         } catch (error) {
             showResult(error.message, false);
         } finally {
@@ -690,9 +802,7 @@
         try {
             const response = await fetch(`/api/locations/search?query=${encodeURIComponent(query)}`);
             const locations = await response.json().catch(() => []);
-            if (!response.ok) {
-                throw new Error(locations.message || "위치 검색에 실패했습니다.");
-            }
+            if (!response.ok) throw new Error(getApiError(locations, "위치 검색에 실패했습니다."));
             if (locations.length === 0) {
                 locationMeta.textContent = "검색 결과가 없습니다. 더 구체적인 지역명을 입력해주세요.";
                 return;
@@ -725,9 +835,7 @@
                 });
                 const response = await fetch(`/api/locations/coordinates?${params.toString()}`);
                 const location = await response.json();
-                if (!response.ok) {
-                    throw new Error(location.message || "현재 위치를 사용할 수 없습니다.");
-                }
+                if (!response.ok) throw new Error(getApiError(location, "현재 위치를 사용할 수 없습니다."));
                 locationQuery.value = "현재 위치";
                 renderLocationResults([location]);
                 selectLocation(location, 0);
@@ -791,9 +899,7 @@
             });
             const response = await fetch(`/api/weather?${params.toString()}`);
             const weather = await response.json();
-            if (!response.ok) {
-                throw new Error(weather.message || "날씨를 불러오지 못했습니다.");
-            }
+            if (!response.ok) throw new Error(getApiError(weather, "날씨를 불러오지 못했습니다."));
             renderWeatherPreview(location, weather);
         } catch (error) {
             weatherPreviewMain.textContent = "날씨 확인 실패";
@@ -835,9 +941,7 @@
                 return;
             }
             const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.message || "구독 정보를 불러오지 못했습니다.");
-            }
+            if (!response.ok) throw new Error(getApiError(data, "구독 정보를 불러오지 못했습니다."));
             managerSummary.textContent = `${data.name} · ${data.email} · ${data.locationName}`;
             document.getElementById("manageMorning").checked = data.morningEnabled;
             document.getElementById("manageAfternoon").checked = data.afternoonEnabled;
@@ -861,9 +965,7 @@
                 })
             });
             const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.message || "알림 시간을 저장하지 못했습니다.");
-            }
+            if (!response.ok) throw new Error(getApiError(data, "알림 시간을 저장하지 못했습니다."));
             document.getElementById("manageMorning").checked = data.morningEnabled;
             showManagerResult(data.message, true);
         } catch (error) {
@@ -881,9 +983,7 @@
         try {
             const response = await fetch("/api/users/me/subscription", {method: "DELETE"});
             const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.message || "구독을 해지하지 못했습니다.");
-            }
+            if (!response.ok) throw new Error(getApiError(data, "구독을 해지하지 못했습니다."));
             showManagerResult(data.message, true);
             managerControls.hidden = true;
         } catch (error) {
@@ -895,6 +995,11 @@
     function showManagerResult(message, ok) {
         managerResult.textContent = message;
         managerResult.className = ok ? "result ok" : "result error";
+    }
+
+    function getApiError(data, fallback) {
+        const message = data && data.message ? data.message : fallback;
+        return data && data.requestId ? `${message} (문의 코드: ${data.requestId})` : message;
     }
 </script>
 </body>

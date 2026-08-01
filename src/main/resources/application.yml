@@ -21,7 +21,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
 
   mail:
     host: ${SMTP_HOST:smtp.gmail.com}
@@ -50,7 +49,7 @@ weather:
 
 air-quality:
   api:
-    key: ${AIR_QUALITY_API_KEY:${WEATHER_API_KEY:}}
+    key: ${AIR_QUALITY_API_KEY:}
     base-url: ${AIR_QUALITY_API_BASE_URL:https://apis.data.go.kr/B552584/ArpltnInforInqireSvc}
 
 location:

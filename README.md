@@ -1,4 +1,4 @@
-# Weather Mail Subscription Service
+# 날씨한편 — 위치 기반 날씨 메일 서비스
 
 사용자가 원하는 지역과 알림 시간을 선택하면, 기상청 단기예보와 에어코리아 대기질 데이터를 기반으로 날씨 메일을 자동 발송하는 Spring Boot 서비스입니다. coders.kr의 native identity, 관리형 PostgreSQL·Redis, scale-to-zero 배포 계약에 맞춰 실제 운영 가능한 구조로 구성했습니다.
 
@@ -73,6 +73,7 @@
 - 여러 인스턴스의 예약 메일 중복 발송을 막는 분산 스케줄 락
 - bounded 메일 executor와 큐 포화 시 backpressure
 - 관리자 API fail-closed 보호 및 보안 응답 헤더
+- API 오류 코드·요청 ID 기반 사용자 문의와 서버 로그 추적
 - Actuator health probe, graceful shutdown, 응답 압축
 - GitHub Actions 테스트·컨테이너 빌드 및 Dependabot
 
@@ -397,6 +398,18 @@ GET /api/weather-mails/histories?email=user@example.com
 
 데이터가 없거나 외부 API 호출에 실패한 항목은 `null`을 노출하지 않고 `-` 또는 안내 문구로 표시합니다.
 
+API 요청이 실패하면 내부 예외나 비밀번호 같은 민감한 정보는 숨기고, 사용자가 이해할 수 있는 메시지와 추적용 문의 코드를 반환합니다.
+
+```json
+{
+  "code": "DATABASE_UNAVAILABLE",
+  "message": "데이터베이스 연결이 원활하지 않습니다. 잠시 후 다시 시도해주세요.",
+  "requestId": "a1b2c3d4"
+}
+```
+
+화면에도 문의 코드가 함께 표시되므로 운영 로그의 `requestId`로 동일한 오류를 빠르게 찾을 수 있습니다.
+
 ## 환경 변수
 
 실제 키와 비밀번호는 GitHub에 올리지 않고 환경변수로 관리합니다.
@@ -422,7 +435,7 @@ APP_BASE_URL=http://localhost:8080
 ADMIN_API_KEY=your_optional_admin_key
 ```
 
-`AIR_QUALITY_API_KEY`를 따로 지정하지 않으면 `WEATHER_API_KEY` 값을 사용하도록 설정되어 있습니다.
+`AIR_QUALITY_API_KEY`는 기상청 날씨 키와 별개의 에어코리아 키입니다. 아직 키를 발급받지 않았다면 비워둘 수 있으며, 이 경우 날씨 서비스는 정상 동작하고 대기질 조회만 건너뜁니다.
 
 운영 환경에서는 `ADMIN_API_KEY`가 비어 있으면 관리자 API가 자동으로 비활성화됩니다. 키는 저장소나 `coders.yaml`에 넣지 말고 배포 플랫폼의 secret 환경변수로 설정해야 합니다.
 
@@ -456,6 +469,8 @@ APP_BASE_URL=https://<배포이름>.coders.kr
 공식 계약상 장시간 SSE/long-poll은 quota를 빠르게 사용하므로 이 프로젝트는 짧은 HTTP 요청만 사용합니다. 외부 API 응답은 Redis에 캐시해 익명 quota와 공공 API 호출량을 함께 절약합니다.
 
 ## 로컬 실행
+
+로컬 개발은 MySQL을 사용하고, `prod` 프로필은 coders.kr가 제공하는 PostgreSQL을 사용합니다. Hibernate 방언은 접속한 DB에 맞춰 선택되므로 MySQL 전용 DDL이 PostgreSQL에 실행되지 않습니다.
 
 MySQL에 `weatherdb` 데이터베이스를 만든 뒤 실행합니다.
 

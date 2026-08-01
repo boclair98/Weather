@@ -6,7 +6,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Controller
 public class HomeController {
@@ -14,16 +13,18 @@ public class HomeController {
     @Value("${coders.identity.required:false}")
     private boolean codersIdentityRequired;
 
+    @Value("${app.base-url:http://localhost:8080}")
+    private String appBaseUrl;
+
     @GetMapping("/")
     public String home(
             @RequestHeader(value = "X-Coders-User", required = false) String codersUserId,
             Model model
     ) {
         boolean signedIn = codersUserId != null && !codersUserId.isBlank();
-        String returnTo = ServletUriComponentsBuilder.fromCurrentRequest()
-                .replaceQuery(null)
-                .build()
-                .toUriString();
+        String returnTo = appBaseUrl.endsWith("/")
+                ? appBaseUrl
+                : appBaseUrl + "/";
 
         model.addAttribute("codersPlatform", codersIdentityRequired);
         model.addAttribute("signedIn", signedIn);
