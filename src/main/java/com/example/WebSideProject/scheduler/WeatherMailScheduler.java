@@ -8,6 +8,7 @@ import com.example.WebSideProject.service.UserService;
 import com.example.WebSideProject.service.WeatherService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -23,16 +24,19 @@ public class WeatherMailScheduler {
     private final MailService mailService;
 
     @Scheduled(cron = "0 30 6 * * *", zone = "Asia/Seoul")
+    @SchedulerLock(name = "weather-mail-morning", lockAtLeastFor = "PT1M", lockAtMostFor = "PT30M")
     public void sendMorningWeatherMail() {
         sendWeatherMailByPeriod(WeatherPeriod.MORNING);
     }
 
     @Scheduled(cron = "0 30 11 * * *", zone = "Asia/Seoul")
+    @SchedulerLock(name = "weather-mail-afternoon", lockAtLeastFor = "PT1M", lockAtMostFor = "PT30M")
     public void sendAfternoonWeatherMail() {
         sendWeatherMailByPeriod(WeatherPeriod.AFTERNOON);
     }
 
     @Scheduled(cron = "0 30 18 * * *", zone = "Asia/Seoul")
+    @SchedulerLock(name = "weather-mail-evening", lockAtLeastFor = "PT1M", lockAtMostFor = "PT30M")
     public void sendEveningWeatherMail() {
         sendWeatherMailByPeriod(WeatherPeriod.EVENING);
     }

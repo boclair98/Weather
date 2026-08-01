@@ -4,7 +4,9 @@ import com.example.WebSideProject.Enum.AgeGroup;
 import com.example.WebSideProject.Enum.GenderType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,18 +17,23 @@ public class UserDto {
     @Setter
     public static class RegisterRequest {
         @NotBlank(message = "이름을 입력해주세요")
+        @Size(max = 50, message = "이름은 50자 이하여야 합니다")
         private String name;
 
         @Email(message = "올바른 이메일 형식이 아닙니다")
         @NotBlank(message = "이메일을 입력해주세요")
+        @Size(max = 254, message = "이메일은 254자 이하여야 합니다")
         private String email;
 
         @Min(value = 1, message = "위치를 선택해주세요")
+        @Max(value = 200, message = "올바른 위치를 선택해주세요")
         private int nx = 60;
 
         @Min(value = 1, message = "위치를 선택해주세요")
+        @Max(value = 300, message = "올바른 위치를 선택해주세요")
         private int ny = 127;
 
+        @Size(max = 200, message = "위치명은 200자 이하여야 합니다")
         private String locationName = "서울특별시 중구";
 
         private Double latitude;
@@ -49,9 +56,11 @@ public class UserDto {
     public static class UpdateLocationRequest {
         @Email(message = "올바른 이메일 형식이 아닙니다")
         @NotBlank(message = "이메일을 입력해주세요")
+        @Size(max = 254, message = "이메일은 254자 이하여야 합니다")
         private String email;
 
         @NotBlank(message = "위치명을 입력해주세요")
+        @Size(max = 200, message = "위치명은 200자 이하여야 합니다")
         private String locationName;
 
         private Double latitude;
@@ -59,9 +68,11 @@ public class UserDto {
         private Double longitude;
 
         @Min(value = 1, message = "위치를 선택해주세요")
+        @Max(value = 200, message = "올바른 위치를 선택해주세요")
         private int nx;
 
         @Min(value = 1, message = "위치를 선택해주세요")
+        @Max(value = 300, message = "올바른 위치를 선택해주세요")
         private int ny;
     }
 
@@ -70,11 +81,20 @@ public class UserDto {
     public static class UpdateStylePreferenceRequest {
         @Email(message = "올바른 이메일 형식이 아닙니다")
         @NotBlank(message = "이메일을 입력해주세요")
+        @Size(max = 254, message = "이메일은 254자 이하여야 합니다")
         private String email;
 
         private AgeGroup ageGroup = AgeGroup.NONE;
 
         private GenderType gender = GenderType.NONE;
+    }
+
+    @Getter
+    @Setter
+    public static class UpdateNotificationRequest {
+        private boolean morningEnabled;
+        private boolean afternoonEnabled;
+        private boolean eveningEnabled;
     }
 
     @Getter

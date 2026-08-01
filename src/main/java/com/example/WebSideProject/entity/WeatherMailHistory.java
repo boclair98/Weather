@@ -11,7 +11,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "weather_mail_histories")
+@Table(
+        name = "weather_mail_histories",
+        indexes = {
+                @Index(name = "idx_mail_history_sent_at", columnList = "sentAt"),
+                @Index(name = "idx_mail_history_email_sent_at", columnList = "userEmail,sentAt")
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WeatherMailHistory {

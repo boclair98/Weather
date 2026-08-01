@@ -111,6 +111,26 @@
             padding: 18px 20px 20px;
         }
 
+        .period-tabs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .period-tab {
+            height: 38px;
+            border: 1px solid #d6deec;
+            color: #52637a;
+            background: #ffffff;
+        }
+
+        .period-tab.selected {
+            border-color: #2563eb;
+            color: #1d4ed8;
+            background: #eef4ff;
+        }
+
         .weather-score {
             display: flex;
             align-items: baseline;
@@ -247,7 +267,7 @@
 
         .location-search {
             display: grid;
-            grid-template-columns: 1fr 92px;
+            grid-template-columns: 1fr 92px 110px;
             gap: 10px;
         }
 
@@ -333,6 +353,54 @@
             border: 1px solid #f3b8b8;
         }
 
+        .account-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            max-width: 1120px;
+            margin: 18px auto 0;
+            padding: 0 24px;
+            color: #52637a;
+            font-size: 14px;
+        }
+
+        .account-link {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            border-radius: 6px;
+            padding: 0 14px;
+            color: #ffffff;
+            background: #172033;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .subscription-manager {
+            margin-top: 28px;
+        }
+
+        .subscription-manager h2 {
+            margin: 0 0 8px;
+            font-size: 22px;
+        }
+
+        .manager-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .manager-actions .primary {
+            width: auto;
+        }
+
+        .danger {
+            color: #991b1b;
+            background: #fee2e2;
+        }
+
         @media (max-width: 820px) {
             main {
                 padding: 32px 16px;
@@ -361,6 +429,12 @@
     </style>
 </head>
 <body>
+<div class="account-bar" th:if="${codersPlatform}">
+    <span th:text="${signedIn ? 'coders.kr 로그인됨' : '구독하려면 로그인이 필요합니다'}"></span>
+    <a class="account-link"
+       th:href="${signedIn ? logoutUrl : loginUrl}"
+       th:text="${signedIn ? '로그아웃' : '로그인'}">로그인</a>
+</div>
 <main>
     <div class="layout">
         <section>
@@ -372,6 +446,11 @@
                     <div class="weather-preview-main" id="weatherPreviewMain">날씨를 불러오는 중</div>
                 </div>
                 <div class="weather-preview-body">
+                    <div class="period-tabs" aria-label="예보 시간대">
+                        <button class="period-tab selected" type="button" data-period="MORNING">아침</button>
+                        <button class="period-tab" type="button" data-period="AFTERNOON">점심</button>
+                        <button class="period-tab" type="button" data-period="EVENING">저녁</button>
+                    </div>
                     <div class="weather-score">
                         <strong id="outingScore">-점</strong>
                         <span id="outingScoreLabel">-</span>
@@ -435,6 +514,7 @@
                     <div class="location-search">
                         <input id="locationQuery" name="locationQuery" placeholder="예: 대전 유성구, 강남역" required>
                         <button class="secondary" type="button" id="searchLocation">검색</button>
+                        <button class="secondary" type="button" id="currentLocation">현재 위치</button>
                     </div>
                     <div class="location-results" id="locationResults" aria-label="위치 검색 결과"></div>
                     <p class="meta" id="locationMeta">지역을 검색한 뒤 결과를 선택해주세요.</p>
@@ -473,6 +553,32 @@
             </form>
         </section>
     </div>
+
+    <section class="panel subscription-manager" th:if="${signedIn}" aria-label="내 날씨 알림 관리">
+        <h2>내 날씨 알림 관리</h2>
+        <p class="intro" id="managerSummary">현재 계정에 연결된 구독을 확인하고 알림 시간을 바꿀 수 있습니다.</p>
+        <div id="managerControls" hidden>
+            <div class="time-options">
+                <label class="time-option" for="manageMorning">
+                    <input id="manageMorning" type="checkbox">
+                    <span><strong>아침 06:30</strong><span>출근·등교 전 날씨</span></span>
+                </label>
+                <label class="time-option" for="manageAfternoon">
+                    <input id="manageAfternoon" type="checkbox">
+                    <span><strong>점심 11:30</strong><span>오후 일정 전 날씨</span></span>
+                </label>
+                <label class="time-option" for="manageEvening">
+                    <input id="manageEvening" type="checkbox">
+                    <span><strong>저녁 18:30</strong><span>퇴근길과 저녁 날씨</span></span>
+                </label>
+            </div>
+            <div class="manager-actions">
+                <button class="primary" type="button" id="saveNotifications">알림 시간 저장</button>
+                <button class="danger" type="button" id="cancelSubscription">구독 해지</button>
+            </div>
+        </div>
+        <div class="result" id="managerResult" role="status"></div>
+    </section>
 </main>
 
 <script>
@@ -482,6 +588,7 @@
     const result = document.getElementById("result");
     const submitButton = document.getElementById("submitButton");
     const searchButton = document.getElementById("searchLocation");
+    const currentLocationButton = document.getElementById("currentLocation");
     const weatherPreview = document.getElementById("weatherPreview");
     const weatherPreviewTitle = document.getElementById("weatherPreviewTitle");
     const weatherPreviewMain = document.getElementById("weatherPreviewMain");
@@ -492,8 +599,21 @@
     const weatherRain = document.getElementById("weatherRain");
     const weatherAir = document.getElementById("weatherAir");
     let selectedLocation = null;
+    let previewPeriod = "MORNING";
 
     searchButton.addEventListener("click", searchLocations);
+    currentLocationButton.addEventListener("click", useCurrentLocation);
+    document.querySelectorAll(".period-tab").forEach((button) => {
+        button.addEventListener("click", () => {
+            previewPeriod = button.dataset.period;
+            document.querySelectorAll(".period-tab").forEach((tab) => {
+                tab.classList.toggle("selected", tab === button);
+            });
+            if (selectedLocation) {
+                loadWeatherPreview(selectedLocation);
+            }
+        });
+    });
     locationQuery.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -534,6 +654,11 @@
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(payload)
             });
+
+            if (response.redirected && response.url.includes("mcp.coders.kr")) {
+                window.location.assign(response.url);
+                return;
+            }
 
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
@@ -584,6 +709,41 @@
         }
     }
 
+    function useCurrentLocation() {
+        if (!navigator.geolocation) {
+            showResult("이 브라우저는 현재 위치 기능을 지원하지 않습니다.", false);
+            return;
+        }
+
+        currentLocationButton.disabled = true;
+        currentLocationButton.textContent = "확인 중";
+        navigator.geolocation.getCurrentPosition(async ({coords}) => {
+            try {
+                const params = new URLSearchParams({
+                    latitude: coords.latitude,
+                    longitude: coords.longitude
+                });
+                const response = await fetch(`/api/locations/coordinates?${params.toString()}`);
+                const location = await response.json();
+                if (!response.ok) {
+                    throw new Error(location.message || "현재 위치를 사용할 수 없습니다.");
+                }
+                locationQuery.value = "현재 위치";
+                renderLocationResults([location]);
+                selectLocation(location, 0);
+            } catch (error) {
+                showResult(error.message, false);
+            } finally {
+                currentLocationButton.disabled = false;
+                currentLocationButton.textContent = "현재 위치";
+            }
+        }, () => {
+            showResult("위치 권한을 허용하거나 지역명을 검색해주세요.", false);
+            currentLocationButton.disabled = false;
+            currentLocationButton.textContent = "현재 위치";
+        }, {enableHighAccuracy: false, timeout: 8000, maximumAge: 300000});
+    }
+
     function renderLocationResults(locations) {
         locationResults.innerHTML = "";
         locations.forEach((location, index) => {
@@ -626,7 +786,7 @@
             const params = new URLSearchParams({
                 nx: location.nx,
                 ny: location.ny,
-                period: "MORNING",
+                period: previewPeriod,
                 locationName: location.locationName
             });
             const response = await fetch(`/api/weather?${params.toString()}`);
@@ -653,6 +813,88 @@
         weatherTemp.textContent = `${weather.tmp || "-"}°C`;
         weatherRain.textContent = `강수 ${weather.pop || "-"}%`;
         weatherAir.textContent = weather.airQualitySummary || "-";
+    }
+
+    const managerControls = document.getElementById("managerControls");
+    const managerSummary = document.getElementById("managerSummary");
+    const managerResult = document.getElementById("managerResult");
+    const saveNotifications = document.getElementById("saveNotifications");
+    const cancelSubscription = document.getElementById("cancelSubscription");
+
+    if (managerControls) {
+        loadCurrentSubscription();
+        saveNotifications.addEventListener("click", updateNotifications);
+        cancelSubscription.addEventListener("click", cancelCurrentSubscription);
+    }
+
+    async function loadCurrentSubscription() {
+        try {
+            const response = await fetch("/api/users/me");
+            if (response.status === 404) {
+                managerSummary.textContent = "아직 이 계정에 연결된 구독이 없습니다. 위 양식에서 새로 등록해주세요.";
+                return;
+            }
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || "구독 정보를 불러오지 못했습니다.");
+            }
+            managerSummary.textContent = `${data.name} · ${data.email} · ${data.locationName}`;
+            document.getElementById("manageMorning").checked = data.morningEnabled;
+            document.getElementById("manageAfternoon").checked = data.afternoonEnabled;
+            document.getElementById("manageEvening").checked = data.eveningEnabled;
+            managerControls.hidden = false;
+        } catch (error) {
+            showManagerResult(error.message, false);
+        }
+    }
+
+    async function updateNotifications() {
+        saveNotifications.disabled = true;
+        try {
+            const response = await fetch("/api/users/me/notifications", {
+                method: "PATCH",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    morningEnabled: document.getElementById("manageMorning").checked,
+                    afternoonEnabled: document.getElementById("manageAfternoon").checked,
+                    eveningEnabled: document.getElementById("manageEvening").checked
+                })
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || "알림 시간을 저장하지 못했습니다.");
+            }
+            document.getElementById("manageMorning").checked = data.morningEnabled;
+            showManagerResult(data.message, true);
+        } catch (error) {
+            showManagerResult(error.message, false);
+        } finally {
+            saveNotifications.disabled = false;
+        }
+    }
+
+    async function cancelCurrentSubscription() {
+        if (!window.confirm("날씨 이메일 구독을 해지할까요?")) {
+            return;
+        }
+        cancelSubscription.disabled = true;
+        try {
+            const response = await fetch("/api/users/me/subscription", {method: "DELETE"});
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || "구독을 해지하지 못했습니다.");
+            }
+            showManagerResult(data.message, true);
+            managerControls.hidden = true;
+        } catch (error) {
+            showManagerResult(error.message, false);
+            cancelSubscription.disabled = false;
+        }
+    }
+
+    function showManagerResult(message, ok) {
+        managerResult.textContent = message;
+        managerResult.className = ok ? "result ok" : "result error";
     }
 </script>
 </body>

@@ -1,0 +1,25 @@
+version: "1"
+mode: native
+
+services:
+  app:
+    dockerfile: Dockerfile
+    context: .
+    port: 8080
+    expose: public
+    timeout: 60
+    env:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://${db.host}:${db.port}/${db.name}
+      DB_USERNAME: ${db.user}
+      DB_PASSWORD: ${db.password}
+      REDIS_URL: ${cache.url}
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC
+      ADMIN_REQUIRE_KEY: "true"
+
+  db:
+    type: postgres
+    size: 1Gi
+
+  cache:
+    type: redis

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -48,6 +49,11 @@ public class WeatherService {
         return getWeather(nx, ny, period, null);
     }
 
+    @Cacheable(
+            cacheNames = "weather",
+            key = "#nx + ':' + #ny + ':' + #period.name() + ':' + (#locationName == null ? '' : #locationName)",
+            sync = true
+    )
     public WeatherDto getWeather(int nx, int ny, WeatherPeriod period, String locationName) {
         ForecastBase forecastBase = getForecastBase();
         String targetDate = getForecastDate(period).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
@@ -90,11 +96,13 @@ public class WeatherService {
                 .build(true)
                 .toUri();
 
-        log.debug("기상청 API 요청: {}", uri);
+        log.debug(
+                "기상청 API 요청: nx={}, ny={}, baseDate={}, baseTime={}, targetDate={}",
+                nx, ny, baseDate, baseTime, targetDate
+        );
 
         try {
             String response = restTemplate.getForObject(uri, String.class);
-            log.debug("기상청 API 응답: {}", response);
             WeatherDto weather = parseWeatherResponse(response, targetDate, period);
             return enrichAirQuality(weather, locationName);
         } catch (Exception e) {
@@ -149,10 +157,9 @@ public class WeatherService {
                 .build(true)
                 .toUri();
 
-        log.debug("미세먼지 API 요청: {}", uri);
+        log.debug("미세먼지 API 요청: sidoName={}", sidoName);
 
         String response = restTemplate.getForObject(uri, String.class);
-        log.debug("미세먼지 API 응답: {}", response);
         return parseAirQualityResponse(response, locationName);
     }
 

@@ -1,12 +1,16 @@
 package com.example.WebSideProject.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.example.WebSideProject.Enum.AgeGroup;
 import com.example.WebSideProject.Enum.GenderType;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.jackson.Jacksonized;
 
 @Getter
 @Builder(toBuilder = true)
+@Jacksonized
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class WeatherDto {
     private String date;
     private String time;
