@@ -11,6 +11,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 public class UserDto {
 
     @Getter
@@ -20,10 +22,11 @@ public class UserDto {
         @Size(max = 50, message = "이름은 50자 이하여야 합니다")
         private String name;
 
-        @Email(message = "올바른 이메일 형식이 아닙니다")
-        @NotBlank(message = "이메일을 입력해주세요")
-        @Size(max = 254, message = "이메일은 254자 이하여야 합니다")
+        @Size(max = 2048, message = "이메일 입력값이 너무 깁니다")
         private String email;
+
+        @Size(max = 10, message = "한 번에 최대 10개의 이메일을 등록할 수 있습니다")
+        private List<@Email(message = "올바른 이메일 형식이 아닙니다") @Size(max = 254, message = "이메일은 254자 이하여야 합니다") String> emails;
 
         @Min(value = 1, message = "위치를 선택해주세요")
         @Max(value = 200, message = "올바른 위치를 선택해주세요")
@@ -110,6 +113,14 @@ public class UserDto {
         private boolean morningEnabled;
         private boolean afternoonEnabled;
         private boolean eveningEnabled;
+        private String message;
+    }
+
+    @Getter
+    @Builder
+    public static class BatchResponse {
+        private int successCount;
+        private List<String> recipients;
         private String message;
     }
 }

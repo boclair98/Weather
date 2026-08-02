@@ -25,4 +25,15 @@ class LocationServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("대한민국");
     }
+
+    @Test
+    void returnsFallbackSuggestionsWhenKakaoKeyIsNotConfigured() {
+        assertThat(locationService.search("강남역"))
+                .singleElement()
+                .satisfies(result -> {
+                    assertThat(result.getLocationName()).isEqualTo("강남역");
+                    assertThat(result.getNx()).isPositive();
+                    assertThat(result.getNy()).isPositive();
+                });
+    }
 }

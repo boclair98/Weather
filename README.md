@@ -4,13 +4,31 @@
 
 단순히 기온만 전달하지 않고, 외출 점수, 날씨별 상세 조언, 미세먼지/마스크 안내, 우산 여부, 연령대/성별 기반 스타일링 추천까지 제공하는 생활 밀착형 날씨 구독 서비스입니다.
 
+## 운영 사이트
+
+> **현재 운영 중:** [https://weather.coders.kr](https://weather.coders.kr)
+
+[![Weather 운영 사이트](https://img.shields.io/badge/Live-weather.coders.kr-2f7cf6?style=for-the-badge)](https://weather.coders.kr)
+
+사용자는 웹에서 위치와 알림 시간을 고른 뒤, 원하는 메일함으로 날씨 브리핑을 받을 수 있습니다. 운영 서버는 coders.kr의 PostgreSQL·Redis와 함께 실행되며, 구독자별 예약 메일을 아침·점심·저녁에 발송합니다.
+
 ## 미리보기
 
 사용자는 위치, 알림 시간, 연령대, 성별을 선택해 구독합니다. 위치를 선택하면 현재 예보를 바탕으로 화면 분위기가 맑음/비/눈/흐림 상태에 맞게 바뀌고, 외출 점수와 상세 조언을 바로 확인할 수 있습니다.
 
 ![구독 화면 미리보기](docs/images/subscription-form-preview.svg)
 
+### 한 번의 구독으로 받는 정보
+
+1. **전국 장소 검색** — 카카오 로컬 검색으로 최대 15개 장소를 제안하고, 카카오 API가 일시적으로 응답하지 않아도 주요 지역 제안을 계속 제공합니다.
+2. **맞춤 예보 브리핑** — 현재 위치의 기온·강수확률·습도·풍속·외출 점수와 준비물을 한눈에 제공합니다.
+3. **여러 메일함 동시 구독** — 쉼표 또는 줄바꿈으로 최대 10개 이메일 주소를 한 번에 등록할 수 있습니다.
+4. **동적 스타일링** — 기온, 비·눈, 바람, 대기질, 연령대·성별 선택에 맞춰 옷차림과 우산·마스크 안내가 달라집니다.
+5. **언제든 변경·해지** — 같은 이메일로 재등록하면 위치와 알림 설정이 바뀌며, 모든 메일에는 안전한 수신 거부 링크가 포함됩니다.
+
 메일에서는 날씨 요약, 외출 점수, 미세먼지, 옷차림, 우산, 마스크, 스타일링 추천을 모바일 친화적인 단일 컬럼 레이아웃으로 제공합니다. Gmail과 네이버 메일에서 보이는 화면을 기준으로 메일 폭, 카드 간격, 텍스트 줄바꿈을 조정했습니다.
+
+![날씨 메일 미리보기](docs/images/weather-mail-preview.svg)
 
 ### Gmail / Naver Mail
 
@@ -32,8 +50,16 @@
 
 ## 주요 기능
 
+| 영역 | 제공 기능 |
+| --- | --- |
+| 위치 | 카카오 장소·주소 검색, 최대 15개 결과, 현재 위치, 기상청 격자 변환, API 장애 시 대체 지역 검색 |
+| 날씨 | 기상청 단기예보, 아침·점심·저녁 미리보기, 날씨별 테마, 외출 점수, 우산·보온·자외선 조언 |
+| 메일 | 웰컴 메일 즉시 발송, 정기 예약 발송, Gmail·네이버 대응 HTML, 토큰 기반 수신 거부, 발송 이력 |
+| 구독 | 이메일 중심 가입, 최대 10개 동시 수신자, 재등록 업데이트, 위치·스타일·알림 시간 변경 |
+| 운영 | PostgreSQL·Redis, 분산 스케줄 락, 캐시·연결 타임아웃, 관리자 보호, health probe, graceful shutdown |
+
 - 지역명 검색 또는 브라우저 현재 위치 기반 위치 선택
-- Kakao Local API를 통한 주소/장소 검색
+- Kakao Local API를 통한 주소/장소 검색(최대 15개 결과)과 키·외부 API 장애 시 대체 지역 제안
 - 위도/경도 좌표를 기상청 격자 좌표로 변환
 - 기상청 단기예보 API 연동
 - 한국환경공단 에어코리아 미세먼지 API 연동
@@ -55,7 +81,7 @@
 - 미세먼지/초미세먼지 상태에 따른 마스크 추천
 - 구독 등록 시 웰컴 날씨 메일 즉시 발송
 - 아침/점심/저녁 알림 시간 선택
-- 같은 이메일 재등록 기반 구독 정보 업데이트와 토큰 기반 안전한 구독 해지
+- 같은 이메일 재등록 기반 구독 정보 업데이트, 최대 10개 이메일 동시 등록, 토큰 기반 안전한 구독 해지
 - 스케줄러를 통한 시간대별 자동 발송
 - 전체 구독자 수동 발송 API
 - 특정 사용자 대상 지정 발표시각 테스트 발송 API
@@ -169,7 +195,7 @@ src/main/java/com/example/WebSideProject
 GET /api/locations/search?query=강남역
 ```
 
-Kakao Local API로 장소 또는 주소를 검색하고, 기상청 격자 좌표까지 변환해 반환합니다.
+Kakao Local API로 장소 또는 주소를 최대 15개까지 검색하고, 기상청 격자 좌표까지 변환해 반환합니다. `KAKAO_REST_API_KEY`가 비어 있거나 카카오 응답이 일시적으로 실패해도 500 오류 대신 국내 주요 지역 제안을 반환합니다.
 
 ```json
 [
@@ -217,6 +243,20 @@ GET /api/weather?nx=61&ny=125&period=MORNING&locationName=강남역
 ```http
 POST /api/users/subscribe
 Content-Type: application/json
+```
+
+한 사람이 여러 메일함으로 받고 싶다면 `email`에 쉼표/줄바꿈으로 입력하거나 `emails` 배열을 함께 전달할 수 있습니다. 중복 주소는 한 번만 처리하며 한 번에 최대 10개까지 지원합니다.
+
+```json
+{
+  "name": "홍길동",
+  "email": "me@example.com",
+  "emails": ["me@example.com", "family@example.com"],
+  "locationName": "강남역",
+  "nx": 61,
+  "ny": 125,
+  "morningEnabled": true
+}
 ```
 
 ```json
@@ -462,9 +502,11 @@ ADMIN_API_KEY
 APP_BASE_URL=https://weather.coders.kr
 ```
 
+`DB_URL`을 설정하지 않아도 로컬에서는 내장 H2 DB로 즉시 실행됩니다. MySQL을 쓰고 싶을 때만 위의 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DRIVER=com.mysql.cj.jdbc.Driver`를 설정하세요.
+
 이 서비스는 일반 사용자가 GitHub 계정으로 로그인할 필요가 없도록 `coders.identity.required=false`로 운영합니다. 같은 이메일로 다시 구독하면 기존 구독의 위치, 알림 시간, 스타일 취향이 업데이트됩니다. 목표 배포 도메인은 `https://weather.coders.kr`입니다.
 
-처음 배포할 때는 `coders.kr/llms.txt`의 Path A 인증 후 이 GitHub 저장소와 프로젝트 이름을 전달합니다. 실제 API 키와 SMTP 비밀번호는 GitHub에 커밋하지 않습니다.
+처음 배포할 때는 [coders.kr/llms.txt](https://coders.kr/llms.txt)의 Path A 인증 후 이 GitHub 저장소와 프로젝트 이름을 전달합니다. 실제 API 키와 SMTP 비밀번호는 GitHub에 커밋하지 않습니다. 해당 안내에 따라 coders MCP의 배포·상태·로그 도구를 사용하며, 비공개 REST 배포 엔드포인트는 사용하지 않습니다.
 
 > coders.kr는 유휴 서비스를 scale-to-zero로 전환합니다. 오전 06:30, 11:30, 18:30 예약 메일을 정확하게 발송하려면 배포 후 프로젝트 정책에서 `always_warm`을 활성화하고 사이트 예산을 충전해야 합니다. 사용하지 않으면 웹 요청이 없어 pod가 내려간 시간의 스케줄은 실행되지 않을 수 있습니다.
 

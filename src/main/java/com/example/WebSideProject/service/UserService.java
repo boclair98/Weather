@@ -11,14 +11,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserService {
+
+    private static final int MAX_RECIPIENTS = 10;
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
 
     private final UserRepository userRepository;
     private final WeatherService weatherService;
@@ -29,13 +35,26 @@ public class UserService {
 
     @Transactional
     public UserDto.Response register(UserDto.RegisterRequest request, String codersUserId) {
+        return registerAll(request, codersUserId).get(0);
+    }
+
+    @Transactional
+    public List<UserDto.Response> registerAll(UserDto.RegisterRequest request, String codersUserId) {
         requireCodersIdentity(codersUserId);
-        String email = normalizeEmail(request.getEmail());
+        return extractEmails(request).stream()
+                .map(email -> registerSingle(request, email, codersUserId))
+                .toList();
+    }
+
+    private UserDto.Response registerSingle(UserDto.RegisterRequest request, String email, String codersUserId) {
+        String identity = codersIdentityRequired ? normalizeCodersUserId(codersUserId) : null;
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
             User user = existingUser.get();
             user.updateName(request.getName());
-            user.claimCodersIdentity(normalizeCodersUserId(codersUserId));
+            if (identity != null) {
+                user.claimCodersIdentity(identity);
+            }
             user.updateLocation(
                     request.getLocationName(),
                     request.getLatitude(),
@@ -62,7 +81,7 @@ public class UserService {
         User user = User.builder()
                 .name(request.getName())
                 .email(email)
-                .codersUserId(normalizeCodersUserId(codersUserId))
+                .codersUserId(identity)
                 .locationName(request.getLocationName())
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
@@ -92,6 +111,37 @@ public class UserService {
                 .eveningEnabled(saved.isEveningEnabled())
                 .message("구독이 완료되었습니다! 선택한 시간에 날씨를 보내드릴게요 🌤️")
                 .build();
+    }
+
+    private List<String> extractEmails(UserDto.RegisterRequest request) {
+        Set<String> recipients = new LinkedHashSet<>();
+        addEmails(recipients, request.getEmail());
+        if (request.getEmails() != null) {
+            request.getEmails().forEach(email -> addEmails(recipients, email));
+        }
+        if (recipients.isEmpty()) {
+            throw new IllegalArgumentException("이메일을 하나 이상 입력해주세요.");
+        }
+        if (recipients.size() > MAX_RECIPIENTS) {
+            throw new IllegalArgumentException("한 번에 최대 10개의 이메일을 등록할 수 있습니다.");
+        }
+        return List.copyOf(recipients);
+    }
+
+    private void addEmails(Set<String> recipients, String input) {
+        if (input == null || input.isBlank()) {
+            return;
+        }
+        for (String candidate : input.split("[,;\\s]+")) {
+            if (candidate.isBlank()) {
+                continue;
+            }
+            String email = normalizeEmail(candidate);
+            if (!EMAIL_PATTERN.matcher(email).matches()) {
+                throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다: " + candidate);
+            }
+            recipients.add(email);
+        }
     }
 
     private void sendWelcomeWeatherMail(User user) {
