@@ -1,6 +1,7 @@
 package com.example.WebSideProject.service;
 
 import com.example.WebSideProject.Enum.WeatherPeriod;
+import com.example.WebSideProject.dto.DailyWeatherDto;
 import com.example.WebSideProject.dto.WeatherDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +61,28 @@ public class WeatherService {
         return getWeather(nx, ny, period, locationName, forecastBase.date(), forecastBase.time(), targetDate);
     }
 
+    @Cacheable(
+            cacheNames = "dailyWeather",
+            key = "#nx + ':' + #ny + ':' + (#locationName == null ? '' : #locationName)",
+            sync = true
+    )
+    public DailyWeatherDto getDailyWeather(int nx, int ny, String locationName) {
+        ForecastBase forecastBase = getDailyForecastBase();
+        String targetDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String response = requestForecast(nx, ny, forecastBase.date(), forecastBase.time(), targetDate);
+
+        WeatherDto morning = parseWeatherResponse(response, targetDate, WeatherPeriod.MORNING);
+        WeatherDto afternoon = parseWeatherResponse(response, targetDate, WeatherPeriod.AFTERNOON);
+        WeatherDto evening = parseWeatherResponse(response, targetDate, WeatherPeriod.EVENING);
+
+        AirQualityInfo airQuality = safelyGetAirQuality(locationName);
+        return DailyWeatherDto.from(
+                applyAirQuality(morning, airQuality),
+                applyAirQuality(afternoon, airQuality),
+                applyAirQuality(evening, airQuality)
+        );
+    }
+
     public WeatherDto getWeatherForBase(
             int nx,
             int ny,
@@ -81,7 +104,18 @@ public class WeatherService {
             String baseTime,
             String targetDate
     ) {
-        String targetTime = period.getTargetTime();
+        String response = requestForecast(nx, ny, baseDate, baseTime, targetDate);
+        WeatherDto weather = parseWeatherResponse(response, targetDate, period);
+        return enrichAirQuality(weather, locationName);
+    }
+
+    private String requestForecast(
+            int nx,
+            int ny,
+            String baseDate,
+            String baseTime,
+            String targetDate
+    ) {
         String encodedApiKey = UriUtils.encode(apiKey, StandardCharsets.UTF_8);
 
         URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl + "/getVilageFcst")
@@ -102,9 +136,7 @@ public class WeatherService {
         );
 
         try {
-            String response = restTemplate.getForObject(uri, String.class);
-            WeatherDto weather = parseWeatherResponse(response, targetDate, period);
-            return enrichAirQuality(weather, locationName);
+            return restTemplate.getForObject(uri, String.class);
         } catch (Exception e) {
             log.error("기상청 API 호출 실패", e);
             throw new RuntimeException("날씨 정보를 가져오는데 실패했습니다.", e);
@@ -127,28 +159,34 @@ public class WeatherService {
     }
 
     private WeatherDto enrichAirQuality(WeatherDto weather, String locationName) {
+        return applyAirQuality(weather, safelyGetAirQuality(locationName));
+    }
+
+    private AirQualityInfo safelyGetAirQuality(String locationName) {
         if (airQualityApiKey == null || airQualityApiKey.isBlank()) {
             log.debug("AIR_QUALITY_API_KEY가 없어 대기질 조회를 건너뜁니다.");
-            return weather;
+            return AirQualityInfo.empty();
         }
-
         try {
-            AirQualityInfo airQualityInfo = getAirQuality(locationName);
-            return weather.toBuilder()
-                    .pm10Value(airQualityInfo.pm10Value())
-                    .pm10Grade(airQualityInfo.pm10Grade())
-                    .pm25Value(airQualityInfo.pm25Value())
-                    .pm25Grade(airQualityInfo.pm25Grade())
-                    .airQualityStation(airQualityInfo.stationName())
-                    .build();
+            return getAirQuality(locationName);
         } catch (Exception e) {
             log.warn(
                     "미세먼지 API 호출 실패. 날씨 정보만 반환합니다. locationName={}, reason={}",
                     locationName,
                     e.getMessage()
             );
-            return weather;
+            return AirQualityInfo.empty();
         }
+    }
+
+    private WeatherDto applyAirQuality(WeatherDto weather, AirQualityInfo airQualityInfo) {
+        return weather.toBuilder()
+                .pm10Value(airQualityInfo.pm10Value())
+                .pm10Grade(airQualityInfo.pm10Grade())
+                .pm25Value(airQualityInfo.pm25Value())
+                .pm25Grade(airQualityInfo.pm25Grade())
+                .airQualityStation(airQualityInfo.stationName())
+                .build();
     }
 
     private AirQualityInfo getAirQuality(String locationName) {
@@ -302,6 +340,18 @@ public class WeatherService {
                 date.format(DateTimeFormatter.ofPattern("yyyyMMdd")),
                 String.format("%02d00", selected)
         );
+    }
+
+    private ForecastBase getDailyForecastBase() {
+        LocalDate date = LocalDate.now();
+        LocalTime time = LocalTime.now();
+        if (time.isBefore(LocalTime.of(2, 10))) {
+            return new ForecastBase(
+                    date.minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                    "2300"
+            );
+        }
+        return new ForecastBase(date.format(DateTimeFormatter.ofPattern("yyyyMMdd")), "0200");
     }
 
     private LocalDate getForecastDate(WeatherPeriod period) {

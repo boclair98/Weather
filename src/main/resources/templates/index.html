@@ -176,6 +176,93 @@
             background: #eef4ff;
         }
 
+        .daily-insight {
+            margin-bottom: 14px;
+            padding: 14px;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            background: #eff6ff;
+        }
+
+        .daily-insight-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .daily-insight-label {
+            display: inline-block;
+            margin-bottom: 5px;
+            color: #1d4ed8;
+            font-size: 11px;
+            line-height: 16px;
+            font-weight: 800;
+        }
+
+        .daily-insight strong {
+            display: block;
+            color: #172554;
+            font-size: 16px;
+            line-height: 23px;
+        }
+
+        .daily-insight p {
+            margin: 6px 0 0;
+            color: #334155;
+            font-size: 13px;
+            line-height: 20px;
+        }
+
+        .share-weather {
+            flex: 0 0 auto;
+            min-width: 72px;
+            height: 34px;
+            padding: 0 10px;
+            border: 1px solid #93c5fd;
+            color: #1d4ed8;
+            background: #ffffff;
+            font-size: 12px;
+        }
+
+        .daily-periods {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 12px 0 16px;
+        }
+
+        .daily-period-card {
+            min-height: 78px;
+            padding: 10px;
+            border: 1px solid #e0e7f2;
+            border-radius: 7px;
+            color: #334155;
+            background: #ffffff;
+            text-align: left;
+        }
+
+        .daily-period-card.selected {
+            border-color: #2563eb;
+            background: #eef4ff;
+            box-shadow: 0 0 0 1px #2563eb inset;
+        }
+
+        .daily-period-card span,
+        .daily-period-card small {
+            display: block;
+            font-size: 11px;
+            line-height: 16px;
+        }
+
+        .daily-period-card strong {
+            display: block;
+            margin: 3px 0;
+            color: #0f172a;
+            font-size: 16px;
+            line-height: 20px;
+        }
+
         .weather-score {
             display: flex;
             align-items: baseline;
@@ -609,6 +696,18 @@
                         <button class="period-tab" type="button" data-period="AFTERNOON">점심</button>
                         <button class="period-tab" type="button" data-period="EVENING">저녁</button>
                     </div>
+                    <div class="daily-insight" id="dailyInsight" hidden>
+                        <div class="daily-insight-top">
+                            <div>
+                                <span class="daily-insight-label">오늘 한눈에</span>
+                                <strong id="dailyHeadline">오늘의 추천 시간대를 분석 중입니다.</strong>
+                            </div>
+                            <button class="share-weather" id="shareWeather" type="button">공유</button>
+                        </div>
+                        <p id="dailyTrend">아침·점심·저녁 기온을 비교합니다.</p>
+                        <p id="dailyRain">시간대별 우산 필요 여부를 확인합니다.</p>
+                    </div>
+                    <div class="daily-periods" id="dailyPeriods" hidden aria-label="오늘 시간대별 날씨"></div>
                     <div class="weather-score">
                         <strong id="outingScore">-점</strong>
                         <span id="outingScoreLabel">-</span>
@@ -803,8 +902,15 @@
     const styleBottom = document.getElementById("styleBottom");
     const styleFootwear = document.getElementById("styleFootwear");
     const styleColor = document.getElementById("styleColor");
+    const dailyInsight = document.getElementById("dailyInsight");
+    const dailyHeadline = document.getElementById("dailyHeadline");
+    const dailyTrend = document.getElementById("dailyTrend");
+    const dailyRain = document.getElementById("dailyRain");
+    const dailyPeriods = document.getElementById("dailyPeriods");
+    const shareWeather = document.getElementById("shareWeather");
     let selectedLocation = null;
     let previewPeriod = "MORNING";
+    let dailyForecast = null;
 
     searchButton.addEventListener("click", searchLocations);
     currentLocationButton.addEventListener("click", useCurrentLocation);
@@ -814,11 +920,14 @@
             document.querySelectorAll(".period-tab").forEach((tab) => {
                 tab.classList.toggle("selected", tab === button);
             });
-            if (selectedLocation) {
+            if (selectedLocation && dailyForecast) {
+                renderSelectedPeriod(selectedLocation);
+            } else if (selectedLocation) {
                 loadWeatherPreview(selectedLocation);
             }
         });
     });
+    shareWeather.addEventListener("click", shareCurrentWeather);
     locationQuery.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -1006,23 +1115,105 @@
         styleBottom.textContent = "-";
         styleFootwear.textContent = "-";
         styleColor.textContent = "-";
+        dailyInsight.hidden = true;
+        dailyPeriods.hidden = true;
+        dailyForecast = null;
 
         try {
             const params = new URLSearchParams({
                 nx: location.nx,
                 ny: location.ny,
-                period: previewPeriod,
                 locationName: location.locationName,
                 ageGroup: document.getElementById("ageGroup").value,
                 gender: document.getElementById("gender").value
             });
-            const response = await fetch(`/api/weather?${params.toString()}`);
-            const weather = await response.json();
-            if (!response.ok) throw new Error(getApiError(weather, "날씨를 불러오지 못했습니다."));
-            renderWeatherPreview(location, weather);
+            const response = await fetch(`/api/weather/daily?${params.toString()}`);
+            dailyForecast = await response.json();
+            if (!response.ok) throw new Error(getApiError(dailyForecast, "날씨를 불러오지 못했습니다."));
+            renderDailyInsight();
+            renderSelectedPeriod(location);
         } catch (error) {
             weatherPreviewMain.textContent = "날씨 확인 실패";
             weatherDetail.textContent = error.message;
+        }
+    }
+
+    function renderDailyInsight() {
+        dailyInsight.hidden = false;
+        dailyPeriods.hidden = false;
+        dailyHeadline.textContent = dailyForecast.headline || "오늘의 추천 시간대를 확인해보세요.";
+        dailyTrend.textContent = dailyForecast.temperatureTrend || "";
+        dailyRain.textContent = dailyForecast.rainSummary || "";
+
+        const periods = [
+            ["MORNING", "아침", dailyForecast.morning],
+            ["AFTERNOON", "점심", dailyForecast.afternoon],
+            ["EVENING", "저녁", dailyForecast.evening]
+        ];
+        dailyPeriods.innerHTML = "";
+        periods.forEach(([code, label, weather]) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = `daily-period-card${code === previewPeriod ? " selected" : ""}`;
+            button.dataset.period = code;
+            const labelElement = document.createElement("span");
+            labelElement.textContent = label;
+            const summaryElement = document.createElement("strong");
+            summaryElement.textContent = `${weather.tmp || "-"}°C · ${weather.outingScore || "-"}점`;
+            const rainElement = document.createElement("small");
+            rainElement.textContent = `강수 ${weather.pop || "-"}%`;
+            button.append(labelElement, summaryElement, rainElement);
+            button.addEventListener("click", () => selectPreviewPeriod(code));
+            dailyPeriods.appendChild(button);
+        });
+    }
+
+    function selectPreviewPeriod(period) {
+        previewPeriod = period;
+        document.querySelectorAll(".period-tab").forEach((tab) => {
+            tab.classList.toggle("selected", tab.dataset.period === period);
+        });
+        document.querySelectorAll(".daily-period-card").forEach((card) => {
+            card.classList.toggle("selected", card.dataset.period === period);
+        });
+        renderSelectedPeriod(selectedLocation);
+    }
+
+    function renderSelectedPeriod(location) {
+        const property = previewPeriod === "MORNING"
+            ? "morning"
+            : previewPeriod === "AFTERNOON" ? "afternoon" : "evening";
+        const weather = dailyForecast[property];
+        renderWeatherPreview(location, weather);
+        document.querySelectorAll(".daily-period-card").forEach((card) => {
+            card.classList.toggle("selected", card.dataset.period === previewPeriod);
+        });
+    }
+
+    async function shareCurrentWeather() {
+        if (!selectedLocation || !dailyForecast) {
+            return;
+        }
+        const text = [
+            `${selectedLocation.locationName} 오늘 날씨`,
+            dailyForecast.headline,
+            dailyForecast.temperatureTrend,
+            dailyForecast.rainSummary,
+            "날씨한편에서 확인하기"
+        ].filter(Boolean).join("\n");
+
+        try {
+            if (navigator.share) {
+                await navigator.share({title: "날씨한편 오늘 브리핑", text, url: window.location.href});
+                return;
+            }
+            await navigator.clipboard.writeText(`${text}\n${window.location.href}`);
+            shareWeather.textContent = "복사됨";
+            window.setTimeout(() => shareWeather.textContent = "공유", 1600);
+        } catch (error) {
+            if (error.name !== "AbortError") {
+                showResult("공유 내용을 복사하지 못했습니다.", false);
+            }
         }
     }
 

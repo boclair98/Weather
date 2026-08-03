@@ -3,6 +3,7 @@ package com.example.WebSideProject.controller;
 import com.example.WebSideProject.Enum.AgeGroup;
 import com.example.WebSideProject.Enum.GenderType;
 import com.example.WebSideProject.Enum.WeatherPeriod;
+import com.example.WebSideProject.dto.DailyWeatherDto;
 import com.example.WebSideProject.dto.WeatherDto;
 import com.example.WebSideProject.service.WeatherService;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,20 @@ public class WeatherController {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(5, TimeUnit.MINUTES).cachePublic())
                 .body(weatherService.getWeather(nx, ny, period, locationName).withStylePreference(ageGroup, gender));
+    }
+
+    @GetMapping("/daily")
+    public ResponseEntity<DailyWeatherDto> getDailyWeather(
+            @RequestParam(defaultValue = "60") int nx,
+            @RequestParam(defaultValue = "127") int ny,
+            @RequestParam(required = false) String locationName,
+            @RequestParam(defaultValue = "NONE") AgeGroup ageGroup,
+            @RequestParam(defaultValue = "NONE") GenderType gender
+    ) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(5, TimeUnit.MINUTES).cachePublic())
+                .body(weatherService.getDailyWeather(nx, ny, locationName)
+                        .withStylePreference(ageGroup, gender));
     }
 
     @GetMapping("/test")
