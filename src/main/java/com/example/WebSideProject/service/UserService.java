@@ -1,13 +1,13 @@
 package com.example.WebSideProject.service;
 
 import com.example.WebSideProject.dto.UserDto;
-import com.example.WebSideProject.dto.WeatherDto;
-import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.entity.User;
+import com.example.WebSideProject.event.SubscriptionWelcomeMailRequested;
 import com.example.WebSideProject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,8 +27,7 @@ public class UserService {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
 
     private final UserRepository userRepository;
-    private final WeatherService weatherService;
-    private final MailService mailService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${coders.identity.required:false}")
     private boolean codersIdentityRequired;
@@ -69,7 +68,7 @@ public class UserService {
                     request.isEveningEnabled()
             );
             user.subscribe();
-            sendWelcomeWeatherMail(user);
+            eventPublisher.publishEvent(new SubscriptionWelcomeMailRequested(user));
             return toResponse(user, "구독 정보가 새롭게 업데이트되었습니다.");
         }
 
@@ -96,7 +95,7 @@ public class UserService {
 
         User saved = userRepository.save(user);
         log.info("신규 구독자 등록: {}", saved.getEmail());
-        sendWelcomeWeatherMail(saved);
+        eventPublisher.publishEvent(new SubscriptionWelcomeMailRequested(saved));
 
         return UserDto.Response.builder()
                 .id(saved.getId())
@@ -144,15 +143,6 @@ public class UserService {
         }
     }
 
-    private void sendWelcomeWeatherMail(User user) {
-        try {
-            WeatherDto weather = weatherService.getWeather(user.getNx(), user.getNy(), WeatherPeriod.MORNING, user.getLocationName());
-            mailService.sendWeatherMail(user, weather);
-        } catch (Exception e) {
-            log.error("구독 직후 날씨 메일 발송 준비 실패: {}", user.getEmail(), e);
-        }
-    }
-
     @Transactional
     public UserDto.Response unsubscribe(String email, String codersUserId) {
         User user = userRepository.findByEmail(normalizeEmail(email))
@@ -160,6 +150,24 @@ public class UserService {
         verifyOwnership(user, codersUserId);
         user.unsubscribe();
         return toResponse(user, "구독이 취소되었습니다.");
+    }
+
+    @Transactional
+    public List<UserDto.Response> unsubscribeAll(UserDto.UnsubscribeRequest request, String codersUserId) {
+        Set<String> recipients = new LinkedHashSet<>();
+        addEmails(recipients, request.getEmail());
+        if (request.getEmails() != null) {
+            request.getEmails().forEach(email -> addEmails(recipients, email));
+        }
+        if (recipients.isEmpty()) {
+            throw new IllegalArgumentException("구독을 취소할 이메일을 하나 이상 입력해주세요.");
+        }
+        if (recipients.size() > MAX_RECIPIENTS) {
+            throw new IllegalArgumentException("한 번에 최대 10개의 이메일을 처리할 수 있습니다.");
+        }
+        return recipients.stream()
+                .map(email -> unsubscribe(email, codersUserId))
+                .toList();
     }
 
     @Transactional

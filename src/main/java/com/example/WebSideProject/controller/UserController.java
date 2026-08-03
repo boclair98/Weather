@@ -34,6 +34,20 @@ public class UserController {
         return ResponseEntity.created(URI.create("/api/users/me")).body(response);
     }
 
+    @PostMapping("/unsubscribe")
+    public ResponseEntity<UserDto.BatchResponse> unsubscribeByEmail(
+            @Valid @RequestBody UserDto.UnsubscribeRequest request,
+            @RequestHeader(value = "X-Coders-User", required = false) String codersUserId
+    ) {
+        List<UserDto.Response> responses = userService.unsubscribeAll(request, codersUserId);
+        UserDto.BatchResponse response = UserDto.BatchResponse.builder()
+                .successCount(responses.size())
+                .recipients(responses.stream().map(UserDto.Response::getEmail).toList())
+                .message(responses.size() + "개의 이메일 구독이 취소되었습니다.")
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
     @PatchMapping("/unsubscribe")
     public ResponseEntity<UserDto.Response> unsubscribe(
             @RequestParam String email,

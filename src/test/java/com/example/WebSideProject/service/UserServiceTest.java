@@ -1,11 +1,12 @@
 package com.example.WebSideProject.service;
 
 import com.example.WebSideProject.dto.UserDto;
-import com.example.WebSideProject.dto.WeatherDto;
 import com.example.WebSideProject.entity.User;
+import com.example.WebSideProject.event.SubscriptionWelcomeMailRequested;
 import com.example.WebSideProject.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,7 +14,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -25,16 +25,12 @@ class UserServiceTest {
     @Test
     void registersEachDistinctRecipientFromCommaAndNewlineInput() {
         UserRepository repository = mock(UserRepository.class);
-        WeatherService weatherService = mock(WeatherService.class);
-        MailService mailService = mock(MailService.class);
-        UserService service = new UserService(repository, weatherService, mailService);
+        ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
+        UserService service = new UserService(repository, eventPublisher);
         UserDto.RegisterRequest request = request("first@example.com, second@example.com\nfirst@example.com");
 
         when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
         when(repository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(weatherService.getWeather(anyInt(), anyInt(), any(), anyString()))
-                .thenReturn(WeatherDto.builder().date("20260802").time("0900").periodLabel("아침")
-                        .sky("1").pty("0").tmp("24").pop("0").reh("50").wsd("1").build());
 
         List<UserDto.Response> responses = service.registerAll(request, "one-platform-user");
 
@@ -44,16 +40,37 @@ class UserServiceTest {
         ArgumentCaptor<User> savedUsers = ArgumentCaptor.forClass(User.class);
         verify(repository, times(2)).save(savedUsers.capture());
         assertThat(savedUsers.getAllValues()).extracting(User::getCodersUserId).containsOnlyNulls();
-        verify(mailService, times(2)).sendWeatherMail(any(User.class), any(WeatherDto.class));
+        verify(eventPublisher, times(2)).publishEvent(any(SubscriptionWelcomeMailRequested.class));
     }
 
     @Test
     void rejectsInvalidRecipientBeforeSaving() {
-        UserService service = new UserService(mock(UserRepository.class), mock(WeatherService.class), mock(MailService.class));
+        UserService service = new UserService(mock(UserRepository.class), mock(ApplicationEventPublisher.class));
 
         assertThatThrownBy(() -> service.registerAll(request("not-an-email"), null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("올바른 이메일");
+    }
+
+    @Test
+    void unsubscribesEveryDistinctEmail() {
+        UserRepository repository = mock(UserRepository.class);
+        UserService service = new UserService(repository, mock(ApplicationEventPublisher.class));
+        User first = User.builder().name("첫 번째").email("first@example.com").nx(60).ny(127).build();
+        User second = User.builder().name("두 번째").email("second@example.com").nx(60).ny(127).build();
+        when(repository.findByEmail("first@example.com")).thenReturn(Optional.of(first));
+        when(repository.findByEmail("second@example.com")).thenReturn(Optional.of(second));
+
+        UserDto.UnsubscribeRequest request = new UserDto.UnsubscribeRequest();
+        request.setEmail("first@example.com");
+        request.setEmails(List.of("first@example.com", "second@example.com"));
+
+        List<UserDto.Response> responses = service.unsubscribeAll(request, null);
+
+        assertThat(responses).extracting(UserDto.Response::getEmail)
+                .containsExactly("first@example.com", "second@example.com");
+        assertThat(first.isSubscribed()).isFalse();
+        assertThat(second.isSubscribed()).isFalse();
     }
 
     private UserDto.RegisterRequest request(String emails) {
