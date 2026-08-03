@@ -13,7 +13,7 @@ class UserIdentityTest {
         user.claimCodersIdentity("coders-user-1");
         user.claimCodersIdentity("coders-user-2");
 
-        assertThat(user.getCodersUserId()).isEqualTo("coders-user-1");
+        assertThat(user.getOwnerId()).isEqualTo("coders-user-1");
     }
 
     @Test
@@ -23,6 +23,8 @@ class UserIdentityTest {
         user.claimCodersIdentity("attacker-id");
 
         assertThat(user.getCodersUserId()).isEqualTo("owner-id");
+        assertThat(user.getOwnerId()).isNull();
+        assertThat(user.isOwnedBy("owner-id")).isTrue();
     }
 
     @Test

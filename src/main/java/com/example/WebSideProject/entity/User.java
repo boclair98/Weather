@@ -15,7 +15,8 @@ import java.util.UUID;
         name = "users",
         indexes = {
                 @Index(name = "idx_users_subscribed", columnList = "subscribed"),
-                @Index(name = "idx_users_coders_user", columnList = "codersUserId")
+                @Index(name = "idx_users_coders_user", columnList = "codersUserId"),
+                @Index(name = "idx_users_owner", columnList = "ownerId")
         }
 )
 @Getter
@@ -37,6 +38,9 @@ public class User {
 
     @Column(unique = true, length = 64)
     private String codersUserId;
+
+    @Column(length = 64)
+    private String ownerId;
 
     @Column(nullable = false)
     private boolean subscribed = true;
@@ -95,6 +99,7 @@ public class User {
             String name,
             String email,
             String codersUserId,
+            String ownerId,
             String locationName,
             Double latitude,
             Double longitude,
@@ -109,6 +114,7 @@ public class User {
         this.name = name;
         this.email = email;
         this.codersUserId = codersUserId;
+        this.ownerId = ownerId;
         this.locationName = locationName == null || locationName.isBlank() ? "서울특별시 중구" : locationName;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -170,9 +176,23 @@ public class User {
     }
 
     public void claimCodersIdentity(String codersUserId) {
-        if (this.codersUserId == null || this.codersUserId.isBlank()) {
-            this.codersUserId = codersUserId;
+        if (codersUserId == null || codersUserId.isBlank()) {
+            return;
         }
+        if (this.ownerId != null && !this.ownerId.isBlank()) {
+            return;
+        }
+        if (this.codersUserId != null
+                && !this.codersUserId.isBlank()
+                && !this.codersUserId.equals(codersUserId)) {
+            return;
+        }
+        this.ownerId = codersUserId;
+    }
+
+    public boolean isOwnedBy(String codersUserId) {
+        return codersUserId != null
+                && (codersUserId.equals(ownerId) || codersUserId.equals(this.codersUserId));
     }
 
     public void ensureUnsubscribeToken() {

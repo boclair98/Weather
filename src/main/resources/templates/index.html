@@ -586,6 +586,7 @@
         .account-link {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             min-height: 38px;
             border-radius: 6px;
             padding: 0 14px;
@@ -593,6 +594,41 @@
             background: #172033;
             font-weight: 700;
             text-decoration: none;
+        }
+
+        .account-link.google {
+            background: #ffffff;
+            color: #172033;
+            border: 1px solid #c9d2e3;
+        }
+
+        .auth-notice {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+            padding: 14px;
+            border: 1px solid #cfe0ff;
+            border-radius: 8px;
+            background: #f2f7ff;
+        }
+
+        .auth-notice.signed-in {
+            border-color: #b7e2ca;
+            background: #eefaf3;
+        }
+
+        .auth-notice strong,
+        .auth-notice span {
+            display: block;
+        }
+
+        .auth-notice span {
+            margin-top: 3px;
+            color: #66758d;
+            font-size: 13px;
+            line-height: 1.45;
         }
 
         .subscription-manager {
@@ -680,11 +716,23 @@
             .benefit-grid {
                 grid-template-columns: 1fr;
             }
+
+            .account-bar,
+            .auth-notice {
+                align-items: stretch;
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
 <main>
+    <div class="account-bar" th:if="${codersPlatform}">
+        <span th:if="${signedIn}">Google 로그인 완료 · 구독과 취소를 이용할 수 있습니다.</span>
+        <span th:unless="${signedIn}">구독과 취소는 Google 로그인 후 이용할 수 있습니다.</span>
+        <a class="account-link google" th:unless="${signedIn}" th:href="${loginUrl}">Google로 로그인</a>
+        <a class="account-link" th:if="${signedIn}" th:href="${logoutUrl}">로그아웃</a>
+    </div>
     <div class="layout">
         <section>
             <p class="eyebrow">실시간 위치 기반 날씨 브리핑</p>
@@ -767,6 +815,13 @@
             <form id="subscribeForm">
                 <h2 class="panel-heading">무료 날씨 알림 시작하기</h2>
                 <p class="panel-description">가입비 없이 언제든 알림 시간을 바꾸거나 구독을 해지할 수 있습니다.</p>
+                <div class="auth-notice" th:classappend="${signedIn} ? ' signed-in' : ''">
+                    <div>
+                        <strong th:text="${signedIn} ? 'Google 로그인이 확인됐어요' : '안전한 구독 관리를 위해 로그인해주세요'">Google 로그인</strong>
+                        <span th:text="${signedIn} ? '이 계정에 최대 10개 수신 이메일을 연결할 수 있습니다.' : '입력 내용은 이 브라우저에 잠시 보관되며 로그인 후 복원됩니다.'">로그인 안내</span>
+                    </div>
+                    <a class="account-link google" th:unless="${signedIn}" th:href="${loginUrl}">Google로 계속</a>
+                </div>
                 <div class="field">
                     <label for="name">이름</label>
                     <input id="name" name="name" autocomplete="name" required>
@@ -893,7 +948,10 @@
     <p class="site-footer">날씨한편 · 데이터 제공: 기상청 · 예보는 실제 관측과 다를 수 있습니다.</p>
 </main>
 
-<script>
+<script th:inline="javascript">
+    const signedIn = /*[[${signedIn}]]*/ false;
+    const googleLoginUrl = /*[[${loginUrl}]]*/ "https://coders.kr/oauth/login/google";
+    const subscriptionDraftKey = "weather-subscription-draft";
     const locationQuery = document.getElementById("locationQuery");
     const locationResults = document.getElementById("locationResults");
     const locationMeta = document.getElementById("locationMeta");
@@ -959,6 +1017,12 @@
 
         if (!selectedLocation) {
             showResult("날씨를 받을 위치를 먼저 선택해주세요.", false);
+            return;
+        }
+
+        if (!signedIn) {
+            saveSubscriptionDraft();
+            window.location.assign(googleLoginUrl);
             return;
         }
 
@@ -1029,6 +1093,11 @@
             showResult("한 번에 최대 10개의 이메일을 처리할 수 있습니다.", false);
             return;
         }
+        if (!signedIn) {
+            saveSubscriptionDraft();
+            window.location.assign(googleLoginUrl);
+            return;
+        }
         if (!window.confirm(`${recipients.join(", ")}의 날씨 알림 구독을 취소할까요?`)) {
             return;
         }
@@ -1063,6 +1132,50 @@
 
     function getNetworkError(error, fallback) {
         return error instanceof TypeError ? fallback : error.message;
+    }
+
+    function saveSubscriptionDraft() {
+        const draft = {
+            name: document.getElementById("name").value,
+            emails: document.getElementById("emails").value,
+            ageGroup: document.getElementById("ageGroup").value,
+            gender: document.getElementById("gender").value,
+            locationQuery: locationQuery.value,
+            selectedLocation,
+            morningEnabled: document.getElementById("morningEnabled").checked,
+            afternoonEnabled: document.getElementById("afternoonEnabled").checked,
+            eveningEnabled: document.getElementById("eveningEnabled").checked
+        };
+        sessionStorage.setItem(subscriptionDraftKey, JSON.stringify(draft));
+    }
+
+    function restoreSubscriptionDraft() {
+        const stored = sessionStorage.getItem(subscriptionDraftKey);
+        if (!stored) {
+            return;
+        }
+        try {
+            const draft = JSON.parse(stored);
+            document.getElementById("name").value = draft.name || "";
+            document.getElementById("emails").value = draft.emails || "";
+            document.getElementById("ageGroup").value = draft.ageGroup || "NONE";
+            document.getElementById("gender").value = draft.gender || "NONE";
+            document.getElementById("morningEnabled").checked = draft.morningEnabled !== false;
+            document.getElementById("afternoonEnabled").checked = Boolean(draft.afternoonEnabled);
+            document.getElementById("eveningEnabled").checked = Boolean(draft.eveningEnabled);
+            locationQuery.value = draft.locationQuery || "";
+            if (draft.selectedLocation) {
+                selectedLocation = draft.selectedLocation;
+                locationMeta.textContent = `선택 위치: ${selectedLocation.locationName} (격자 ${selectedLocation.nx}, ${selectedLocation.ny})`;
+                loadWeatherPreview(selectedLocation);
+            }
+            if (signedIn) {
+                showResult("Google 로그인이 완료됐습니다. 구독 또는 구독 취소 버튼을 다시 눌러주세요.", true);
+                sessionStorage.removeItem(subscriptionDraftKey);
+            }
+        } catch (error) {
+            sessionStorage.removeItem(subscriptionDraftKey);
+        }
     }
 
     async function searchLocations() {
@@ -1382,6 +1495,8 @@
         const message = data && data.message ? data.message : fallback;
         return data && data.requestId ? `${message} (문의 코드: ${data.requestId})` : message;
     }
+
+    restoreSubscriptionDraft();
 </script>
 </body>
 </html>

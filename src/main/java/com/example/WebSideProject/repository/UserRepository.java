@@ -10,6 +10,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findAllBySubscribedTrue();
     Optional<User> findByEmail(String email);
     Optional<User> findByCodersUserId(String codersUserId);
+    Optional<User> findFirstByOwnerIdOrderByIdAsc(String ownerId);
     Optional<User> findByUnsubscribeToken(String unsubscribeToken);
     boolean existsByEmail(String email);
 }
