@@ -78,6 +78,11 @@ server:
     max-connections: ${SERVER_MAX_CONNECTIONS:10000}
 
 management:
+  health:
+    mail:
+      enabled: false
+    redis:
+      enabled: false
   endpoints:
     web:
       exposure:

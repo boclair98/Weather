@@ -27,6 +27,13 @@ coders:
 admin:
   require-key: true
 
+management:
+  health:
+    mail:
+      enabled: true
+    redis:
+      enabled: true
+
 logging:
   level:
     root: INFO
