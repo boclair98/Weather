@@ -316,7 +316,7 @@ PATCH /api/users/unsubscribe?email=user@example.com
 
 ### 내 구독 관리
 
-`/me` 계열 API는 coders native identity를 켠 별도 환경에서만 사용합니다. 현재 운영 서비스는 `standalone` 모드에서 사용자가 GitHub 로그인 없이 쓸 수 있도록 이메일 재등록 업데이트 방식을 기본으로 사용합니다.
+`/me` 계열 API는 coders native identity를 켠 환경에서만 사용합니다. 현재 운영 서비스는 사용자가 GitHub 로그인 없이 쓸 수 있도록 이메일 재등록 업데이트 방식을 기본으로 사용합니다.
 
 ```http
 GET /api/users/me
@@ -505,7 +505,7 @@ ADMIN_API_KEY=your_optional_admin_key
 
 이 저장소의 `coders.yaml`은 [coders.kr 공식 `llms.txt`](https://coders.kr/llms.txt)와 템플릿의 `PLATFORM.md` 계약에 맞춰 작성했습니다.
 
-- `mode: standalone` — 이메일 구독·취소 POST 요청도 GitHub 로그인 없이 사용
+- `mode: native`
 - Spring Boot 단일 public 서비스
 - 관리형 PostgreSQL과 Redis
 - 이미지 빌드 단계에서 Gradle 의존성과 실행 JAR 생성
@@ -526,9 +526,7 @@ APP_BASE_URL=https://weather.coders.kr
 
 `DB_URL`을 설정하지 않아도 로컬에서는 내장 H2 DB로 즉시 실행됩니다. MySQL을 쓰고 싶을 때만 위의 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DRIVER=com.mysql.cj.jdbc.Driver`를 설정하세요.
 
-이 서비스는 일반 사용자가 GitHub 계정으로 로그인할 필요가 없도록 `mode: standalone`, `coders.identity.required=false`로 운영합니다. coders.kr `native` 모드는 익명 사용자의 POST 요청을 로그인 화면으로 전환하므로 이메일 중심 공개 서비스에는 사용하지 않습니다. 같은 이메일로 다시 구독하면 기존 구독의 위치, 알림 시간, 스타일 취향이 업데이트됩니다. 목표 배포 도메인은 `https://weather.coders.kr`입니다.
-
-`standalone` 모드에서는 쓰기 요청도 애플리케이션에 직접 도달하므로 관리자 API는 `ADMIN_API_KEY`로 보호하고, 공개 구독 API는 입력 검증·수신자 수 제한을 적용합니다.
+이 서비스는 일반 사용자가 GitHub 계정으로 로그인할 필요가 없도록 `coders.identity.required=false`로 운영합니다. 같은 이메일로 다시 구독하면 기존 구독의 위치, 알림 시간, 스타일 취향이 업데이트됩니다. 목표 배포 도메인은 `https://weather.coders.kr`입니다.
 
 처음 배포할 때는 [coders.kr/llms.txt](https://coders.kr/llms.txt)의 Path A 인증 후 이 GitHub 저장소와 프로젝트 이름을 전달합니다. 실제 API 키와 SMTP 비밀번호는 GitHub에 커밋하지 않습니다. 해당 안내에 따라 coders MCP의 배포·상태·로그 도구를 사용하며, 비공개 REST 배포 엔드포인트는 사용하지 않습니다.
 
