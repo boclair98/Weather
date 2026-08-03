@@ -7,6 +7,7 @@ import com.example.WebSideProject.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -71,6 +72,48 @@ class UserServiceTest {
                 .containsExactly("first@example.com", "second@example.com");
         assertThat(first.isSubscribed()).isFalse();
         assertThat(second.isSubscribed()).isFalse();
+    }
+
+    @Test
+    void oneValidatedIdentityCanOwnMultipleRecipients() {
+        UserRepository repository = mock(UserRepository.class);
+        UserService service = new UserService(repository, mock(ApplicationEventPublisher.class));
+        ReflectionTestUtils.setField(service, "codersIdentityRequired", true);
+        when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(repository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        List<UserDto.Response> responses = service.registerAll(
+                request("first@example.com, second@example.com"),
+                "validated-google-user"
+        );
+
+        assertThat(responses).hasSize(2);
+        ArgumentCaptor<User> users = ArgumentCaptor.forClass(User.class);
+        verify(repository, times(2)).save(users.capture());
+        assertThat(users.getAllValues()).extracting(User::getOwnerId)
+                .containsOnly("validated-google-user");
+        assertThat(users.getAllValues()).extracting(User::getCodersUserId)
+                .containsOnlyNulls();
+    }
+
+    @Test
+    void validatedIdentityCannotReplaceAnotherOwnersSubscription() {
+        UserRepository repository = mock(UserRepository.class);
+        UserService service = new UserService(repository, mock(ApplicationEventPublisher.class));
+        ReflectionTestUtils.setField(service, "codersIdentityRequired", true);
+        User owned = User.builder()
+                .name("기존 사용자")
+                .email("owned@example.com")
+                .ownerId("original-owner")
+                .locationName("서울")
+                .nx(60)
+                .ny(127)
+                .build();
+        when(repository.findByEmail("owned@example.com")).thenReturn(Optional.of(owned));
+
+        assertThatThrownBy(() -> service.registerAll(request("owned@example.com"), "different-owner"))
+                .isInstanceOf(SecurityException.class)
+                .hasMessageContaining("본인의 구독");
     }
 
     private UserDto.RegisterRequest request(String emails) {

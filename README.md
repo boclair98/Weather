@@ -95,7 +95,7 @@
 - 토큰 기반 이메일 수신 거부
 - Gmail/네이버 메일을 고려한 브리핑형 HTML 메일 템플릿
 - `null` 값 대신 `-` 또는 안내 문구 표시
-- GitHub 로그인 없이 이메일 중심으로 구독·변경 가능
+- Google 로그인으로 구독 소유권을 보호하고 계정당 최대 10개 수신 이메일 관리
 - Redis 기반 분산 날씨·위치 캐시
 - 외부 API HTTP 연결 풀과 연결·응답 타임아웃
 - 여러 인스턴스의 예약 메일 중복 발송을 막는 분산 스케줄 락
@@ -141,7 +141,7 @@ flowchart LR
 ```
 
 - 공개 `GET` 요청은 coders.kr의 익명 quota 안에서 제공됩니다.
-- 구독은 GitHub 로그인 없이 이메일 기반으로 진행됩니다.
+- 구독과 이메일 기반 취소는 Google 로그인 후 진행되며, 입력값은 로그인 왕복 중 브라우저 세션에 복원됩니다.
 - 같은 이메일로 다시 구독하면 기존 구독의 위치, 스타일 취향, 알림 시간이 업데이트됩니다.
 - 날씨는 10분, 위치 검색은 1시간 Redis에 캐시해 외부 API와 pod 부하를 줄입니다.
 - 스케줄 작업은 DB 분산 락으로 보호돼 여러 인스턴스에서도 한 번만 실행됩니다.
@@ -312,11 +312,11 @@ GET /api/users/unsubscribe?token={unsubscribeToken}
 PATCH /api/users/unsubscribe?email=user@example.com
 ```
 
-같은 이메일로 다시 구독하면 기존 구독 정보가 업데이트되므로 별도 GitHub 로그인은 필요하지 않습니다.
+Google 로그인 후 같은 이메일로 다시 구독하면 본인 계정에 연결된 기존 구독 정보가 업데이트됩니다.
 
 ### 내 구독 관리
 
-`/me` 계열 API는 coders native identity를 켠 환경에서만 사용합니다. 현재 운영 서비스는 사용자가 GitHub 로그인 없이 쓸 수 있도록 이메일 재등록 업데이트 방식을 기본으로 사용합니다.
+`/me` 계열 API는 coders native identity로 검증된 Google 로그인 계정의 대표 구독을 관리합니다. 한 계정에는 최대 10개의 수신 이메일을 연결할 수 있습니다.
 
 ```http
 GET /api/users/me
@@ -526,7 +526,7 @@ APP_BASE_URL=https://weather.coders.kr
 
 `DB_URL`을 설정하지 않아도 로컬에서는 내장 H2 DB로 즉시 실행됩니다. MySQL을 쓰고 싶을 때만 위의 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DRIVER=com.mysql.cj.jdbc.Driver`를 설정하세요.
 
-이 서비스는 일반 사용자가 GitHub 계정으로 로그인할 필요가 없도록 `coders.identity.required=false`로 운영합니다. 같은 이메일로 다시 구독하면 기존 구독의 위치, 알림 시간, 스타일 취향이 업데이트됩니다. 목표 배포 도메인은 `https://weather.coders.kr`입니다.
+이 서비스는 GitHub 로그인을 요구하지 않고 Google 로그인과 coders native identity를 사용합니다. 운영 환경은 `coders.identity.required=true`로 요청 소유권을 다시 확인하며, 같은 Google 계정에 최대 10개 수신 이메일을 연결할 수 있습니다. 같은 이메일로 다시 구독하면 해당 계정이 소유한 기존 구독의 위치, 알림 시간, 스타일 취향이 업데이트됩니다. 목표 배포 도메인은 `https://weather.coders.kr`입니다.
 
 처음 배포할 때는 [coders.kr/llms.txt](https://coders.kr/llms.txt)의 Path A 인증 후 이 GitHub 저장소와 프로젝트 이름을 전달합니다. 실제 API 키와 SMTP 비밀번호는 GitHub에 커밋하지 않습니다. 해당 안내에 따라 coders MCP의 배포·상태·로그 도구를 사용하며, 비공개 REST 배포 엔드포인트는 사용하지 않습니다.
 

@@ -50,10 +50,10 @@ public class UserService {
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
             User user = existingUser.get();
-            user.updateName(request.getName());
             if (identity != null) {
-                user.claimCodersIdentity(identity);
+                verifyOwnership(user, codersUserId);
             }
+            user.updateName(request.getName());
             user.updateLocation(
                     request.getLocationName(),
                     request.getLatitude(),
@@ -80,7 +80,7 @@ public class UserService {
         User user = User.builder()
                 .name(request.getName())
                 .email(email)
-                .codersUserId(identity)
+                .ownerId(identity)
                 .locationName(request.getLocationName())
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
@@ -238,7 +238,7 @@ public class UserService {
         if (normalized == null) {
             return Optional.empty();
         }
-        return userRepository.findByCodersUserId(normalized)
+        return findOwnedSubscription(normalized)
                 .map(user -> toResponse(user, "내 구독 정보를 불러왔습니다."));
     }
 
@@ -282,8 +282,13 @@ public class UserService {
         if (normalized == null) {
             throw new SecurityException("내 구독 관리는 coders.kr 로그인 후 이용해주세요.");
         }
-        return userRepository.findByCodersUserId(normalized)
+        return findOwnedSubscription(normalized)
                 .orElseThrow(() -> new IllegalArgumentException("현재 계정에 연결된 구독이 없습니다."));
+    }
+
+    private Optional<User> findOwnedSubscription(String codersUserId) {
+        return userRepository.findFirstByOwnerIdOrderByIdAsc(codersUserId)
+                .or(() -> userRepository.findByCodersUserId(codersUserId));
     }
 
     private void verifyOwnership(User user, String codersUserId) {
@@ -294,11 +299,12 @@ public class UserService {
         if (normalized == null) {
             throw new SecurityException("로그인 후 이용해주세요.");
         }
-        if (user.getCodersUserId() == null || user.getCodersUserId().isBlank()) {
+        if ((user.getOwnerId() == null || user.getOwnerId().isBlank())
+                && (user.getCodersUserId() == null || user.getCodersUserId().isBlank())) {
             user.claimCodersIdentity(normalized);
             return;
         }
-        if (!user.getCodersUserId().equals(normalized)) {
+        if (!user.isOwnedBy(normalized)) {
             throw new SecurityException("본인의 구독 정보만 변경할 수 있습니다.");
         }
     }
