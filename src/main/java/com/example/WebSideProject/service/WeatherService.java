@@ -61,11 +61,6 @@ public class WeatherService {
         return getWeather(nx, ny, period, locationName, forecastBase.date(), forecastBase.time(), targetDate);
     }
 
-    @Cacheable(
-            cacheNames = "dailyWeather",
-            key = "#nx + ':' + #ny + ':' + (#locationName == null ? '' : #locationName)",
-            sync = true
-    )
     public DailyWeatherDto getDailyWeather(int nx, int ny, String locationName) {
         ForecastBase forecastBase = getDailyForecastBase();
         String targetDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));

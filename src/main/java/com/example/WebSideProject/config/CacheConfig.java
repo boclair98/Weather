@@ -18,7 +18,7 @@ public class CacheConfig {
     @Bean
     public CacheManager cacheManager() {
         CaffeineCacheManager manager =
-                new CaffeineCacheManager("weather", "dailyWeather", "locations");
+                new CaffeineCacheManager("weather", "locations");
         manager.setCaffeine(Caffeine.newBuilder()
                 .maximumSize(5000)
                 .expireAfterWrite(Duration.ofMinutes(10))
