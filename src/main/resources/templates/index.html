@@ -530,6 +530,16 @@
             background: #2563eb;
         }
 
+        .subscription-actions {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 10px;
+        }
+
+        .subscription-actions .danger {
+            width: 100%;
+        }
+
         .meta {
             min-height: 22px;
             margin: 8px 0 0;
@@ -830,7 +840,11 @@
                     <p class="meta">선택하지 않으면 아침 알림으로 등록됩니다.</p>
                 </div>
 
-                <button class="primary" type="submit" id="submitButton">구독하기</button>
+                <div class="subscription-actions">
+                    <button class="primary" type="submit" id="submitButton">구독하기</button>
+                    <button class="danger" type="button" id="unsubscribeByEmailButton">이메일로 구독 취소</button>
+                </div>
+                <p class="meta">구독 취소 시 위 이메일에 등록된 날씨 알림만 중단됩니다.</p>
                 <div class="result" id="result" role="status"></div>
             </form>
         </section>
@@ -885,6 +899,7 @@
     const locationMeta = document.getElementById("locationMeta");
     const result = document.getElementById("result");
     const submitButton = document.getElementById("submitButton");
+    const unsubscribeByEmailButton = document.getElementById("unsubscribeByEmailButton");
     const searchButton = document.getElementById("searchLocation");
     const currentLocationButton = document.getElementById("currentLocation");
     const weatherPreview = document.getElementById("weatherPreview");
@@ -965,10 +980,7 @@
             eveningEnabled: document.getElementById("eveningEnabled").checked
         };
 
-        const recipients = [...new Set(document.getElementById("emails").value
-            .split(/[,;\s]+/)
-            .map((email) => email.trim().toLowerCase())
-            .filter(Boolean))];
+        const recipients = getRecipients();
         if (!recipients.length) {
             showResult("받을 이메일을 하나 이상 입력해주세요.", false);
             submitButton.disabled = false;
@@ -999,12 +1011,59 @@
                 await loadCurrentSubscription();
             }
         } catch (error) {
-            showResult(error.message, false);
+            showResult(getNetworkError(error, "구독 처리 중 서버 연결이 끊겼습니다. 잠시 후 다시 시도해주세요."), false);
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = "구독하기";
         }
     });
+
+    unsubscribeByEmailButton.addEventListener("click", async () => {
+        result.className = "result";
+        const recipients = getRecipients();
+        if (!recipients.length) {
+            showResult("구독을 취소할 이메일을 하나 이상 입력해주세요.", false);
+            return;
+        }
+        if (recipients.length > 10) {
+            showResult("한 번에 최대 10개의 이메일을 처리할 수 있습니다.", false);
+            return;
+        }
+        if (!window.confirm(`${recipients.join(", ")}의 날씨 알림 구독을 취소할까요?`)) {
+            return;
+        }
+
+        unsubscribeByEmailButton.disabled = true;
+        submitButton.disabled = true;
+        unsubscribeByEmailButton.textContent = "취소 처리 중";
+        try {
+            const response = await fetch("/api/users/unsubscribe", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({email: recipients[0], emails: recipients})
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(getApiError(data, "구독 취소에 실패했습니다."));
+            showResult(data.message || `${recipients.length}개의 이메일 구독이 취소되었습니다.`, true);
+        } catch (error) {
+            showResult(getNetworkError(error, "구독 취소 중 서버 연결이 끊겼습니다. 잠시 후 다시 시도해주세요."), false);
+        } finally {
+            unsubscribeByEmailButton.disabled = false;
+            submitButton.disabled = false;
+            unsubscribeByEmailButton.textContent = "이메일로 구독 취소";
+        }
+    });
+
+    function getRecipients() {
+        return [...new Set(document.getElementById("emails").value
+            .split(/[,;\s]+/)
+            .map((email) => email.trim().toLowerCase())
+            .filter(Boolean))];
+    }
+
+    function getNetworkError(error, fallback) {
+        return error instanceof TypeError ? fallback : error.message;
+    }
 
     async function searchLocations() {
         const query = locationQuery.value.trim();
