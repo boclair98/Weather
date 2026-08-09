@@ -61,7 +61,19 @@ public class UserService {
                     request.getNx(),
                     request.getNy()
             );
-            user.updateStylePreference(request.getAgeGroup(), request.getGender());
+            user.updateStylePreference(
+                    request.getAgeGroup(),
+                    request.getGender(),
+                    request.getTemperatureSensitivity(),
+                    request.getActivityType()
+            );
+            user.updateSmartAlerts(
+                    request.isSmartAlertEnabled(),
+                    request.isRainAlertEnabled(),
+                    request.isTemperatureAlertEnabled(),
+                    request.isAirQualityAlertEnabled(),
+                    request.isWindAlertEnabled()
+            );
             user.updateNotificationTimes(
                     request.isMorningEnabled(),
                     request.isAfternoonEnabled(),
@@ -88,6 +100,13 @@ public class UserService {
                 .ny(request.getNy())
                 .ageGroup(request.getAgeGroup())
                 .gender(request.getGender())
+                .temperatureSensitivity(request.getTemperatureSensitivity())
+                .activityType(request.getActivityType())
+                .smartAlertEnabled(request.isSmartAlertEnabled())
+                .rainAlertEnabled(request.isRainAlertEnabled())
+                .temperatureAlertEnabled(request.isTemperatureAlertEnabled())
+                .airQualityAlertEnabled(request.isAirQualityAlertEnabled())
+                .windAlertEnabled(request.isWindAlertEnabled())
                 .morningEnabled(morningEnabled)
                 .afternoonEnabled(request.isAfternoonEnabled())
                 .eveningEnabled(request.isEveningEnabled())
@@ -103,8 +122,19 @@ public class UserService {
                 .email(saved.getEmail())
                 .subscribed(saved.isSubscribed())
                 .locationName(saved.getLocationName())
+                .latitude(saved.getLatitude())
+                .longitude(saved.getLongitude())
+                .nx(saved.getNx())
+                .ny(saved.getNy())
                 .ageGroup(saved.getAgeGroup())
                 .gender(saved.getGender())
+                .temperatureSensitivity(saved.getTemperatureSensitivity())
+                .activityType(saved.getActivityType())
+                .smartAlertEnabled(saved.isSmartAlertEnabled())
+                .rainAlertEnabled(saved.isRainAlertEnabled())
+                .temperatureAlertEnabled(saved.isTemperatureAlertEnabled())
+                .airQualityAlertEnabled(saved.isAirQualityAlertEnabled())
+                .windAlertEnabled(saved.isWindAlertEnabled())
                 .morningEnabled(saved.isMorningEnabled())
                 .afternoonEnabled(saved.isAfternoonEnabled())
                 .eveningEnabled(saved.isEveningEnabled())
@@ -216,7 +246,12 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
         verifyOwnership(user, codersUserId);
 
-        user.updateStylePreference(request.getAgeGroup(), request.getGender());
+        user.updateStylePreference(
+                request.getAgeGroup(),
+                request.getGender(),
+                request.getTemperatureSensitivity(),
+                request.getActivityType()
+        );
 
         return toResponse(user, "스타일 추천 기준이 변경되었습니다.");
     }
@@ -286,6 +321,33 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("현재 계정에 연결된 구독이 없습니다."));
     }
 
+    @Transactional
+    public UserDto.Response updateSmartAlerts(
+            UserDto.UpdateSmartAlertRequest request,
+            String codersUserId
+    ) {
+        User user = findCurrentUser(codersUserId);
+        user.updateSmartAlerts(
+                request.isSmartAlertEnabled(),
+                request.isRainAlertEnabled(),
+                request.isTemperatureAlertEnabled(),
+                request.isAirQualityAlertEnabled(),
+                request.isWindAlertEnabled()
+        );
+        return toResponse(user, "스마트 위험 알림 설정이 변경되었습니다.");
+    }
+
+    @Transactional
+    public boolean markSmartAlertSent(Long userId, String fingerprint) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        if (user.hasReceivedSmartAlert(fingerprint)) {
+            return false;
+        }
+        user.markSmartAlertSent(fingerprint);
+        return true;
+    }
+
     private Optional<User> findOwnedSubscription(String codersUserId) {
         return userRepository.findFirstByOwnerIdOrderByIdAsc(codersUserId)
                 .or(() -> userRepository.findByCodersUserId(codersUserId));
@@ -329,8 +391,19 @@ public class UserService {
                 .email(user.getEmail())
                 .subscribed(user.isSubscribed())
                 .locationName(user.getLocationName())
+                .latitude(user.getLatitude())
+                .longitude(user.getLongitude())
+                .nx(user.getNx())
+                .ny(user.getNy())
                 .ageGroup(user.getAgeGroup())
                 .gender(user.getGender())
+                .temperatureSensitivity(user.getTemperatureSensitivity())
+                .activityType(user.getActivityType())
+                .smartAlertEnabled(user.isSmartAlertEnabled())
+                .rainAlertEnabled(user.isRainAlertEnabled())
+                .temperatureAlertEnabled(user.isTemperatureAlertEnabled())
+                .airQualityAlertEnabled(user.isAirQualityAlertEnabled())
+                .windAlertEnabled(user.isWindAlertEnabled())
                 .morningEnabled(user.isMorningEnabled())
                 .afternoonEnabled(user.isAfternoonEnabled())
                 .eveningEnabled(user.isEveningEnabled())

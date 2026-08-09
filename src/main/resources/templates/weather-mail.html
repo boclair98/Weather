@@ -22,6 +22,11 @@
                              style="padding-top:8px; font-size:14px; line-height:20px; color:#f8fafc;">
                             서울특별시 중구 · 화창 · 외출 86점
                         </div>
+                        <div th:if="${smartAlertSummary != '특별한 위험 신호 없음'}"
+                             th:text="|오늘 주의 · ${smartAlertSummary}|"
+                             style="display:inline-block; margin-top:10px; padding:6px 9px; border-radius:999px; background-color:rgba(255,255,255,.18); color:#ffffff; font-size:11px; line-height:16px; font-weight:800;">
+                            오늘 주의 · 폭염 주의
+                        </div>
                     </td>
                 </tr>
 
@@ -83,7 +88,9 @@
                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#fff7ed; border:1px solid #fed7aa; border-collapse:collapse;">
                             <tr>
                                 <td style="padding:16px 16px 8px 16px;">
-                                    <div style="font-size:13px; line-height:19px; color:#9a3412; font-weight:800;">동적 스타일링</div>
+                                    <div style="font-size:13px; line-height:19px; color:#9a3412; font-weight:800;">내 체감 맞춤 스타일링</div>
+                                    <div th:text="${temperatureSensitivityLabel} + ' · ' + ${activityTypeLabel}"
+                                         style="padding-top:3px; font-size:11px; line-height:17px; color:#c2410c;">보통 · 편안한 일상</div>
                                     <div th:text="${weather.styleHeadline}" style="padding-top:5px; font-size:15px; line-height:22px; color:#431407; font-weight:800;">
                                         오늘은 밝은 포인트를 주기 좋은 날이에요.
                                     </div>

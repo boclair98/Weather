@@ -688,6 +688,252 @@
             background: #fee2e2;
         }
 
+        /* Dashboard-first visual system */
+        main {
+            width: min(1180px, 100%);
+        }
+
+        .layout {
+            grid-template-columns: minmax(0, 1fr) 390px;
+            gap: 28px;
+        }
+
+        h1 {
+            max-width: 720px;
+            font-size: clamp(42px, 5vw, 66px);
+            line-height: 1.06;
+            letter-spacing: -.055em;
+        }
+
+        .hero-accent {
+            color: #2563eb;
+        }
+
+        .dashboard-search-card {
+            margin-top: 28px;
+            padding: 18px;
+            border: 1px solid rgba(191, 219, 254, .9);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, .86);
+            box-shadow: 0 18px 45px rgba(30, 64, 175, .09);
+            backdrop-filter: blur(16px);
+        }
+
+        .dashboard-search-copy {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .dashboard-search-copy strong {
+            font-size: 17px;
+        }
+
+        .dashboard-search-copy span,
+        .style-personalizer > div > span {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .favorite-locations {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-top: 10px;
+        }
+
+        .favorite-location {
+            height: 34px;
+            padding: 0 11px;
+            border: 1px solid #bfdbfe;
+            border-radius: 999px;
+            color: #1d4ed8;
+            background: #eff6ff;
+            font-size: 12px;
+        }
+
+        .weather-header-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .day-tabs {
+            display: inline-flex;
+            gap: 4px;
+            padding: 4px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, .22);
+        }
+
+        .day-tab {
+            height: 32px;
+            padding: 0 12px;
+            border-radius: 9px;
+            color: rgba(255, 255, 255, .75);
+            background: transparent;
+            font-size: 12px;
+        }
+
+        .day-tab.selected {
+            color: #0f172a;
+            background: #ffffff;
+        }
+
+        .weather-preview,
+        .panel {
+            border-radius: 22px;
+            box-shadow: 0 22px 55px rgba(30, 45, 75, .11);
+        }
+
+        .weather-preview-header {
+            padding: 24px 26px;
+        }
+
+        .weather-preview-body {
+            padding: 22px 24px 26px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .action-card {
+            min-height: 72px;
+            padding: 12px;
+            border-radius: 12px;
+            background: #0f172a;
+            color: #fff;
+        }
+
+        .action-card span,
+        .action-card strong {
+            display: block;
+        }
+
+        .action-card span {
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .action-card strong {
+            margin-top: 6px;
+            font-size: 13px;
+            line-height: 1.35;
+        }
+
+        .style-personalizer {
+            display: grid;
+            gap: 12px;
+            margin-top: 16px;
+            padding: 16px;
+            border: 1px solid #dbeafe;
+            border-radius: 14px;
+            background: #f8fbff;
+        }
+
+        .style-personalizer > div > strong,
+        .style-personalizer > div > span {
+            display: block;
+        }
+
+        .style-personalizer label {
+            margin: 0;
+            color: #475569;
+            font-size: 12px;
+        }
+
+        .style-personalizer select {
+            margin-top: 6px;
+        }
+
+        .style-preview {
+            padding: 18px;
+            border-radius: 16px;
+            background: linear-gradient(145deg, #fff7ed, #fffbeb);
+        }
+
+        .style-item {
+            min-height: 76px;
+            padding: 12px;
+            border-radius: 11px;
+        }
+
+        .style-item-wide {
+            grid-column: 1 / -1;
+        }
+
+        .smart-alert-card {
+            margin: 18px 0;
+            padding: 15px;
+            border: 1px solid #c7d2fe;
+            border-radius: 14px;
+            background: linear-gradient(145deg, #eef2ff, #f8fafc);
+        }
+
+        .smart-alert-card > strong,
+        .smart-alert-card > span {
+            display: block;
+        }
+
+        .smart-alert-card > span {
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .smart-alert-master {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin: 13px 0 10px;
+            padding: 11px;
+            border-radius: 10px;
+            background: #ffffff;
+        }
+
+        .smart-alert-master label {
+            margin: 0;
+        }
+
+        .smart-alert-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 7px;
+        }
+
+        .smart-alert-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+            padding: 9px;
+            border: 1px solid #e2e8f0;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, .8);
+            font-size: 12px;
+        }
+
+        .panel {
+            position: sticky;
+            top: 20px;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: 3px solid rgba(37, 99, 235, .14);
+            border-color: #2563eb;
+        }
+
         @media (max-width: 820px) {
             main {
                 padding: 32px 16px;
@@ -713,6 +959,27 @@
                 grid-template-columns: 1fr;
             }
 
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .weather-header-top {
+                flex-direction: column;
+            }
+
+            .smart-alert-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-search-copy {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .panel {
+                position: static;
+            }
+
             .benefit-grid {
                 grid-template-columns: 1fr;
             }
@@ -735,17 +1002,37 @@
     </div>
     <div class="layout">
         <section>
-            <p class="eyebrow">실시간 위치 기반 날씨 브리핑</p>
-            <h1>날씨를 확인하는 대신,<br>필요할 때 받아보세요</h1>
-            <p class="intro">내 위치의 기온·강수·외출 점수를 한눈에 확인하고, 선택한 시간에 맞춤 날씨 브리핑을 이메일로 받아보세요.</p>
+            <p class="eyebrow">오늘을 결정하는 날씨 브리핑</p>
+            <h1>지금 필요한 건<br><span class="hero-accent">기온보다 행동</span>이에요</h1>
+            <p class="intro">어느 시간에 나갈지, 우산과 마스크는 필요한지, 무엇을 입을지 한 화면에서 결정하세요.</p>
             <div class="hero-badges" aria-label="서비스 특징">
-                <span class="hero-badge">기상청 단기예보</span>
-                <span class="hero-badge">전국 위치 검색</span>
-                <span class="hero-badge">하루 최대 3회 알림</span>
+                <span class="hero-badge">3초 외출 판단</span>
+                <span class="hero-badge">체감 맞춤 코디</span>
+                <span class="hero-badge">필요할 때만 이메일</span>
+            </div>
+            <div class="dashboard-search-card">
+                <div class="dashboard-search-copy">
+                    <strong>어디의 날씨를 볼까요?</strong>
+                    <span>동네, 역, 건물 이름으로 검색할 수 있어요.</span>
+                </div>
+                <div class="location-search">
+                    <input id="locationQuery" name="locationQuery" aria-label="위치" placeholder="예: 대전 유성구, 강남역" required>
+                    <button class="secondary" type="button" id="searchLocation">검색</button>
+                    <button class="secondary" type="button" id="currentLocation">현재 위치</button>
+                </div>
+                <div class="location-results" id="locationResults" aria-label="위치 검색 결과"></div>
+                <p class="meta" id="locationMeta">지역을 검색하거나 현재 위치를 선택해주세요.</p>
+                <div class="favorite-locations" id="favoriteLocations" aria-label="최근 본 장소"></div>
             </div>
             <div class="weather-preview" id="weatherPreview" hidden>
                 <div class="weather-preview-header">
-                    <p class="weather-preview-title" id="weatherPreviewTitle">선택 위치 날씨</p>
+                    <div class="weather-header-top">
+                        <p class="weather-preview-title" id="weatherPreviewTitle">선택 위치 날씨</p>
+                        <div class="day-tabs" aria-label="예보 날짜">
+                            <button class="day-tab selected" type="button" data-day-offset="0">오늘</button>
+                            <button class="day-tab" type="button" data-day-offset="1">내일</button>
+                        </div>
+                    </div>
                     <div class="weather-preview-main" id="weatherPreviewMain">날씨를 불러오는 중</div>
                 </div>
                 <div class="weather-preview-body">
@@ -757,7 +1044,7 @@
                     <div class="daily-insight" id="dailyInsight" hidden>
                         <div class="daily-insight-top">
                             <div>
-                                <span class="daily-insight-label">오늘 한눈에</span>
+                                <span class="daily-insight-label" id="dailyInsightLabel">오늘 한눈에</span>
                                 <strong id="dailyHeadline">오늘의 추천 시간대를 분석 중입니다.</strong>
                             </div>
                             <button class="share-weather" id="shareWeather" type="button">공유</button>
@@ -765,7 +1052,7 @@
                         <p id="dailyTrend">아침·점심·저녁 기온을 비교합니다.</p>
                         <p id="dailyRain">시간대별 우산 필요 여부를 확인합니다.</p>
                     </div>
-                    <div class="daily-periods" id="dailyPeriods" hidden aria-label="오늘 시간대별 날씨"></div>
+                    <div class="daily-periods" id="dailyPeriods" hidden aria-label="시간대별 날씨"></div>
                     <div class="weather-score">
                         <strong id="outingScore">-점</strong>
                         <span id="outingScoreLabel">-</span>
@@ -785,9 +1072,37 @@
                             <strong id="weatherAir">-</strong>
                         </div>
                     </div>
+                    <div class="action-grid" aria-label="외출 준비">
+                        <div class="action-card"><span>우산</span><strong id="actionUmbrella">확인 중</strong></div>
+                        <div class="action-card"><span>마스크</span><strong id="actionMask">확인 중</strong></div>
+                        <div class="action-card"><span>야외 활동</span><strong id="actionOutdoor">확인 중</strong></div>
+                    </div>
+                    <div class="style-personalizer">
+                        <div>
+                            <strong>내 체감과 일정에 맞추기</strong>
+                            <span>선택 즉시 코디가 다시 계산됩니다.</span>
+                        </div>
+                        <div class="split-fields">
+                            <label for="temperatureSensitivity">체감 성향
+                                <select id="temperatureSensitivity" name="temperatureSensitivity">
+                                    <option value="NONE">보통이에요</option>
+                                    <option value="COLD">추위를 많이 타요</option>
+                                    <option value="HEAT">더위를 많이 타요</option>
+                                </select>
+                            </label>
+                            <label for="activityType">활동 목적
+                                <select id="activityType" name="activityType">
+                                    <option value="DAILY">편안한 일상</option>
+                                    <option value="COMMUTE">출근·등교</option>
+                                    <option value="OUTDOOR">산책·야외 활동</option>
+                                    <option value="FORMAL">미팅·격식 일정</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
                     <div class="style-preview" id="stylePreview">
                         <p class="style-preview-title" id="styleHeadline">스타일 추천을 준비 중입니다.</p>
-                        <p class="style-preview-detail" id="styleSummary">연령대와 성별 선택에 맞춰 날씨별 코디를 조합합니다.</p>
+                        <p class="style-preview-detail" id="styleSummary">체감 성향과 활동 목적에 맞춰 코디를 조합합니다.</p>
                         <div class="style-grid">
                             <div class="style-item">
                                 <span>상의</span>
@@ -802,8 +1117,16 @@
                                 <strong id="styleFootwear">-</strong>
                             </div>
                             <div class="style-item">
-                                <span>컬러</span>
+                                <span>아우터</span>
+                                <strong id="styleOuter">-</strong>
+                            </div>
+                            <div class="style-item">
+                                <span>추천 컬러</span>
                                 <strong id="styleColor">-</strong>
+                            </div>
+                            <div class="style-item style-item-wide">
+                                <span>피하면 좋은 것</span>
+                                <strong id="styleCaution">-</strong>
                             </div>
                         </div>
                     </div>
@@ -813,8 +1136,8 @@
 
         <section class="panel" aria-label="날씨 구독 신청">
             <form id="subscribeForm">
-                <h2 class="panel-heading">무료 날씨 알림 시작하기</h2>
-                <p class="panel-description">가입비 없이 언제든 알림 시간을 바꾸거나 구독을 해지할 수 있습니다.</p>
+                <h2 class="panel-heading">이 브리핑을 받아보세요</h2>
+                <p class="panel-description">선택한 위치와 체감 설정 그대로, 필요한 시간에만 보내드립니다.</p>
                 <div class="auth-notice" th:classappend="${signedIn} ? ' signed-in' : ''">
                     <div>
                         <strong th:text="${signedIn} ? 'Google 로그인이 확인됐어요' : '안전한 구독 관리를 위해 로그인해주세요'">Google 로그인</strong>
@@ -831,40 +1154,6 @@
                     <label for="emails">받는 이메일</label>
                     <textarea id="emails" name="emails" autocomplete="email" required maxlength="2048" placeholder="me@example.com&#10;family@example.com"></textarea>
                     <small>쉼표 또는 줄바꿈으로 최대 10개까지 등록할 수 있어요.</small>
-                </div>
-
-                <div class="split-fields">
-                    <div class="field">
-                        <label for="ageGroup">연령대</label>
-                        <select id="ageGroup" name="ageGroup">
-                            <option value="NONE">선택 안 함</option>
-                            <option value="TEENS">10대</option>
-                            <option value="TWENTIES">20대</option>
-                            <option value="THIRTIES">30대</option>
-                            <option value="FORTIES">40대</option>
-                            <option value="FIFTIES_PLUS">50대 이상</option>
-                        </select>
-                    </div>
-
-                    <div class="field">
-                        <label for="gender">성별</label>
-                        <select id="gender" name="gender">
-                            <option value="NONE">선택 안 함</option>
-                            <option value="FEMALE">여성</option>
-                            <option value="MALE">남성</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label for="locationQuery">위치</label>
-                    <div class="location-search">
-                        <input id="locationQuery" name="locationQuery" placeholder="예: 대전 유성구, 강남역" required>
-                        <button class="secondary" type="button" id="searchLocation">검색</button>
-                        <button class="secondary" type="button" id="currentLocation">현재 위치</button>
-                    </div>
-                    <div class="location-results" id="locationResults" aria-label="위치 검색 결과"></div>
-                    <p class="meta" id="locationMeta">지역을 검색한 뒤 결과를 선택해주세요.</p>
                 </div>
 
                 <div class="field">
@@ -895,6 +1184,21 @@
                     <p class="meta">선택하지 않으면 아침 알림으로 등록됩니다.</p>
                 </div>
 
+                <div class="smart-alert-card">
+                    <strong>스마트 위험 알림</strong>
+                    <span>정해진 시간 외에도 위험 신호가 새로 잡히면 중복 없이 알려드립니다.</span>
+                    <div class="smart-alert-master">
+                        <input id="smartAlertEnabled" type="checkbox">
+                        <label for="smartAlertEnabled">스마트 위험 알림 사용</label>
+                    </div>
+                    <div class="smart-alert-grid">
+                        <label class="smart-alert-option" for="rainAlertEnabled"><input id="rainAlertEnabled" type="checkbox" checked>비·눈</label>
+                        <label class="smart-alert-option" for="temperatureAlertEnabled"><input id="temperatureAlertEnabled" type="checkbox" checked>폭염·한파</label>
+                        <label class="smart-alert-option" for="airQualityAlertEnabled"><input id="airQualityAlertEnabled" type="checkbox" checked>대기질</label>
+                        <label class="smart-alert-option" for="windAlertEnabled"><input id="windAlertEnabled" type="checkbox" checked>강풍</label>
+                    </div>
+                </div>
+
                 <div class="subscription-actions">
                     <button class="primary" type="submit" id="submitButton">구독하기</button>
                     <button class="danger" type="button" id="unsubscribeByEmailButton">이메일로 구독 취소</button>
@@ -923,8 +1227,23 @@
                     <span><strong>저녁 18:30</strong><span>퇴근길과 저녁 날씨</span></span>
                 </label>
             </div>
+            <div class="smart-alert-card">
+                <strong>스마트 위험 알림</strong>
+                <span>같은 위험 신호는 한 번만 보내 과도한 알림을 막습니다.</span>
+                <div class="smart-alert-master">
+                    <input id="manageSmartAlert" type="checkbox">
+                    <label for="manageSmartAlert">스마트 위험 알림 사용</label>
+                </div>
+                <div class="smart-alert-grid">
+                    <label class="smart-alert-option" for="manageRainAlert"><input id="manageRainAlert" type="checkbox">비·눈</label>
+                    <label class="smart-alert-option" for="manageTemperatureAlert"><input id="manageTemperatureAlert" type="checkbox">폭염·한파</label>
+                    <label class="smart-alert-option" for="manageAirQualityAlert"><input id="manageAirQualityAlert" type="checkbox">대기질</label>
+                    <label class="smart-alert-option" for="manageWindAlert"><input id="manageWindAlert" type="checkbox">강풍</label>
+                </div>
+            </div>
             <div class="manager-actions">
                 <button class="primary" type="button" id="saveNotifications">알림 시간 저장</button>
+                <button class="secondary" type="button" id="saveSmartAlerts">스마트 알림 저장</button>
                 <button class="danger" type="button" id="cancelSubscription">구독 해지</button>
             </div>
         </div>
@@ -952,9 +1271,11 @@
     const signedIn = /*[[${signedIn}]]*/ false;
     const googleLoginUrl = /*[[${loginUrl}]]*/ "https://coders.kr/oauth/login/google";
     const subscriptionDraftKey = "weather-subscription-draft";
+    const favoriteLocationsKey = "weather-favorite-locations";
     const locationQuery = document.getElementById("locationQuery");
     const locationResults = document.getElementById("locationResults");
     const locationMeta = document.getElementById("locationMeta");
+    const favoriteLocations = document.getElementById("favoriteLocations");
     const result = document.getElementById("result");
     const submitButton = document.getElementById("submitButton");
     const unsubscribeByEmailButton = document.getElementById("unsubscribeByEmailButton");
@@ -974,8 +1295,14 @@
     const styleTop = document.getElementById("styleTop");
     const styleBottom = document.getElementById("styleBottom");
     const styleFootwear = document.getElementById("styleFootwear");
+    const styleOuter = document.getElementById("styleOuter");
     const styleColor = document.getElementById("styleColor");
+    const styleCaution = document.getElementById("styleCaution");
+    const actionUmbrella = document.getElementById("actionUmbrella");
+    const actionMask = document.getElementById("actionMask");
+    const actionOutdoor = document.getElementById("actionOutdoor");
     const dailyInsight = document.getElementById("dailyInsight");
+    const dailyInsightLabel = document.getElementById("dailyInsightLabel");
     const dailyHeadline = document.getElementById("dailyHeadline");
     const dailyTrend = document.getElementById("dailyTrend");
     const dailyRain = document.getElementById("dailyRain");
@@ -983,10 +1310,20 @@
     const shareWeather = document.getElementById("shareWeather");
     let selectedLocation = null;
     let previewPeriod = "MORNING";
+    let forecastDayOffset = 0;
     let dailyForecast = null;
 
     searchButton.addEventListener("click", searchLocations);
     currentLocationButton.addEventListener("click", useCurrentLocation);
+    document.querySelectorAll(".day-tab").forEach((button) => {
+        button.addEventListener("click", () => {
+            forecastDayOffset = Number(button.dataset.dayOffset || 0);
+            document.querySelectorAll(".day-tab").forEach((tab) => {
+                tab.classList.toggle("selected", tab === button);
+            });
+            if (selectedLocation) loadWeatherPreview(selectedLocation);
+        });
+    });
     document.querySelectorAll(".period-tab").forEach((button) => {
         button.addEventListener("click", () => {
             previewPeriod = button.dataset.period;
@@ -1008,8 +1345,8 @@
         }
 
     });
-    document.getElementById("ageGroup").addEventListener("change", reloadPreviewIfReady);
-    document.getElementById("gender").addEventListener("change", reloadPreviewIfReady);
+    document.getElementById("temperatureSensitivity").addEventListener("change", reloadPreviewIfReady);
+    document.getElementById("activityType").addEventListener("change", reloadPreviewIfReady);
 
     document.getElementById("subscribeForm").addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -1037,11 +1374,16 @@
             longitude: selectedLocation.longitude,
             nx: selectedLocation.nx,
             ny: selectedLocation.ny,
-            ageGroup: document.getElementById("ageGroup").value,
-            gender: document.getElementById("gender").value,
+            temperatureSensitivity: document.getElementById("temperatureSensitivity").value,
+            activityType: document.getElementById("activityType").value,
             morningEnabled: document.getElementById("morningEnabled").checked,
             afternoonEnabled: document.getElementById("afternoonEnabled").checked,
-            eveningEnabled: document.getElementById("eveningEnabled").checked
+            eveningEnabled: document.getElementById("eveningEnabled").checked,
+            smartAlertEnabled: document.getElementById("smartAlertEnabled").checked,
+            rainAlertEnabled: document.getElementById("rainAlertEnabled").checked,
+            temperatureAlertEnabled: document.getElementById("temperatureAlertEnabled").checked,
+            airQualityAlertEnabled: document.getElementById("airQualityAlertEnabled").checked,
+            windAlertEnabled: document.getElementById("windAlertEnabled").checked
         };
 
         const recipients = getRecipients();
@@ -1138,13 +1480,20 @@
         const draft = {
             name: document.getElementById("name").value,
             emails: document.getElementById("emails").value,
-            ageGroup: document.getElementById("ageGroup").value,
-            gender: document.getElementById("gender").value,
+            ageGroup: "NONE",
+            gender: "NONE",
+            temperatureSensitivity: document.getElementById("temperatureSensitivity").value,
+            activityType: document.getElementById("activityType").value,
             locationQuery: locationQuery.value,
             selectedLocation,
             morningEnabled: document.getElementById("morningEnabled").checked,
             afternoonEnabled: document.getElementById("afternoonEnabled").checked,
-            eveningEnabled: document.getElementById("eveningEnabled").checked
+            eveningEnabled: document.getElementById("eveningEnabled").checked,
+            smartAlertEnabled: document.getElementById("smartAlertEnabled").checked,
+            rainAlertEnabled: document.getElementById("rainAlertEnabled").checked,
+            temperatureAlertEnabled: document.getElementById("temperatureAlertEnabled").checked,
+            airQualityAlertEnabled: document.getElementById("airQualityAlertEnabled").checked,
+            windAlertEnabled: document.getElementById("windAlertEnabled").checked
         };
         sessionStorage.setItem(subscriptionDraftKey, JSON.stringify(draft));
     }
@@ -1158,11 +1507,16 @@
             const draft = JSON.parse(stored);
             document.getElementById("name").value = draft.name || "";
             document.getElementById("emails").value = draft.emails || "";
-            document.getElementById("ageGroup").value = draft.ageGroup || "NONE";
-            document.getElementById("gender").value = draft.gender || "NONE";
+            document.getElementById("temperatureSensitivity").value = draft.temperatureSensitivity || "NONE";
+            document.getElementById("activityType").value = draft.activityType || "DAILY";
             document.getElementById("morningEnabled").checked = draft.morningEnabled !== false;
             document.getElementById("afternoonEnabled").checked = Boolean(draft.afternoonEnabled);
             document.getElementById("eveningEnabled").checked = Boolean(draft.eveningEnabled);
+            document.getElementById("smartAlertEnabled").checked = Boolean(draft.smartAlertEnabled);
+            document.getElementById("rainAlertEnabled").checked = draft.rainAlertEnabled !== false;
+            document.getElementById("temperatureAlertEnabled").checked = draft.temperatureAlertEnabled !== false;
+            document.getElementById("airQualityAlertEnabled").checked = draft.airQualityAlertEnabled !== false;
+            document.getElementById("windAlertEnabled").checked = draft.windAlertEnabled !== false;
             locationQuery.value = draft.locationQuery || "";
             if (draft.selectedLocation) {
                 selectedLocation = draft.selectedLocation;
@@ -1262,7 +1616,41 @@
             element.classList.toggle("selected", elementIndex === index);
         });
         locationMeta.textContent = `선택 위치: ${location.locationName} (격자 ${location.nx}, ${location.ny})`;
+        rememberLocation(location);
         loadWeatherPreview(location);
+    }
+
+    function readFavoriteLocations() {
+        try {
+            const stored = JSON.parse(localStorage.getItem(favoriteLocationsKey) || "[]");
+            return Array.isArray(stored) ? stored.slice(0, 5) : [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function rememberLocation(location) {
+        const locations = readFavoriteLocations()
+            .filter((item) => item.locationName !== location.locationName);
+        locations.unshift(location);
+        localStorage.setItem(favoriteLocationsKey, JSON.stringify(locations.slice(0, 5)));
+        renderFavoriteLocations();
+    }
+
+    function renderFavoriteLocations() {
+        favoriteLocations.innerHTML = "";
+        readFavoriteLocations().forEach((location) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "favorite-location";
+            button.textContent = `최근 · ${location.locationName}`;
+            button.addEventListener("click", () => {
+                locationQuery.value = location.locationName;
+                locationResults.innerHTML = "";
+                selectLocation(location, -1);
+            });
+            favoriteLocations.appendChild(button);
+        });
     }
 
     function showResult(message, ok) {
@@ -1286,7 +1674,12 @@
         styleTop.textContent = "-";
         styleBottom.textContent = "-";
         styleFootwear.textContent = "-";
+        styleOuter.textContent = "-";
         styleColor.textContent = "-";
+        styleCaution.textContent = "-";
+        actionUmbrella.textContent = "확인 중";
+        actionMask.textContent = "확인 중";
+        actionOutdoor.textContent = "확인 중";
         dailyInsight.hidden = true;
         dailyPeriods.hidden = true;
         dailyForecast = null;
@@ -1296,8 +1689,11 @@
                 nx: location.nx,
                 ny: location.ny,
                 locationName: location.locationName,
-                ageGroup: document.getElementById("ageGroup").value,
-                gender: document.getElementById("gender").value
+                ageGroup: "NONE",
+                gender: "NONE",
+                temperatureSensitivity: document.getElementById("temperatureSensitivity").value,
+                activityType: document.getElementById("activityType").value,
+                dayOffset: forecastDayOffset
             });
             const response = await fetch(`/api/weather/daily?${params.toString()}`);
             dailyForecast = await response.json();
@@ -1313,6 +1709,7 @@
     function renderDailyInsight() {
         dailyInsight.hidden = false;
         dailyPeriods.hidden = false;
+        dailyInsightLabel.textContent = `${dailyForecast.dayLabel || "오늘"} 한눈에`;
         dailyHeadline.textContent = dailyForecast.headline || "오늘의 추천 시간대를 확인해보세요.";
         dailyTrend.textContent = dailyForecast.temperatureTrend || "";
         dailyRain.textContent = dailyForecast.rainSummary || "";
@@ -1367,7 +1764,7 @@
             return;
         }
         const text = [
-            `${selectedLocation.locationName} 오늘 날씨`,
+            `${selectedLocation.locationName} ${dailyForecast.dayLabel || "오늘"} 날씨`,
             dailyForecast.headline,
             dailyForecast.temperatureTrend,
             dailyForecast.rainSummary,
@@ -1406,7 +1803,12 @@
         styleTop.textContent = weather.topAdvice || "-";
         styleBottom.textContent = weather.bottomAdvice || "-";
         styleFootwear.textContent = weather.footwearAdvice || "-";
+        styleOuter.textContent = weather.outerAdvice || "-";
         styleColor.textContent = weather.colorPalette || "-";
+        styleCaution.textContent = weather.styleCaution || "-";
+        actionUmbrella.textContent = weather.umbrellaAdvice || "확인 필요";
+        actionMask.textContent = weather.maskAdvice || "확인 필요";
+        actionOutdoor.textContent = weather.outdoorAdvice || "확인 필요";
     }
 
     function reloadPreviewIfReady() {
@@ -1419,11 +1821,13 @@
     const managerSummary = document.getElementById("managerSummary");
     const managerResult = document.getElementById("managerResult");
     const saveNotifications = document.getElementById("saveNotifications");
+    const saveSmartAlerts = document.getElementById("saveSmartAlerts");
     const cancelSubscription = document.getElementById("cancelSubscription");
 
     if (managerControls) {
         loadCurrentSubscription();
         saveNotifications.addEventListener("click", updateNotifications);
+        saveSmartAlerts.addEventListener("click", updateSmartAlerts);
         cancelSubscription.addEventListener("click", cancelCurrentSubscription);
     }
 
@@ -1440,7 +1844,26 @@
             document.getElementById("manageMorning").checked = data.morningEnabled;
             document.getElementById("manageAfternoon").checked = data.afternoonEnabled;
             document.getElementById("manageEvening").checked = data.eveningEnabled;
+            document.getElementById("manageSmartAlert").checked = data.smartAlertEnabled;
+            document.getElementById("manageRainAlert").checked = data.rainAlertEnabled;
+            document.getElementById("manageTemperatureAlert").checked = data.temperatureAlertEnabled;
+            document.getElementById("manageAirQualityAlert").checked = data.airQualityAlertEnabled;
+            document.getElementById("manageWindAlert").checked = data.windAlertEnabled;
             managerControls.hidden = false;
+            document.getElementById("temperatureSensitivity").value = data.temperatureSensitivity || "NONE";
+            document.getElementById("activityType").value = data.activityType || "DAILY";
+            if (!selectedLocation && data.nx && data.ny) {
+                selectedLocation = {
+                    locationName: data.locationName,
+                    latitude: data.latitude,
+                    longitude: data.longitude,
+                    nx: data.nx,
+                    ny: data.ny
+                };
+                locationQuery.value = data.locationName;
+                locationMeta.textContent = `내 구독 위치: ${data.locationName}`;
+                await loadWeatherPreview(selectedLocation);
+            }
         } catch (error) {
             showManagerResult(error.message, false);
         }
@@ -1496,6 +1919,31 @@
         return data && data.requestId ? `${message} (문의 코드: ${data.requestId})` : message;
     }
 
+    async function updateSmartAlerts() {
+        saveSmartAlerts.disabled = true;
+        try {
+            const response = await fetch("/api/users/me/smart-alerts", {
+                method: "PATCH",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    smartAlertEnabled: document.getElementById("manageSmartAlert").checked,
+                    rainAlertEnabled: document.getElementById("manageRainAlert").checked,
+                    temperatureAlertEnabled: document.getElementById("manageTemperatureAlert").checked,
+                    airQualityAlertEnabled: document.getElementById("manageAirQualityAlert").checked,
+                    windAlertEnabled: document.getElementById("manageWindAlert").checked
+                })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(getApiError(data, "스마트 알림을 저장하지 못했습니다."));
+            showManagerResult(data.message, true);
+        } catch (error) {
+            showManagerResult(error.message, false);
+        } finally {
+            saveSmartAlerts.disabled = false;
+        }
+    }
+
+    renderFavoriteLocations();
     restoreSubscriptionDraft();
 </script>
 </body>

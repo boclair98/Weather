@@ -45,6 +45,22 @@ class DailyWeatherDtoTest {
         assertThat(daily.bestPeriod()).isEqualTo("EVENING");
     }
 
+    @Test
+    void labelsTomorrowForecastWithoutFilteringPassedPeriods() {
+        DailyWeatherDto daily = DailyWeatherDto.fromAtHour(
+                weather("20", "0", "0", "1"),
+                weather("24", "0", "0", "1"),
+                weather("18", "20", "0", "3"),
+                0,
+                "내일",
+                "20260804"
+        );
+
+        assertThat(daily.dayLabel()).isEqualTo("내일");
+        assertThat(daily.forecastDate()).isEqualTo("20260804");
+        assertThat(daily.headline()).startsWith("내일");
+    }
+
     private WeatherDto weather(String temperature, String pop, String pty, String sky) {
         return WeatherDto.builder()
                 .date("20260803")

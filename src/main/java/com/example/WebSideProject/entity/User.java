@@ -1,7 +1,9 @@
 package com.example.WebSideProject.entity;
 
 import com.example.WebSideProject.Enum.AgeGroup;
+import com.example.WebSideProject.Enum.ActivityType;
 import com.example.WebSideProject.Enum.GenderType;
+import com.example.WebSideProject.Enum.TemperatureSensitivity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -63,6 +65,34 @@ public class User {
     @Enumerated(EnumType.STRING)
     private GenderType gender = GenderType.NONE;
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    private TemperatureSensitivity temperatureSensitivity = TemperatureSensitivity.NONE;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private ActivityType activityType = ActivityType.DAILY;
+
+    @Column
+    private Boolean smartAlertEnabled = false;
+
+    @Column
+    private Boolean rainAlertEnabled = true;
+
+    @Column
+    private Boolean temperatureAlertEnabled = true;
+
+    @Column
+    private Boolean airQualityAlertEnabled = true;
+
+    @Column
+    private Boolean windAlertEnabled = true;
+
+    @Column(length = 160)
+    private String lastSmartAlertFingerprint;
+
+    private LocalDateTime lastSmartAlertAt;
+
     @Column(nullable = false)
     private boolean morningEnabled = true;
 
@@ -92,6 +122,17 @@ public class User {
         if (this.gender == null) {
             this.gender = GenderType.NONE;
         }
+        if (this.temperatureSensitivity == null) {
+            this.temperatureSensitivity = TemperatureSensitivity.NONE;
+        }
+        if (this.activityType == null) {
+            this.activityType = ActivityType.DAILY;
+        }
+        if (this.smartAlertEnabled == null) this.smartAlertEnabled = false;
+        if (this.rainAlertEnabled == null) this.rainAlertEnabled = true;
+        if (this.temperatureAlertEnabled == null) this.temperatureAlertEnabled = true;
+        if (this.airQualityAlertEnabled == null) this.airQualityAlertEnabled = true;
+        if (this.windAlertEnabled == null) this.windAlertEnabled = true;
     }
 
     @Builder
@@ -107,6 +148,13 @@ public class User {
             int ny,
             AgeGroup ageGroup,
             GenderType gender,
+            TemperatureSensitivity temperatureSensitivity,
+            ActivityType activityType,
+            Boolean smartAlertEnabled,
+            Boolean rainAlertEnabled,
+            Boolean temperatureAlertEnabled,
+            Boolean airQualityAlertEnabled,
+            Boolean windAlertEnabled,
             boolean morningEnabled,
             boolean afternoonEnabled,
             boolean eveningEnabled
@@ -122,6 +170,14 @@ public class User {
         this.ny = ny;
         this.ageGroup = ageGroup == null ? AgeGroup.NONE : ageGroup;
         this.gender = gender == null ? GenderType.NONE : gender;
+        this.temperatureSensitivity = temperatureSensitivity == null
+                ? TemperatureSensitivity.NONE : temperatureSensitivity;
+        this.activityType = activityType == null ? ActivityType.DAILY : activityType;
+        this.smartAlertEnabled = Boolean.TRUE.equals(smartAlertEnabled);
+        this.rainAlertEnabled = rainAlertEnabled == null || rainAlertEnabled;
+        this.temperatureAlertEnabled = temperatureAlertEnabled == null || temperatureAlertEnabled;
+        this.airQualityAlertEnabled = airQualityAlertEnabled == null || airQualityAlertEnabled;
+        this.windAlertEnabled = windAlertEnabled == null || windAlertEnabled;
         this.morningEnabled = morningEnabled;
         this.afternoonEnabled = afternoonEnabled;
         this.eveningEnabled = eveningEnabled;
@@ -137,6 +193,34 @@ public class User {
 
     public GenderType getGender() {
         return gender == null ? GenderType.NONE : gender;
+    }
+
+    public TemperatureSensitivity getTemperatureSensitivity() {
+        return temperatureSensitivity == null ? TemperatureSensitivity.NONE : temperatureSensitivity;
+    }
+
+    public ActivityType getActivityType() {
+        return activityType == null ? ActivityType.DAILY : activityType;
+    }
+
+    public boolean isSmartAlertEnabled() {
+        return Boolean.TRUE.equals(smartAlertEnabled);
+    }
+
+    public boolean isRainAlertEnabled() {
+        return rainAlertEnabled == null || rainAlertEnabled;
+    }
+
+    public boolean isTemperatureAlertEnabled() {
+        return temperatureAlertEnabled == null || temperatureAlertEnabled;
+    }
+
+    public boolean isAirQualityAlertEnabled() {
+        return airQualityAlertEnabled == null || airQualityAlertEnabled;
+    }
+
+    public boolean isWindAlertEnabled() {
+        return windAlertEnabled == null || windAlertEnabled;
     }
 
     public void updateName(String name) {
@@ -164,6 +248,18 @@ public class User {
         this.gender = gender == null ? GenderType.NONE : gender;
     }
 
+    public void updateStylePreference(
+            AgeGroup ageGroup,
+            GenderType gender,
+            TemperatureSensitivity temperatureSensitivity,
+            ActivityType activityType
+    ) {
+        updateStylePreference(ageGroup, gender);
+        this.temperatureSensitivity = temperatureSensitivity == null
+                ? TemperatureSensitivity.NONE : temperatureSensitivity;
+        this.activityType = activityType == null ? ActivityType.DAILY : activityType;
+    }
+
     public void updateNotificationTimes(
             boolean morningEnabled,
             boolean afternoonEnabled,
@@ -188,6 +284,29 @@ public class User {
             return;
         }
         this.ownerId = codersUserId;
+    }
+
+    public void updateSmartAlerts(
+            boolean smartAlertEnabled,
+            boolean rainAlertEnabled,
+            boolean temperatureAlertEnabled,
+            boolean airQualityAlertEnabled,
+            boolean windAlertEnabled
+    ) {
+        this.smartAlertEnabled = smartAlertEnabled;
+        this.rainAlertEnabled = rainAlertEnabled;
+        this.temperatureAlertEnabled = temperatureAlertEnabled;
+        this.airQualityAlertEnabled = airQualityAlertEnabled;
+        this.windAlertEnabled = windAlertEnabled;
+    }
+
+    public boolean hasReceivedSmartAlert(String fingerprint) {
+        return fingerprint != null && fingerprint.equals(lastSmartAlertFingerprint);
+    }
+
+    public void markSmartAlertSent(String fingerprint) {
+        this.lastSmartAlertFingerprint = fingerprint;
+        this.lastSmartAlertAt = LocalDateTime.now();
     }
 
     public boolean isOwnedBy(String codersUserId) {

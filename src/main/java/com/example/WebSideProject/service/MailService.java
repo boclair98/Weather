@@ -31,13 +31,29 @@ public class MailService {
 
     @Async
     public void sendWeatherMail(User user, WeatherDto weather) {
+        sendWeatherMailInternal(user, weather, null);
+    }
+
+    @Async
+    public void sendSmartAlertMail(User user, WeatherDto weather, String alertSummary) {
+        sendWeatherMailInternal(user, weather, "[날씨 주의] " + alertSummary);
+    }
+
+    private void sendWeatherMailInternal(User user, WeatherDto weather, String subject) {
         try {
-            WeatherDto styledWeather = weather.withStylePreference(user.getAgeGroup(), user.getGender());
+            WeatherDto styledWeather = weather.withStylePreference(
+                    user.getAgeGroup(),
+                    user.getGender(),
+                    user.getTemperatureSensitivity(),
+                    user.getActivityType()
+            );
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(user.getEmail());
-            helper.setSubject(styledWeather.getForecastLabel() + " 날씨 알림");
+            helper.setSubject(subject == null
+                    ? styledWeather.getForecastLabel() + " 날씨 알림"
+                    : subject + " · " + valueOrDash(user.getLocationName()));
 
             Context context = new Context();
             context.setVariable("name", valueOrDash(user.getName()));
@@ -48,7 +64,10 @@ public class MailService {
             context.setVariable("gender", user.getGender());
             context.setVariable("ageGroupLabel", user.getAgeGroup().getLabel());
             context.setVariable("genderLabel", user.getGender().getLabel());
+            context.setVariable("temperatureSensitivityLabel", user.getTemperatureSensitivity().getLabel());
+            context.setVariable("activityTypeLabel", user.getActivityType().getLabel());
             context.setVariable("styleRecommendation", styledWeather.getStyleRecommendation());
+            context.setVariable("smartAlertSummary", styledWeather.getSmartAlertSummary());
             context.setVariable("unsubscribeUrl", appBaseUrl + "/api/users/unsubscribe?token=" + encode(user.getUnsubscribeToken()));
 
             String html = templateEngine.process("weather-mail", context);
