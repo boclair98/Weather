@@ -187,7 +187,7 @@ flowchart LR
 - 공개 조회 응답은 `stale-while-revalidate`와 `stale-if-error`를 제공해 재검증 중이거나 외부 API가 잠시 실패해도 기존 정보를 활용합니다.
 - 예약 작업은 DB 분산 락으로 보호해 여러 인스턴스에서도 한 번만 실행됩니다.
 - 메일 작업은 bounded executor와 backpressure를 사용합니다.
-- 3일 플래너는 별도 bounded executor와 Redis/Caffeine 캐시를 사용합니다.
+- 3일 플래너는 별도 bounded executor와 Redis/Caffeine 캐시를 사용하며, 기상청 단기예보 1회 응답을 오늘·내일·모레로 분해해 외부 API 왕복을 최소화합니다.
 - 읽기와 쓰기 API에 서로 다른 분당 요청 한도를 적용합니다.
 - Actuator health probe, graceful shutdown, 응답 압축을 적용했습니다.
 - 운영 프로필은 필수 기상청 키 누락을 health `DOWN`으로 감지해 잘못된 배포를 차단합니다.

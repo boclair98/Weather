@@ -53,17 +53,15 @@ public class WeatherPlannerService {
         Timer.Sample timer = Timer.start(meterRegistry);
         boolean success = false;
         try {
-            List<CompletableFuture<DailyWeatherDto>> futures = List.of(0, 1, 2).stream()
-                    .map(dayOffset -> CompletableFuture.supplyAsync(
-                            () -> weatherService.getPlannerDailyWeather(nx, ny, locationName, dayOffset)
-                                    .withStylePreference(
-                                            ageGroup, gender, temperatureSensitivity, activityType
-                                    ),
+            List<DailyWeatherDto> forecasts = CompletableFuture.supplyAsync(
+                            () -> weatherService.getPlannerDailyWeatherList(nx, ny, locationName),
                             plannerExecutor
+                    )
+                    .join()
+                    .stream()
+                    .map(forecast -> forecast.withStylePreference(
+                            ageGroup, gender, temperatureSensitivity, activityType
                     ))
-                    .toList();
-            List<DailyWeatherDto> forecasts = futures.stream()
-                    .map(CompletableFuture::join)
                     .toList();
             WeatherPlannerDto planner = WeatherPlannerDto.from(locationName, forecasts);
             success = true;
