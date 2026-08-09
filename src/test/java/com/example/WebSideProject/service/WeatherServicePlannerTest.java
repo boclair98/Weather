@@ -28,7 +28,9 @@ class WeatherServicePlannerTest {
         WeatherService service = new WeatherService(
                 restTemplate,
                 mock(WeatherSafetyService.class),
-                new ExternalApiGuard(new SimpleMeterRegistry())
+                new ExternalApiGuard(
+                        new SimpleMeterRegistry(), Runnable::run, java.time.Duration.ofSeconds(1)
+                )
         );
         ReflectionTestUtils.setField(service, "apiKey", "test-key");
         ReflectionTestUtils.setField(service, "baseUrl", "https://weather.example.test");
@@ -86,7 +88,9 @@ class WeatherServicePlannerTest {
         WeatherService service = new WeatherService(
                 restTemplate,
                 mock(WeatherSafetyService.class),
-                new ExternalApiGuard(new SimpleMeterRegistry())
+                new ExternalApiGuard(
+                        new SimpleMeterRegistry(), Runnable::run, java.time.Duration.ofSeconds(1)
+                )
         );
         ReflectionTestUtils.setField(service, "apiKey", "test-key");
         ReflectionTestUtils.setField(service, "baseUrl", "https://weather.example.test");
