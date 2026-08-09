@@ -3,6 +3,9 @@ package com.example.WebSideProject.service;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,7 +16,7 @@ class ExternalApiGuardTest {
     @Test
     void retriesOneTransientFailureAndRecovers() {
         SimpleMeterRegistry registry = new SimpleMeterRegistry();
-        ExternalApiGuard guard = new ExternalApiGuard(registry);
+        ExternalApiGuard guard = new ExternalApiGuard(registry, Runnable::run, Duration.ofSeconds(1));
         AtomicInteger attempts = new AtomicInteger();
 
         String result = guard.execute("test-provider", () -> {
@@ -28,7 +31,9 @@ class ExternalApiGuardTest {
 
     @Test
     void opensCircuitAfterRepeatedProviderFailures() {
-        ExternalApiGuard guard = new ExternalApiGuard(new SimpleMeterRegistry());
+        ExternalApiGuard guard = new ExternalApiGuard(
+                new SimpleMeterRegistry(), Runnable::run, Duration.ofSeconds(1)
+        );
 
         for (int i = 0; i < 3; i++) {
             assertThatThrownBy(() -> guard.execute("test-provider", () -> {
@@ -40,5 +45,28 @@ class ExternalApiGuardTest {
         assertThatThrownBy(() -> guard.execute("test-provider", () -> "never"))
                 .isInstanceOf(ExternalApiGuard.ExternalApiUnavailableException.class)
                 .hasMessageContaining("회로");
+    }
+
+    @Test
+    void stopsWaitingWhenProviderCallExceedsDeadline() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            ExternalApiGuard guard = new ExternalApiGuard(
+                    new SimpleMeterRegistry(), executor, Duration.ofMillis(40)
+            );
+
+            assertThatThrownBy(() -> guard.execute("slow-provider", () -> {
+                try {
+                    Thread.sleep(5_000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                return "late";
+            }))
+                    .isInstanceOf(ExternalApiGuard.ExternalApiUnavailableException.class)
+                    .hasMessageContaining("실패");
+        } finally {
+            executor.shutdownNow();
+        }
     }
 }

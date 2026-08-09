@@ -72,4 +72,17 @@ public class AppConfig {
         executor.initialize();
         return executor;
     }
+
+    @Bean(name = "providerExecutor")
+    public Executor providerExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(4);
+        executor.setMaxPoolSize(8);
+        executor.setQueueCapacity(16);
+        executor.setThreadNamePrefix("provider-");
+        executor.setWaitForTasksToCompleteOnShutdown(false);
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
+        executor.initialize();
+        return executor;
+    }
 }
