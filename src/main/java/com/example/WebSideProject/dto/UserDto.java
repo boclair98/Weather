@@ -1,7 +1,9 @@
 package com.example.WebSideProject.dto;
 
 import com.example.WebSideProject.Enum.AgeGroup;
+import com.example.WebSideProject.Enum.ActivityType;
 import com.example.WebSideProject.Enum.GenderType;
+import com.example.WebSideProject.Enum.TemperatureSensitivity;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
@@ -47,6 +49,20 @@ public class UserDto {
 
         private GenderType gender = GenderType.NONE;
 
+        private TemperatureSensitivity temperatureSensitivity = TemperatureSensitivity.NONE;
+
+        private ActivityType activityType = ActivityType.DAILY;
+
+        private boolean smartAlertEnabled = false;
+
+        private boolean rainAlertEnabled = true;
+
+        private boolean temperatureAlertEnabled = true;
+
+        private boolean airQualityAlertEnabled = true;
+
+        private boolean windAlertEnabled = true;
+
         private boolean morningEnabled = true;
 
         private boolean afternoonEnabled = false;
@@ -90,6 +106,10 @@ public class UserDto {
         private AgeGroup ageGroup = AgeGroup.NONE;
 
         private GenderType gender = GenderType.NONE;
+
+        private TemperatureSensitivity temperatureSensitivity = TemperatureSensitivity.NONE;
+
+        private ActivityType activityType = ActivityType.DAILY;
     }
 
     @Getter
@@ -98,6 +118,16 @@ public class UserDto {
         private boolean morningEnabled;
         private boolean afternoonEnabled;
         private boolean eveningEnabled;
+    }
+
+    @Getter
+    @Setter
+    public static class UpdateSmartAlertRequest {
+        private boolean smartAlertEnabled;
+        private boolean rainAlertEnabled = true;
+        private boolean temperatureAlertEnabled = true;
+        private boolean airQualityAlertEnabled = true;
+        private boolean windAlertEnabled = true;
     }
 
     @Getter
@@ -118,8 +148,19 @@ public class UserDto {
         private String email;
         private boolean subscribed;
         private String locationName;
+        private Double latitude;
+        private Double longitude;
+        private int nx;
+        private int ny;
         private AgeGroup ageGroup;
         private GenderType gender;
+        private TemperatureSensitivity temperatureSensitivity;
+        private ActivityType activityType;
+        private boolean smartAlertEnabled;
+        private boolean rainAlertEnabled;
+        private boolean temperatureAlertEnabled;
+        private boolean airQualityAlertEnabled;
+        private boolean windAlertEnabled;
         private boolean morningEnabled;
         private boolean afternoonEnabled;
         private boolean eveningEnabled;

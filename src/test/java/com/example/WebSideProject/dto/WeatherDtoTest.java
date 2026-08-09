@@ -3,7 +3,9 @@ package com.example.WebSideProject.dto;
 import org.junit.jupiter.api.Test;
 
 import com.example.WebSideProject.Enum.AgeGroup;
+import com.example.WebSideProject.Enum.ActivityType;
 import com.example.WebSideProject.Enum.GenderType;
+import com.example.WebSideProject.Enum.TemperatureSensitivity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -60,9 +62,39 @@ class WeatherDtoTest {
         assertThat(rainy.getFootwearAdvice()).contains("방수");
         assertThat(rainy.getStyleCaution()).contains("물 얼룩");
         assertThat(hotSunny.getTopAdvice()).contains("통풍");
-        assertThat(hotSunny.getStyleRecommendation(AgeGroup.TWENTIES, GenderType.FEMALE))
-                .contains("20대 여성")
+        assertThat(hotSunny.getStyleRecommendation(
+                AgeGroup.NONE,
+                GenderType.NONE,
+                TemperatureSensitivity.HEAT,
+                ActivityType.OUTDOOR))
+                .contains("산책·야외 활동")
                 .contains("통풍");
+        assertThat(hotSunny.withStylePreference(
+                        AgeGroup.NONE,
+                        GenderType.NONE,
+                        TemperatureSensitivity.HEAT,
+                        ActivityType.OUTDOOR)
+                .getTopAdvice()).contains("흡습·속건");
         assertThat(rainy.getColorPalette()).isNotEqualTo(hotSunny.getColorPalette());
+    }
+
+    @Test
+    void smartAlertSummaryCombinesOnlyDetectedRisks() {
+        WeatherDto risky = WeatherDto.builder()
+                .date("20260809")
+                .tmp("33")
+                .pop("80")
+                .pty("1")
+                .wsd("9.2")
+                .pm10Grade("3")
+                .pm25Grade("2")
+                .build();
+
+        assertThat(risky.isRainRisk()).isTrue();
+        assertThat(risky.isTemperatureRisk()).isTrue();
+        assertThat(risky.isWindRisk()).isTrue();
+        assertThat(risky.isAirQualityRisk()).isTrue();
+        assertThat(risky.getSmartAlertSummary())
+                .contains("비·우산", "폭염", "대기질", "강풍");
     }
 }

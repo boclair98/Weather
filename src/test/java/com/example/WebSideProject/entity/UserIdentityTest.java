@@ -38,6 +38,19 @@ class UserIdentityTest {
         assertThat(user.isEveningEnabled()).isFalse();
     }
 
+    @Test
+    void smartAlertFingerprintPreventsDuplicateDelivery() {
+        User user = user("owner-id");
+        user.updateSmartAlerts(true, true, true, false, true);
+
+        user.markSmartAlertSent("20260809:MORNING:폭염");
+
+        assertThat(user.isSmartAlertEnabled()).isTrue();
+        assertThat(user.isAirQualityAlertEnabled()).isFalse();
+        assertThat(user.hasReceivedSmartAlert("20260809:MORNING:폭염")).isTrue();
+        assertThat(user.hasReceivedSmartAlert("20260809:AFTERNOON:폭염")).isFalse();
+    }
+
     private User user(String codersUserId) {
         return User.builder()
                 .name("테스트")

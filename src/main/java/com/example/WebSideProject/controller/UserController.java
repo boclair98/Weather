@@ -104,6 +104,14 @@ public class UserController {
         return ResponseEntity.ok(userService.updateNotificationTimes(request, codersUserId));
     }
 
+    @PatchMapping("/me/smart-alerts")
+    public ResponseEntity<UserDto.Response> updateCurrentSmartAlerts(
+            @RequestBody UserDto.UpdateSmartAlertRequest request,
+            @RequestHeader(value = "X-Coders-User", required = false) String codersUserId
+    ) {
+        return ResponseEntity.ok(userService.updateSmartAlerts(request, codersUserId));
+    }
+
     @DeleteMapping("/me/subscription")
     public ResponseEntity<UserDto.Response> unsubscribeCurrent(
             @RequestHeader(value = "X-Coders-User", required = false) String codersUserId

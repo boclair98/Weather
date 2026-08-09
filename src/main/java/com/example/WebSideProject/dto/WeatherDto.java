@@ -2,10 +2,15 @@ package com.example.WebSideProject.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.example.WebSideProject.Enum.AgeGroup;
+import com.example.WebSideProject.Enum.ActivityType;
 import com.example.WebSideProject.Enum.GenderType;
+import com.example.WebSideProject.Enum.TemperatureSensitivity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.jackson.Jacksonized;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Builder(toBuilder = true)
@@ -30,6 +35,8 @@ public class WeatherDto {
     private String airQualityStation;
     private String styleHeadline;
     private String styleRecommendation;
+    private TemperatureSensitivity temperatureSensitivity;
+    private ActivityType activityType;
 
     public String getDate() {
         return valueOrDash(date);
@@ -85,6 +92,14 @@ public class WeatherDto {
 
     public String getStyleRecommendation() {
         return valueOrDash(styleRecommendation);
+    }
+
+    public TemperatureSensitivity getTemperatureSensitivity() {
+        return temperatureSensitivity == null ? TemperatureSensitivity.NONE : temperatureSensitivity;
+    }
+
+    public ActivityType getActivityType() {
+        return activityType == null ? ActivityType.DAILY : activityType;
     }
 
     public String getPm10Display() {
@@ -294,7 +309,7 @@ public class WeatherDto {
     }
 
     public String getClothingAdvice() {
-        int temperature = getTmpValue();
+        int temperature = getStyledTemperature();
         if (temperature >= 28) {
             return "반팔, 얇은 셔츠, 통풍이 좋은 옷";
         }
@@ -321,52 +336,98 @@ public class WeatherDto {
     }
 
     public String getStyleRecommendation(AgeGroup ageGroup, GenderType gender) {
+        return getStyleRecommendation(ageGroup, gender, TemperatureSensitivity.NONE, ActivityType.DAILY);
+    }
+
+    public String getStyleRecommendation(
+            AgeGroup ageGroup,
+            GenderType gender,
+            TemperatureSensitivity sensitivity,
+            ActivityType activity
+    ) {
         AgeGroup selectedAgeGroup = ageGroup == null ? AgeGroup.NONE : ageGroup;
         GenderType selectedGender = gender == null ? GenderType.NONE : gender;
-
-        return getStyleHeadline(selectedAgeGroup, selectedGender) + " "
-                + getLayeringAdvice() + " "
-                + getMaterialAdvice() + " "
-                + getStyleCaution();
+        WeatherDto personalized = toBuilder()
+                .temperatureSensitivity(sensitivity == null ? TemperatureSensitivity.NONE : sensitivity)
+                .activityType(activity == null ? ActivityType.DAILY : activity)
+                .build();
+        return personalized.getStyleHeadline(selectedAgeGroup, selectedGender, sensitivity, activity) + " "
+                + personalized.getLayeringAdvice() + " "
+                + personalized.getMaterialAdvice() + " "
+                + personalized.getStyleCaution();
     }
 
     public WeatherDto withStylePreference(AgeGroup ageGroup, GenderType gender) {
+        return withStylePreference(ageGroup, gender, TemperatureSensitivity.NONE, ActivityType.DAILY);
+    }
+
+    public WeatherDto withStylePreference(
+            AgeGroup ageGroup,
+            GenderType gender,
+            TemperatureSensitivity sensitivity,
+            ActivityType activity
+    ) {
         AgeGroup selectedAgeGroup = ageGroup == null ? AgeGroup.NONE : ageGroup;
         GenderType selectedGender = gender == null ? GenderType.NONE : gender;
-        return toBuilder()
-                .styleHeadline(getStyleHeadline(selectedAgeGroup, selectedGender))
-                .styleRecommendation(getStyleRecommendation(selectedAgeGroup, selectedGender))
+        TemperatureSensitivity selectedSensitivity = sensitivity == null
+                ? TemperatureSensitivity.NONE : sensitivity;
+        ActivityType selectedActivity = activity == null ? ActivityType.DAILY : activity;
+        WeatherDto personalized = toBuilder()
+                .temperatureSensitivity(selectedSensitivity)
+                .activityType(selectedActivity)
+                .build();
+        return personalized.toBuilder()
+                .styleHeadline(personalized.getStyleHeadline(
+                        selectedAgeGroup, selectedGender, selectedSensitivity, selectedActivity))
+                .styleRecommendation(personalized.getStyleRecommendation(
+                        selectedAgeGroup, selectedGender, selectedSensitivity, selectedActivity))
                 .build();
     }
 
     public String getStyleHeadline(AgeGroup ageGroup, GenderType gender) {
-        AgeGroup selectedAgeGroup = ageGroup == null ? AgeGroup.NONE : ageGroup;
-        GenderType selectedGender = gender == null ? GenderType.NONE : gender;
-        String audience = getAudienceLabel(selectedAgeGroup, selectedGender);
+        return getStyleHeadline(ageGroup, gender, TemperatureSensitivity.NONE, ActivityType.DAILY);
+    }
+
+    public String getStyleHeadline(
+            AgeGroup ageGroup,
+            GenderType gender,
+            TemperatureSensitivity sensitivity,
+            ActivityType activity
+    ) {
+        TemperatureSensitivity selectedSensitivity = sensitivity == null
+                ? TemperatureSensitivity.NONE : sensitivity;
+        ActivityType selectedActivity = activity == null ? ActivityType.DAILY : activity;
+        String context = getStyleContext(selectedSensitivity, selectedActivity);
 
         if (isSnowy()) {
-            return audience + " 오늘은 보온형 시티룩이 좋아요.";
+            return context + " 미끄럼과 보온을 함께 잡는 룩이 좋아요.";
         }
         if (isRainy() || getPopValue() >= 60) {
-            return audience + " 오늘은 비에 강한 깔끔한 룩이 좋아요.";
+            return context + " 비에 강하고 빨리 마르는 룩이 좋아요.";
         }
         if (isBadAirQuality()) {
-            return audience + " 오늘은 세탁 쉬운 소재와 마스크 조합이 좋아요.";
+            return context + " 세탁 쉬운 소재와 마스크 조합이 좋아요.";
         }
-        if (getTmpValue() >= 30) {
-            return audience + " 오늘은 통풍이 핵심인 가벼운 룩이 좋아요.";
+        if (getStyledTemperature() >= 30) {
+            return context + " 통풍이 핵심인 가벼운 룩이 좋아요.";
         }
-        if (getTmpValue() <= 5) {
-            return audience + " 오늘은 레이어드와 보온 액세서리가 핵심이에요.";
+        if (getStyledTemperature() <= 5) {
+            return context + " 레이어드와 보온 액세서리가 핵심이에요.";
         }
         if ("1".equals(sky)) {
-            return audience + " 오늘은 밝은 포인트를 주기 좋은 날이에요.";
+            return context + " 밝은 포인트를 주기 좋은 날이에요.";
         }
-        return audience + " 오늘은 단정한 데일리룩으로 안정감 있게 가면 좋아요.";
+        return context + " 단정하고 조절하기 쉬운 레이어드가 좋아요.";
     }
 
     public String getTopAdvice() {
-        int temperature = getTmpValue();
+        int temperature = getStyledTemperature();
+        if (getActivityType() == ActivityType.FORMAL && temperature >= 18) {
+            return "통기성 좋은 셔츠나 블라우스, 가벼운 재킷";
+        }
+        if (getActivityType() == ActivityType.OUTDOOR && temperature >= 18) {
+            return "흡습·속건 티셔츠와 움직임 편한 얇은 레이어";
+        }
         if (temperature >= 30) {
             return "얇은 반팔, 린넨 셔츠, 통풍 좋은 니트";
         }
@@ -386,7 +447,7 @@ public class WeatherDto {
     }
 
     public String getBottomAdvice() {
-        int temperature = getTmpValue();
+        int temperature = getStyledTemperature();
         if (isRainy() || isSnowy()) {
             return "물 튐이 덜 보이는 어두운 팬츠나 발목이 편한 하의";
         }
@@ -396,11 +457,17 @@ public class WeatherDto {
         if (temperature <= 5) {
             return "기모 팬츠, 두께감 있는 데님, 울 혼방 팬츠";
         }
+        if (getActivityType() == ActivityType.OUTDOOR) {
+            return "신축성 좋은 조거·트레킹 팬츠처럼 움직이기 편한 하의";
+        }
+        if (getActivityType() == ActivityType.FORMAL) {
+            return "구김 적은 슬랙스나 단정한 미디 길이 하의";
+        }
         return "데님, 슬랙스, 치노 팬츠처럼 활동성 있는 하의";
     }
 
     public String getOuterAdvice() {
-        int temperature = getTmpValue();
+        int temperature = getStyledTemperature();
         if (temperature >= 26) {
             return "실내 냉방 대비 얇은 셔츠 하나면 충분해요.";
         }
@@ -426,7 +493,13 @@ public class WeatherDto {
         if (getWsdValue() >= 8.0) {
             return "발을 안정적으로 잡아주는 스니커즈나 로퍼";
         }
-        if (getTmpValue() >= 28) {
+        if (getActivityType() == ActivityType.OUTDOOR) {
+            return "쿠션과 접지력이 좋은 워킹화 또는 트레킹화";
+        }
+        if (getActivityType() == ActivityType.FORMAL) {
+            return "오래 걸어도 편한 로퍼나 낮은 굽의 단정한 신발";
+        }
+        if (getStyledTemperature() >= 28) {
             return "통풍 좋은 스니커즈나 샌들";
         }
         return "걷기 편한 스니커즈, 로퍼, 데일리 슈즈";
@@ -442,10 +515,10 @@ public class WeatherDto {
         if (isBadAirQuality()) {
             return "라이트그레이, 카키, 워시드블루";
         }
-        if (getTmpValue() >= 28) {
+        if (getStyledTemperature() >= 28) {
             return "화이트, 스카이블루, 라이트베이지";
         }
-        if (getTmpValue() <= 5) {
+        if (getStyledTemperature() <= 5) {
             return "카멜, 버건디, 다크브라운";
         }
         if ("1".equals(sky)) {
@@ -461,17 +534,17 @@ public class WeatherDto {
         if (isRainy() || getPopValue() >= 60) {
             return "나일론, 코팅 코튼, 폴리 혼방처럼 젖어도 빨리 마르는 소재를 추천해요.";
         }
-        if (getTmpValue() >= 28 || getRehValue() >= 80) {
+        if (getStyledTemperature() >= 28 || getRehValue() >= 80) {
             return "린넨, 얇은 코튼, 기능성 드라이 소재처럼 몸에 달라붙지 않는 소재가 좋아요.";
         }
-        if (getTmpValue() <= 5) {
+        if (getStyledTemperature() <= 5) {
             return "울, 플리스, 기모 소재처럼 공기층을 만드는 소재가 체감 온도를 올려줘요.";
         }
         return "코튼, 니트, 가벼운 울 혼방처럼 구김이 적고 움직이기 편한 소재가 좋아요.";
     }
 
     public String getLayeringAdvice() {
-        int temperature = getTmpValue();
+        int temperature = getStyledTemperature();
         if (temperature >= 28) {
             return "상의는 짧고 가볍게, 실내 냉방용 얇은 겉옷만 더하세요.";
         }
@@ -497,7 +570,13 @@ public class WeatherDto {
         if (getWsdValue() >= 8.0) {
             return "가벼운 모자나 날리는 스카프는 고정감 있게 매치하세요.";
         }
-        if (getTmpValue() >= 30) {
+        if (getActivityType() == ActivityType.OUTDOOR) {
+            return "장시간 활동이면 여벌 양말과 가벼운 수분 보충 용품도 챙겨주세요.";
+        }
+        if (getActivityType() == ActivityType.FORMAL) {
+            return "실내 냉난방을 고려해 벗어도 단정한 레이어를 구성하세요.";
+        }
+        if (getStyledTemperature() >= 30) {
             return "두꺼운 데님이나 어두운 긴팔은 한낮 체감 온도를 크게 올릴 수 있어요.";
         }
         return "큰 변수는 적지만 오래 걷는 일정이면 신발 착화감을 우선하세요.";
@@ -541,11 +620,38 @@ public class WeatherDto {
         return "야외 활동에 큰 무리는 없어 보여요.";
     }
 
-    private String getAudienceLabel(AgeGroup ageGroup, GenderType gender) {
-        String age = ageGroup == AgeGroup.NONE ? "" : ageGroup.getLabel() + " ";
-        String genderLabel = gender == GenderType.NONE ? "" : gender.getLabel() + " ";
-        String label = (age + genderLabel).trim();
-        return label.isBlank() ? "당신에게는" : label + "에게는";
+    public boolean isRainRisk() {
+        return isRainy() || isSnowy() || getPopValue() >= 60;
+    }
+
+    public boolean isTemperatureRisk() {
+        return getTmpValue() >= 30 || getTmpValue() <= 5;
+    }
+
+    public boolean isAirQualityRisk() {
+        return isBadAirQuality();
+    }
+
+    public boolean isWindRisk() {
+        return getWsdValue() >= 8.0;
+    }
+
+    public String getSmartAlertSummary() {
+        List<String> alerts = new ArrayList<>();
+        if (isRainRisk()) alerts.add(isSnowy() ? "눈·빙판" : "비·우산");
+        if (isTemperatureRisk()) alerts.add(getTmpValue() >= 30 ? "폭염" : "한파");
+        if (isAirQualityRisk()) alerts.add("대기질");
+        if (isWindRisk()) alerts.add("강풍");
+        return alerts.isEmpty() ? "특별한 위험 신호 없음" : String.join(" · ", alerts) + " 주의";
+    }
+
+    private String getStyleContext(TemperatureSensitivity sensitivity, ActivityType activity) {
+        String sensitivityLabel = switch (sensitivity) {
+            case COLD -> "추위를 많이 타는 체감 기준으로";
+            case HEAT -> "더위를 많이 타는 체감 기준으로";
+            default -> "보통 체감 기준으로";
+        };
+        return activity.getLabel() + " 일정에는 " + sensitivityLabel;
     }
 
     private boolean hasAirQuality() {
@@ -593,6 +699,14 @@ public class WeatherDto {
 
     private int getTmpValue() {
         return parseInt(tmp, 20);
+    }
+
+    private int getStyledTemperature() {
+        return switch (getTemperatureSensitivity()) {
+            case COLD -> getTmpValue() - 3;
+            case HEAT -> getTmpValue() + 2;
+            default -> getTmpValue();
+        };
     }
 
     private int getPopValue() {

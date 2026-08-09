@@ -62,8 +62,21 @@ public class WeatherService {
     }
 
     public DailyWeatherDto getDailyWeather(int nx, int ny, String locationName) {
+        return getDailyWeather(nx, ny, locationName, 0);
+    }
+
+    @Cacheable(
+            cacheNames = "weather",
+            key = "'daily:' + #nx + ':' + #ny + ':' + #dayOffset + ':' + (#locationName == null ? '' : #locationName)",
+            sync = true
+    )
+    public DailyWeatherDto getDailyWeather(int nx, int ny, String locationName, int dayOffset) {
+        if (dayOffset < 0 || dayOffset > 2) {
+            throw new IllegalArgumentException("dayOffset은 0부터 2까지만 지원합니다.");
+        }
         ForecastBase forecastBase = getDailyForecastBase();
-        String targetDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String targetDate = LocalDate.now().plusDays(dayOffset)
+                .format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String response = requestForecast(nx, ny, forecastBase.date(), forecastBase.time(), targetDate);
 
         WeatherDto morning = parseWeatherResponse(response, targetDate, WeatherPeriod.MORNING);
@@ -71,10 +84,17 @@ public class WeatherService {
         WeatherDto evening = parseWeatherResponse(response, targetDate, WeatherPeriod.EVENING);
 
         AirQualityInfo airQuality = safelyGetAirQuality(locationName);
+        String dayLabel = switch (dayOffset) {
+            case 0 -> "오늘";
+            case 1 -> "내일";
+            default -> "모레";
+        };
         return DailyWeatherDto.from(
                 applyAirQuality(morning, airQuality),
                 applyAirQuality(afternoon, airQuality),
-                applyAirQuality(evening, airQuality)
+                applyAirQuality(evening, airQuality),
+                dayLabel,
+                targetDate
         );
     }
 

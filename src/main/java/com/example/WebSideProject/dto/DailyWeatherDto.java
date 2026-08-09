@@ -1,7 +1,9 @@
 package com.example.WebSideProject.dto;
 
 import com.example.WebSideProject.Enum.AgeGroup;
+import com.example.WebSideProject.Enum.ActivityType;
 import com.example.WebSideProject.Enum.GenderType;
+import com.example.WebSideProject.Enum.TemperatureSensitivity;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -15,11 +17,24 @@ public record DailyWeatherDto(
         int bestOutingScore,
         String headline,
         String temperatureTrend,
-        String rainSummary
+        String rainSummary,
+        String dayLabel,
+        String forecastDate
 ) {
 
     public static DailyWeatherDto from(WeatherDto morning, WeatherDto afternoon, WeatherDto evening) {
-        return fromAtHour(morning, afternoon, evening, LocalTime.now().getHour());
+        return from(morning, afternoon, evening, "오늘", morning.getDate());
+    }
+
+    public static DailyWeatherDto from(
+            WeatherDto morning,
+            WeatherDto afternoon,
+            WeatherDto evening,
+            String dayLabel,
+            String forecastDate
+    ) {
+        int currentHour = "오늘".equals(dayLabel) ? LocalTime.now().getHour() : 0;
+        return fromAtHour(morning, afternoon, evening, currentHour, dayLabel, forecastDate);
     }
 
     static DailyWeatherDto fromAtHour(
@@ -27,6 +42,17 @@ public record DailyWeatherDto(
             WeatherDto afternoon,
             WeatherDto evening,
             int currentHour
+    ) {
+        return fromAtHour(morning, afternoon, evening, currentHour, "오늘", morning.getDate());
+    }
+
+    static DailyWeatherDto fromAtHour(
+            WeatherDto morning,
+            WeatherDto afternoon,
+            WeatherDto evening,
+            int currentHour,
+            String dayLabel,
+            String forecastDate
     ) {
         List<PeriodWeather> periods = List.of(
                 new PeriodWeather("MORNING", "아침", 9, morning),
@@ -51,34 +77,47 @@ public record DailyWeatherDto(
                 best.code(),
                 best.label(),
                 best.weather().getOutingScore(),
-                buildHeadline(best, periods),
+                buildHeadline(best, periods, dayLabel),
                 buildTemperatureTrend(morning, afternoon, evening),
-                buildRainSummary(periods)
+                buildRainSummary(periods),
+                dayLabel,
+                forecastDate
         );
     }
 
     public DailyWeatherDto withStylePreference(AgeGroup ageGroup, GenderType gender) {
+        return withStylePreference(ageGroup, gender, TemperatureSensitivity.NONE, ActivityType.DAILY);
+    }
+
+    public DailyWeatherDto withStylePreference(
+            AgeGroup ageGroup,
+            GenderType gender,
+            TemperatureSensitivity temperatureSensitivity,
+            ActivityType activityType
+    ) {
         return new DailyWeatherDto(
-                morning.withStylePreference(ageGroup, gender),
-                afternoon.withStylePreference(ageGroup, gender),
-                evening.withStylePreference(ageGroup, gender),
+                morning.withStylePreference(ageGroup, gender, temperatureSensitivity, activityType),
+                afternoon.withStylePreference(ageGroup, gender, temperatureSensitivity, activityType),
+                evening.withStylePreference(ageGroup, gender, temperatureSensitivity, activityType),
                 bestPeriod,
                 bestPeriodLabel,
                 bestOutingScore,
                 headline,
                 temperatureTrend,
-                rainSummary
+                rainSummary,
+                dayLabel,
+                forecastDate
         );
     }
 
-    private static String buildHeadline(PeriodWeather best, List<PeriodWeather> periods) {
+    private static String buildHeadline(PeriodWeather best, List<PeriodWeather> periods, String dayLabel) {
         long difficultPeriods = periods.stream()
                 .filter(period -> period.weather().getOutingScore() < 70)
                 .count();
         if (difficultPeriods == periods.size()) {
-            return "오늘은 세 시간대 모두 준비가 필요해요.";
+            return dayLabel + "은 세 시간대 모두 준비가 필요해요.";
         }
-        return best.label() + "이 가장 외출하기 좋아요.";
+        return dayLabel + " " + best.label() + "이 가장 외출하기 좋아요.";
     }
 
     private static String buildTemperatureTrend(

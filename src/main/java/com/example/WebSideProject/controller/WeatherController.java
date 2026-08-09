@@ -1,7 +1,9 @@
 package com.example.WebSideProject.controller;
 
 import com.example.WebSideProject.Enum.AgeGroup;
+import com.example.WebSideProject.Enum.ActivityType;
 import com.example.WebSideProject.Enum.GenderType;
+import com.example.WebSideProject.Enum.TemperatureSensitivity;
 import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.dto.DailyWeatherDto;
 import com.example.WebSideProject.dto.WeatherDto;
@@ -30,11 +32,14 @@ public class WeatherController {
             @RequestParam(defaultValue = "MORNING") WeatherPeriod period,
             @RequestParam(required = false) String locationName,
             @RequestParam(defaultValue = "NONE") AgeGroup ageGroup,
-            @RequestParam(defaultValue = "NONE") GenderType gender
+            @RequestParam(defaultValue = "NONE") GenderType gender,
+            @RequestParam(defaultValue = "NONE") TemperatureSensitivity temperatureSensitivity,
+            @RequestParam(defaultValue = "DAILY") ActivityType activityType
     ) {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(5, TimeUnit.MINUTES).cachePublic())
-                .body(weatherService.getWeather(nx, ny, period, locationName).withStylePreference(ageGroup, gender));
+                .body(weatherService.getWeather(nx, ny, period, locationName)
+                        .withStylePreference(ageGroup, gender, temperatureSensitivity, activityType));
     }
 
     @GetMapping("/daily")
@@ -43,12 +48,15 @@ public class WeatherController {
             @RequestParam(defaultValue = "127") int ny,
             @RequestParam(required = false) String locationName,
             @RequestParam(defaultValue = "NONE") AgeGroup ageGroup,
-            @RequestParam(defaultValue = "NONE") GenderType gender
+            @RequestParam(defaultValue = "NONE") GenderType gender,
+            @RequestParam(defaultValue = "NONE") TemperatureSensitivity temperatureSensitivity,
+            @RequestParam(defaultValue = "DAILY") ActivityType activityType,
+            @RequestParam(defaultValue = "0") int dayOffset
     ) {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(5, TimeUnit.MINUTES).cachePublic())
-                .body(weatherService.getDailyWeather(nx, ny, locationName)
-                        .withStylePreference(ageGroup, gender));
+                .body(weatherService.getDailyWeather(nx, ny, locationName, dayOffset)
+                        .withStylePreference(ageGroup, gender, temperatureSensitivity, activityType));
     }
 
     @GetMapping("/test")
@@ -59,12 +67,14 @@ public class WeatherController {
             @RequestParam(required = false) String locationName,
             @RequestParam(defaultValue = "NONE") AgeGroup ageGroup,
             @RequestParam(defaultValue = "NONE") GenderType gender,
+            @RequestParam(defaultValue = "NONE") TemperatureSensitivity temperatureSensitivity,
+            @RequestParam(defaultValue = "DAILY") ActivityType activityType,
             @RequestParam String baseDate,
             @RequestParam String baseTime
     ) {
         WeatherDto weather = weatherService.getWeatherForBase(
                 nx, ny, period, locationName, baseDate, baseTime
-        ).withStylePreference(ageGroup, gender);
+        ).withStylePreference(ageGroup, gender, temperatureSensitivity, activityType);
         return ResponseEntity.ok(weather);
     }
 }
