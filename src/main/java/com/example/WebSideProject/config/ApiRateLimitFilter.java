@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
@@ -19,8 +20,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.HexFormat;
 
 @Component
@@ -32,6 +37,8 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
     private final int writeLimit;
     private final boolean distributed;
     private final StringRedisTemplate redisTemplate;
+    private final Executor rateLimitExecutor;
+    private final Duration redisDeadline;
     private final Cache<String, WindowCounter> counters = Caffeine.newBuilder()
             .maximumSize(100_000)
             .expireAfterAccess(Duration.ofMinutes(3))
@@ -42,12 +49,16 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
             @Value("${app.rate-limit.read-per-minute:180}") int readLimit,
             @Value("${app.rate-limit.write-per-minute:20}") int writeLimit,
             @Value("${app.rate-limit.distributed:false}") boolean distributed,
-            ObjectProvider<StringRedisTemplate> redisTemplateProvider
+            ObjectProvider<StringRedisTemplate> redisTemplateProvider,
+            @Qualifier("rateLimitExecutor") Executor rateLimitExecutor,
+            @Value("${app.rate-limit.redis-deadline:300ms}") Duration redisDeadline
     ) {
         this.readLimit = Math.max(1, readLimit);
         this.writeLimit = Math.max(1, writeLimit);
         this.distributed = distributed;
         this.redisTemplate = redisTemplateProvider.getIfAvailable();
+        this.rateLimitExecutor = rateLimitExecutor;
+        this.redisDeadline = redisDeadline;
     }
 
     ApiRateLimitFilter(int readLimit, int writeLimit) {
@@ -55,6 +66,8 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
         this.writeLimit = Math.max(1, writeLimit);
         this.distributed = false;
         this.redisTemplate = null;
+        this.rateLimitExecutor = Runnable::run;
+        this.redisDeadline = Duration.ofSeconds(1);
     }
 
     @Override
@@ -86,18 +99,36 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
     private long increment(String key) {
         if (distributed && redisTemplate != null) {
             try {
-                String redisKey = "rate-limit:" + key + ":" + (System.currentTimeMillis() / WINDOW_MILLIS);
-                Long count = redisTemplate.opsForValue().increment(redisKey);
-                if (count != null && count == 1) {
-                    redisTemplate.expire(redisKey, Duration.ofSeconds(70));
-                }
-                return count == null ? 1 : count;
+                return incrementDistributed(key);
             } catch (RuntimeException ignored) {
                 // Availability wins over the distributed limiter. The bounded local limiter remains active.
             }
         }
         WindowCounter counter = counters.get(key, ignored -> new WindowCounter(System.currentTimeMillis()));
         return counter == null ? 1 : counter.increment(System.currentTimeMillis());
+    }
+
+    private long incrementDistributed(String key) {
+        CompletableFuture<Long> future = CompletableFuture.supplyAsync(() -> {
+            String redisKey = "rate-limit:" + key + ":" + (System.currentTimeMillis() / WINDOW_MILLIS);
+            Long count = redisTemplate.opsForValue().increment(redisKey);
+            if (count != null && count == 1) {
+                redisTemplate.expire(redisKey, Duration.ofSeconds(70));
+            }
+            return count == null ? 1 : count;
+        }, rateLimitExecutor);
+        try {
+            return future.get(redisDeadline.toMillis(), TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            throw new IllegalStateException("분산 요청 제한기 응답 시간이 초과되었습니다.", e);
+        } catch (InterruptedException e) {
+            future.cancel(true);
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("분산 요청 제한기 호출이 중단되었습니다.", e);
+        } catch (ExecutionException e) {
+            throw new IllegalStateException("분산 요청 제한기를 사용할 수 없습니다.", e.getCause());
+        }
     }
 
     private String hashClientKey(String value) {

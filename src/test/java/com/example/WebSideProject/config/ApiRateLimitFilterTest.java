@@ -9,6 +9,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.mockito.ArgumentCaptor;
 
+import java.time.Duration;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -61,7 +65,9 @@ class ApiRateLimitFilterTest {
         when(provider.getIfAvailable()).thenReturn(redis);
         when(redis.opsForValue()).thenReturn(operations);
         when(operations.increment(any())).thenReturn(1L);
-        ApiRateLimitFilter filter = new ApiRateLimitFilter(5, 2, true, provider);
+        ApiRateLimitFilter filter = new ApiRateLimitFilter(
+                5, 2, true, provider, Runnable::run, Duration.ofSeconds(1)
+        );
         MockHttpServletRequest request = request("GET");
         request.addHeader("X-Coders-User", "sensitive-user-id");
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -72,6 +78,36 @@ class ApiRateLimitFilterTest {
         verify(operations).increment(key.capture());
         assertThat(key.getValue()).startsWith("rate-limit:").doesNotContain("sensitive-user-id");
         assertThat(response.getHeader("X-RateLimit-Remaining")).isEqualTo("4");
+    }
+
+    @Test
+    void fallsBackToLocalLimitWhenRedisExceedsDeadline() throws Exception {
+        @SuppressWarnings("unchecked")
+        ObjectProvider<StringRedisTemplate> provider = mock(ObjectProvider.class);
+        StringRedisTemplate redis = mock(StringRedisTemplate.class);
+        @SuppressWarnings("unchecked")
+        ValueOperations<String, String> operations = mock(ValueOperations.class);
+        when(provider.getIfAvailable()).thenReturn(redis);
+        when(redis.opsForValue()).thenReturn(operations);
+        when(operations.increment(any())).thenAnswer(ignored -> {
+            Thread.sleep(5_000);
+            return 1L;
+        });
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            ApiRateLimitFilter filter = new ApiRateLimitFilter(
+                    5, 2, true, provider, executor, Duration.ofMillis(40)
+            );
+            FilterChain chain = mock(FilterChain.class);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            filter.doFilter(request("GET"), response, chain);
+
+            assertThat(response.getStatus()).isEqualTo(200);
+            verify(chain).doFilter(any(), any());
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
     private MockHttpServletRequest request(String method) {

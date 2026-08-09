@@ -85,4 +85,17 @@ public class AppConfig {
         executor.initialize();
         return executor;
     }
+
+    @Bean(name = "rateLimitExecutor")
+    public Executor rateLimitExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(4);
+        executor.setQueueCapacity(32);
+        executor.setThreadNamePrefix("rate-limit-");
+        executor.setWaitForTasksToCompleteOnShutdown(false);
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
+        executor.initialize();
+        return executor;
+    }
 }
