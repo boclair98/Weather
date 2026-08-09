@@ -66,6 +66,26 @@
 
                 <tr>
                     <td style="padding:14px 18px 0 18px;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#eff6ff; border:1px solid #bfdbfe; border-collapse:collapse;">
+                            <tr>
+                                <td style="padding:15px;">
+                                    <div style="font-size:13px; line-height:19px; color:#1e3a8a; font-weight:800;">생활안전 브리핑</div>
+                                    <div th:if="${weather.officialWarningRisk}" th:text="|공식 특보 · ${weather.weatherWarningTitle}|"
+                                         style="padding-top:6px; font-size:13px; line-height:19px; color:#b91c1c; font-weight:800;">공식 특보</div>
+                                    <div th:if="${weather.officialWarningRisk}" th:text="${weather.weatherWarningDetails}"
+                                         style="padding-top:3px; font-size:11px; line-height:17px; color:#991b1b;">특보 상세</div>
+                                    <div th:text="|자외선 ${weather.uvDisplay} · ${weather.uvAdvice}|"
+                                         style="padding-top:7px; font-size:12px; line-height:18px; color:#1e40af;">자외선 정보</div>
+                                    <div th:text="|꽃가루 ${weather.pollenDisplay} · ${weather.pollenAdvice}|"
+                                         style="padding-top:5px; font-size:12px; line-height:18px; color:#1e40af;">꽃가루 정보</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:14px 18px 0 18px;">
                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f0fdfa; border:1px solid #99f6e4; border-collapse:collapse;">
                             <tr>
                                 <td style="padding:16px;">
@@ -169,7 +189,7 @@
                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff; border:1px solid #e2e8f0; border-collapse:collapse;">
                             <tr>
                                 <td align="center" style="padding:12px 10px; font-size:11px; line-height:17px; color:#94a3b8;">
-                                    날씨 데이터: 기상청 · 대기질 데이터: 한국환경공단 에어코리아<br>
+                                    날씨·특보·생활기상 데이터: 기상청 · 대기질 데이터: 한국환경공단 에어코리아<br>
                                     같은 이메일로 다시 구독하면 위치와 알림 시간이 업데이트됩니다.<br>
                                     <a th:href="${unsubscribeUrl}" style="color:#64748b; text-decoration:underline;">수신 거부</a>
                                 </td>

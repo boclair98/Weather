@@ -70,6 +70,15 @@ public class SmartWeatherAlertScheduler {
         if (user.isWindAlertEnabled() && weather.isWindRisk()) {
             alerts.add("강풍");
         }
+        if (weather.isOfficialWarningRisk()) {
+            alerts.add(weather.getWeatherWarningTitle());
+        }
+        if (weather.isUvRisk()) {
+            alerts.add("자외선");
+        }
+        if (weather.isPollenRisk()) {
+            alerts.add("꽃가루");
+        }
         return alerts;
     }
 

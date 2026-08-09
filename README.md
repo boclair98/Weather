@@ -1,6 +1,6 @@
 # 날씨한편 — 위치 기반 날씨 메일 서비스
 
-사용자가 원하는 지역과 알림 시간을 선택하면, 기상청 단기예보와 에어코리아 대기질 데이터를 기반으로 날씨 메일을 자동 발송하는 Spring Boot 서비스입니다. coders.kr의 관리형 PostgreSQL·Redis, scale-to-zero 배포 계약에 맞춰 실제 운영 가능한 구조로 구성했습니다.
+사용자가 원하는 지역과 알림 시간을 선택하면, 단기예보·기상특보·자외선·꽃가루·대기질 데이터를 기반으로 외출 결정을 돕고 날씨 메일을 자동 발송하는 Spring Boot 서비스입니다. coders.kr의 관리형 PostgreSQL·Redis, scale-to-zero 배포 계약에 맞춰 실제 운영 가능한 구조로 구성했습니다.
 
 단순히 기온만 전달하지 않고, 외출 점수, 날씨별 상세 조언, 미세먼지/마스크 안내, 우산 여부, 체감 성향·일정 기반 스타일링 추천까지 제공하는 생활 밀착형 날씨 구독 서비스입니다.
 
@@ -27,6 +27,8 @@
 5. **언제든 변경·해지** — 같은 이메일로 재등록하면 위치와 알림 설정이 바뀌며, 화면에서 이메일을 다시 입력하거나 메일의 수신 거부 링크로 알림을 중단할 수 있습니다.
 6. **스마트 위험 알림** — 비·눈, 폭염·한파, 대기질, 강풍을 선택해 위험 신호가 생길 때만 추가 알림을 받고 동일 경보의 반복 발송은 막습니다.
 7. **최근 장소 바로가기** — 최근 확인한 장소 5개를 브라우저에 안전하게 보관해 한 번의 클릭으로 다시 비교합니다.
+8. **공식 생활안전 브리핑** — 지역별 기상특보, 자외선, 계절성 꽃가루 위험을 외출 점수·야외활동 조언·메일에 반영합니다.
+9. **출발지→목적지 경로 날씨** — 카카오모빌리티 자동차 길찾기로 거리·예상시간과 출발/도착 날씨를 함께 비교합니다.
 
 메일에서는 날씨 요약, 외출 점수, 미세먼지, 옷차림, 우산, 마스크, 스타일링 추천을 모바일 친화적인 단일 컬럼 레이아웃으로 제공합니다. Gmail과 네이버 메일에서 보이는 화면을 기준으로 메일 폭, 카드 간격, 텍스트 줄바꿈을 조정했습니다.
 
@@ -56,6 +58,8 @@
 | --- | --- |
 | 위치 | 카카오 장소·주소 검색, 최대 15개 결과, 현재 위치, 기상청 격자 변환, API 장애 시 대체 지역 검색 |
 | 날씨 | 대시보드 중심 첫 화면, 오늘·내일 비교, 아침·점심·저녁 미리보기, 외출 점수, 우산·마스크·야외 활동 행동 카드 |
+| 안전 | 지역별 공식 기상특보, 최대 자외선지수, 계절성 꽃가루 위험, 점수·코디·스마트 알림 연동 |
+| 경로 | 출발지·목적지 장소 검색, 자동차 예상시간·거리, 양쪽 기온·위험 비교, 도착 준비 체크리스트 |
 | 코디 | 추위·더위 민감도, 일상·출근·야외·격식 일정별 상의·하의·아우터·신발·컬러·주의사항 추천 |
 | 메일 | 정기 예약 발송, 조건형 스마트 위험 알림, 중복 경보 방지, Gmail·네이버 대응 HTML, 토큰 기반 수신 거부, 발송 이력 |
 | 구독 | 이메일 중심 가입·취소, 최대 10개 동시 처리, 재등록 업데이트, 위치·스타일·알림 시간 변경 |
@@ -90,7 +94,7 @@
 - 구독 등록 응답을 지연시키지 않는 비동기 웰컴 날씨 메일 발송
 - 아침/점심/저녁 알림 시간 선택
 - 같은 이메일 재등록 기반 구독 정보 업데이트, 최대 10개 이메일 동시 등록·취소, 토큰 기반 메일 수신 거부
-- 비·눈, 폭염·한파, 대기질, 강풍 조건을 선택하는 스마트 위험 알림과 날짜·시간대별 중복 방지
+- 비·눈, 폭염·한파, 대기질, 강풍에 공식 특보·자외선·꽃가루를 결합한 스마트 위험 알림과 날짜·시간대별 중복 방지
 - 스케줄러를 통한 시간대별 자동 발송
 - 전체 구독자 수동 발송 API
 - 특정 사용자 대상 지정 발표시각 테스트 발송 API
@@ -130,7 +134,9 @@
 - Lombok
 - org.json
 - Kakao Local API
+- Kakao Mobility Directions API
 - 기상청 단기예보 API
+- 기상청 기상특보·생활기상지수·꽃가루농도위험지수 API
 - 에어코리아 대기오염정보 API
 
 ## 운영 아키텍처
@@ -144,6 +150,8 @@ flowchart LR
     A --> K["기상청 API"]
     A --> Q["에어코리아 API"]
     A --> L["Kakao Local API"]
+    A --> N["Kakao Mobility API"]
+    A --> S["기상특보·자외선·꽃가루 API"]
     A --> M["SMTP"]
 ```
 
@@ -237,6 +245,16 @@ GET /api/weather/daily?nx=61&ny=125&locationName=강남역&dayOffset=1&temperatu
 ```
 
 기상청 단기예보와 에어코리아 미세먼지 정보를 함께 반환합니다. 응답에는 외출 점수, 날씨 테마, 상세 날씨 조언, 미세먼지 표시값 등이 포함됩니다.
+
+응답에는 설정된 경우 공식 특보, 자외선, 꽃가루 정보도 포함되며 이 값들은 외출 점수와 스마트 위험 알림에 직접 반영됩니다.
+
+### 이동 경로 날씨 브리핑
+
+```http
+GET /api/routes/briefing?originQuery=강남역&destinationQuery=서울시청&period=MORNING
+```
+
+카카오모빌리티 자동차 길찾기의 예상 거리·시간과 출발지/목적지 날씨를 결합합니다. 우산, 마스크, 자외선, 꽃가루, 공식 특보, 두 장소의 기온 차를 체크리스트로 반환합니다.
 
 ```json
 {
@@ -522,6 +540,11 @@ AIR_QUALITY_API_KEY=your_airkorea_api_key
 AIR_QUALITY_API_BASE_URL=https://apis.data.go.kr/B552584/ArpltnInforInqireSvc
 
 KAKAO_REST_API_KEY=your_kakao_rest_api_key
+KAKAO_MOBILITY_REST_API_KEY=your_kakao_mobility_rest_api_key
+
+WEATHER_WARNING_API_KEY=your_kma_weather_warning_api_key
+LIVING_WEATHER_API_KEY=your_kma_living_weather_api_key
+POLLEN_API_KEY=your_kma_pollen_api_key
 APP_BASE_URL=http://localhost:8080
 ADMIN_API_KEY=your_optional_admin_key
 ```
@@ -547,6 +570,10 @@ ADMIN_API_KEY=your_optional_admin_key
 WEATHER_API_KEY
 AIR_QUALITY_API_KEY
 KAKAO_REST_API_KEY
+KAKAO_MOBILITY_REST_API_KEY
+WEATHER_WARNING_API_KEY
+LIVING_WEATHER_API_KEY
+POLLEN_API_KEY
 SMTP_USERNAME
 SMTP_PASSWORD
 ADMIN_API_KEY

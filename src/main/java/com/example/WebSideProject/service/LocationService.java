@@ -94,6 +94,7 @@ public class LocationService {
         Grid grid = convertToGrid(latitude, longitude);
         return LocationDto.Response.builder()
                 .locationName("현재 위치")
+                .regionName("현재 위치")
                 .latitude(latitude)
                 .longitude(longitude)
                 .nx(grid.nx())
@@ -145,6 +146,7 @@ public class LocationService {
 
                 results.add(LocationDto.Response.builder()
                         .locationName(getLocationName(item))
+                        .regionName(getRegionName(item))
                         .latitude(latitude)
                         .longitude(longitude)
                         .nx(grid.nx())
@@ -170,6 +172,13 @@ public class LocationService {
         return "선택 위치";
     }
 
+    private String getRegionName(JSONObject item) {
+        String roadAddress = item.optString("road_address_name");
+        if (!roadAddress.isBlank()) return roadAddress;
+        String address = item.optString("address_name");
+        return address.isBlank() ? getLocationName(item) : address;
+    }
+
     private List<LocationDto.Response> searchFallback(String query) {
         String normalized = query.replaceAll("\\s+", "").trim().toLowerCase(Locale.ROOT);
         return FALLBACK_LOCATIONS.stream()
@@ -179,6 +188,7 @@ public class LocationService {
                     Grid grid = convertToGrid(location.latitude(), location.longitude());
                     return LocationDto.Response.builder()
                             .locationName(location.name())
+                            .regionName(location.name())
                             .latitude(location.latitude())
                             .longitude(location.longitude())
                             .nx(grid.nx())

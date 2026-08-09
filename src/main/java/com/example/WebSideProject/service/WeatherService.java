@@ -2,6 +2,7 @@ package com.example.WebSideProject.service;
 
 import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.dto.DailyWeatherDto;
+import com.example.WebSideProject.dto.SafetyInsightDto;
 import com.example.WebSideProject.dto.WeatherDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,7 @@ public class WeatherService {
     private String airQualityBaseUrl;
 
     private final RestTemplate restTemplate;
+    private final WeatherSafetyService weatherSafetyService;
 
     public WeatherDto getWeather(int nx, int ny) {
         return getWeather(nx, ny, WeatherPeriod.MORNING);
@@ -84,15 +86,16 @@ public class WeatherService {
         WeatherDto evening = parseWeatherResponse(response, targetDate, WeatherPeriod.EVENING);
 
         AirQualityInfo airQuality = safelyGetAirQuality(locationName);
+        SafetyInsightDto safetyInsight = weatherSafetyService.getSafetyInsight(locationName, dayOffset);
         String dayLabel = switch (dayOffset) {
             case 0 -> "오늘";
             case 1 -> "내일";
             default -> "모레";
         };
         return DailyWeatherDto.from(
-                applyAirQuality(morning, airQuality),
-                applyAirQuality(afternoon, airQuality),
-                applyAirQuality(evening, airQuality),
+                applySafetyInsight(applyAirQuality(morning, airQuality), safetyInsight),
+                applySafetyInsight(applyAirQuality(afternoon, airQuality), safetyInsight),
+                applySafetyInsight(applyAirQuality(evening, airQuality), safetyInsight),
                 dayLabel,
                 targetDate
         );
@@ -121,7 +124,11 @@ public class WeatherService {
     ) {
         String response = requestForecast(nx, ny, baseDate, baseTime, targetDate);
         WeatherDto weather = parseWeatherResponse(response, targetDate, period);
-        return enrichAirQuality(weather, locationName);
+        int dayOffset = Math.max(0, Math.min(2,
+                (int) java.time.temporal.ChronoUnit.DAYS.between(
+                        LocalDate.now(), LocalDate.parse(targetDate, DateTimeFormatter.BASIC_ISO_DATE))));
+        SafetyInsightDto safetyInsight = weatherSafetyService.getSafetyInsight(locationName, dayOffset);
+        return applySafetyInsight(enrichAirQuality(weather, locationName), safetyInsight);
     }
 
     private String requestForecast(
@@ -201,6 +208,16 @@ public class WeatherService {
                 .pm25Value(airQualityInfo.pm25Value())
                 .pm25Grade(airQualityInfo.pm25Grade())
                 .airQualityStation(airQualityInfo.stationName())
+                .build();
+    }
+
+    private WeatherDto applySafetyInsight(WeatherDto weather, SafetyInsightDto safetyInsight) {
+        return weather.toBuilder()
+                .uvIndex(safetyInsight.uvIndex())
+                .pollenType(safetyInsight.pollenType())
+                .pollenRiskLevel(safetyInsight.pollenRiskLevel())
+                .weatherWarningTitle(safetyInsight.weatherWarningTitle())
+                .weatherWarningDetails(safetyInsight.weatherWarningDetails())
                 .build();
     }
 
