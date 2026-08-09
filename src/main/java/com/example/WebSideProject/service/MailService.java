@@ -68,6 +68,7 @@ public class MailService {
             context.setVariable("activityTypeLabel", user.getActivityType().getLabel());
             context.setVariable("styleRecommendation", styledWeather.getStyleRecommendation());
             context.setVariable("smartAlertSummary", styledWeather.getSmartAlertSummary());
+            context.setVariable("dashboardUrl", appBaseUrl);
             context.setVariable("unsubscribeUrl", appBaseUrl + "/api/users/unsubscribe?token=" + encode(user.getUnsubscribeToken()));
 
             String html = templateEngine.process("weather-mail", context);
