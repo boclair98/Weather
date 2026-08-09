@@ -55,7 +55,7 @@ public class WeatherPlannerService {
         try {
             List<CompletableFuture<DailyWeatherDto>> futures = List.of(0, 1, 2).stream()
                     .map(dayOffset -> CompletableFuture.supplyAsync(
-                            () -> weatherService.getDailyWeather(nx, ny, locationName, dayOffset)
+                            () -> weatherService.getPlannerDailyWeather(nx, ny, locationName, dayOffset)
                                     .withStylePreference(
                                             ageGroup, gender, temperatureSensitivity, activityType
                                     ),

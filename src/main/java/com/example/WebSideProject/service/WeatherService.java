@@ -78,6 +78,29 @@ public class WeatherService {
         if (dayOffset < 0 || dayOffset > 2) {
             throw new IllegalArgumentException("dayOffset은 0부터 2까지만 지원합니다.");
         }
+        return buildDailyWeather(nx, ny, locationName, dayOffset, true);
+    }
+
+    @Cacheable(
+            cacheNames = "weather",
+            key = "'planner-basic:' + #nx + ':' + #ny + ':' + #dayOffset + ':' + (#locationName == null ? '' : #locationName)",
+            sync = true
+    )
+    public DailyWeatherDto getPlannerDailyWeather(int nx, int ny, String locationName, int dayOffset) {
+        validateGrid(nx, ny);
+        if (dayOffset < 0 || dayOffset > 2) {
+            throw new IllegalArgumentException("dayOffset은 0부터 2까지만 지원합니다.");
+        }
+        return buildDailyWeather(nx, ny, locationName, dayOffset, false);
+    }
+
+    private DailyWeatherDto buildDailyWeather(
+            int nx,
+            int ny,
+            String locationName,
+            int dayOffset,
+            boolean includeSafetyDetails
+    ) {
         ForecastBase forecastBase = getDailyForecastBase();
         String targetDate = LocalDate.now().plusDays(dayOffset)
                 .format(DateTimeFormatter.ofPattern("yyyyMMdd"));
@@ -87,19 +110,22 @@ public class WeatherService {
         WeatherDto afternoon = parseWeatherResponse(response, targetDate, WeatherPeriod.AFTERNOON);
         WeatherDto evening = parseWeatherResponse(response, targetDate, WeatherPeriod.EVENING);
 
-        AirQualityInfo airQuality = safelyGetAirQuality(locationName);
-        SafetyInsightDto safetyInsight = weatherSafetyService.getSafetyInsight(locationName, dayOffset);
         String dayLabel = switch (dayOffset) {
             case 0 -> "오늘";
             case 1 -> "내일";
             default -> "모레";
         };
+        if (!includeSafetyDetails) {
+            return DailyWeatherDto.from(morning, afternoon, evening, dayLabel, targetDate);
+        }
+
+        AirQualityInfo airQuality = safelyGetAirQuality(locationName);
+        SafetyInsightDto safetyInsight = weatherSafetyService.getSafetyInsight(locationName, dayOffset);
         return DailyWeatherDto.from(
                 applySafetyInsight(applyAirQuality(morning, airQuality), safetyInsight),
                 applySafetyInsight(applyAirQuality(afternoon, airQuality), safetyInsight),
                 applySafetyInsight(applyAirQuality(evening, airQuality), safetyInsight),
-                dayLabel,
-                targetDate
+                dayLabel, targetDate
         );
     }
 
