@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -92,6 +93,35 @@ public class WeatherService {
             throw new IllegalArgumentException("dayOffset은 0부터 2까지만 지원합니다.");
         }
         return buildDailyWeather(nx, ny, locationName, dayOffset, false);
+    }
+
+    @Cacheable(
+            cacheNames = "weather",
+            key = "'planner-three-day:' + #nx + ':' + #ny + ':' + (#locationName == null ? '' : #locationName)",
+            sync = true
+    )
+    public List<DailyWeatherDto> getPlannerDailyWeatherList(int nx, int ny, String locationName) {
+        validateGrid(nx, ny);
+        ForecastBase forecastBase = getDailyForecastBase();
+
+        // A single village-forecast response already contains today through the day after tomorrow.
+        // Reusing it avoids three network round trips and keeps cold planner requests below gateways.
+        String response = requestForecast(nx, ny, forecastBase.date(), forecastBase.time(), null);
+        List<DailyWeatherDto> forecasts = new ArrayList<>(3);
+        for (int dayOffset = 0; dayOffset <= 2; dayOffset++) {
+            String targetDate = LocalDate.now().plusDays(dayOffset)
+                    .format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            WeatherDto morning = parseWeatherResponse(response, targetDate, WeatherPeriod.MORNING);
+            WeatherDto afternoon = parseWeatherResponse(response, targetDate, WeatherPeriod.AFTERNOON);
+            WeatherDto evening = parseWeatherResponse(response, targetDate, WeatherPeriod.EVENING);
+            String dayLabel = switch (dayOffset) {
+                case 0 -> "오늘";
+                case 1 -> "내일";
+                default -> "모레";
+            };
+            forecasts.add(DailyWeatherDto.from(morning, afternoon, evening, dayLabel, targetDate));
+        }
+        return List.copyOf(forecasts);
     }
 
     private DailyWeatherDto buildDailyWeather(
