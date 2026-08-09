@@ -18,12 +18,18 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class LocationController {
 
+    private static final CacheControl LOCATION_CACHE = CacheControl
+            .maxAge(30, TimeUnit.MINUTES)
+            .staleWhileRevalidate(1, TimeUnit.HOURS)
+            .staleIfError(24, TimeUnit.HOURS)
+            .cachePublic();
+
     private final LocationService locationService;
 
     @GetMapping("/search")
     public ResponseEntity<List<LocationDto.Response>> search(@RequestParam String query) {
         return ResponseEntity.ok()
-                .cacheControl(CacheControl.maxAge(30, TimeUnit.MINUTES).cachePublic())
+                .cacheControl(LOCATION_CACHE)
                 .body(locationService.search(query));
     }
 
@@ -33,7 +39,7 @@ public class LocationController {
             @RequestParam double longitude
     ) {
         return ResponseEntity.ok()
-                .cacheControl(CacheControl.maxAge(30, TimeUnit.MINUTES).cachePublic())
+                .cacheControl(LOCATION_CACHE)
                 .body(locationService.resolveCoordinates(latitude, longitude));
     }
 }

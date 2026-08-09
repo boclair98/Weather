@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="오늘부터 모레까지 외출 점수, 시간대별 날씨, 코디와 이동 경로를 한 번에 결정하는 맞춤 날씨 서비스">
+    <meta name="theme-color" content="#2563eb">
     <title>날씨한편 | 내 위치 맞춤 날씨 알림</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="/manifest.webmanifest">
     <style>
         * {
             box-sizing: border-box;
@@ -17,6 +20,22 @@
             color: #172033;
             background: #eef4ff;
             transition: background 240ms ease, color 240ms ease;
+        }
+
+        .skip-link {
+            position: fixed;
+            z-index: 100;
+            top: 10px;
+            left: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            color: #ffffff;
+            background: #172554;
+            transform: translateY(-160%);
+        }
+
+        .skip-link:focus {
+            transform: translateY(0);
         }
 
         [aria-label="Open support chat"],
@@ -1069,6 +1088,174 @@
             border-color: #2563eb;
         }
 
+        button:focus-visible,
+        a:focus-visible {
+            outline: 3px solid #60a5fa;
+            outline-offset: 3px;
+        }
+
+        .weather-planner {
+            margin-top: 22px;
+            padding: 22px;
+            overflow: hidden;
+            border: 1px solid #bfdbfe;
+            border-radius: 24px;
+            color: #eff6ff;
+            background: linear-gradient(145deg, #0f172a, #172554 58%, #1d4ed8);
+            box-shadow: 0 22px 55px rgba(30, 64, 175, .18);
+        }
+
+        .planner-header,
+        .planner-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .planner-header h2 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 21px;
+        }
+
+        .planner-header p {
+            margin: 6px 0 0;
+            color: #bfdbfe;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .planner-recommendation {
+            flex: 0 0 auto;
+            padding: 8px 11px;
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 999px;
+            color: #dbeafe;
+            background: rgba(255, 255, 255, .1);
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .planner-days {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .planner-day {
+            min-width: 0;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, .13);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .08);
+        }
+
+        .planner-day.recommended {
+            border-color: #93c5fd;
+            background: rgba(37, 99, 235, .36);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+        }
+
+        .planner-day-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .planner-day-top strong {
+            color: #ffffff;
+            font-size: 15px;
+        }
+
+        .planner-score {
+            color: #bfdbfe;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .planner-day h3 {
+            margin: 13px 0 5px;
+            color: #ffffff;
+            font-size: 17px;
+        }
+
+        .planner-day p,
+        .planner-day small {
+            display: block;
+            margin: 0;
+            color: #cbd5e1;
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .planner-day p {
+            min-height: 38px;
+            margin-top: 10px;
+            color: #e2e8f0;
+        }
+
+        .planner-actions {
+            align-items: flex-end;
+            margin-top: 18px;
+        }
+
+        .planner-packing strong,
+        .planner-packing span {
+            display: block;
+        }
+
+        .planner-packing strong {
+            color: #ffffff;
+            font-size: 13px;
+        }
+
+        .planner-packing span {
+            margin-top: 5px;
+            color: #bfdbfe;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .calendar-button {
+            flex: 0 0 auto;
+            border: 1px solid rgba(255, 255, 255, .2);
+            color: #172554;
+            background: #ffffff;
+        }
+
+        .planner-error {
+            margin: 16px 0 0;
+            color: #fecaca;
+            font-size: 13px;
+        }
+
+        .hero-install {
+            min-height: auto;
+            padding: 7px 11px;
+            border: 1px solid #93c5fd;
+            border-radius: 999px;
+            color: #1e3a8a;
+            background: #eff6ff;
+            font-size: 12px;
+        }
+
+        .network-status {
+            position: fixed;
+            z-index: 20;
+            right: 18px;
+            bottom: 18px;
+            padding: 10px 13px;
+            border-radius: 999px;
+            color: #ffffff;
+            background: #b91c1c;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, .22);
+            font-size: 12px;
+            font-weight: 900;
+        }
+
         @media (max-width: 820px) {
             main {
                 padding: 32px 16px;
@@ -1099,8 +1286,15 @@
             }
 
             .safety-grid,
-            .route-form {
+            .route-form,
+            .planner-days {
                 grid-template-columns: 1fr;
+            }
+
+            .planner-header,
+            .planner-actions {
+                align-items: stretch;
+                flex-direction: column;
             }
 
             .weather-header-top {
@@ -1130,10 +1324,21 @@
                 flex-direction: column;
             }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                scroll-behavior: auto !important;
+                transition-duration: .01ms !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+            }
+        }
     </style>
 </head>
 <body>
-<main>
+<a class="skip-link" href="#weatherSearch">날씨 검색으로 건너뛰기</a>
+<div class="network-status" id="networkStatus" hidden role="status">오프라인 · 저장된 화면을 보여드려요</div>
+<main id="mainContent">
     <div class="account-bar" th:if="${codersPlatform}">
         <span th:if="${signedIn}">Google 로그인 완료 · 구독과 취소를 이용할 수 있습니다.</span>
         <span th:unless="${signedIn}">구독과 취소는 Google 로그인 후 이용할 수 있습니다.</span>
@@ -1151,8 +1356,9 @@
                 <span class="hero-badge">공식 안전지수</span>
                 <span class="hero-badge">경로 날씨</span>
                 <span class="hero-badge">필요할 때만 이메일</span>
+                <button class="hero-install" type="button" id="installApp" hidden>앱으로 설치</button>
             </div>
-            <div class="dashboard-search-card">
+            <div class="dashboard-search-card" id="weatherSearch" tabindex="-1">
                 <div class="dashboard-search-copy">
                     <strong>어디의 날씨를 볼까요?</strong>
                     <span>동네, 역, 건물 이름으로 검색할 수 있어요.</span>
@@ -1163,7 +1369,7 @@
                     <button class="secondary" type="button" id="currentLocation">현재 위치</button>
                 </div>
                 <div class="location-results" id="locationResults" aria-label="위치 검색 결과"></div>
-                <p class="meta" id="locationMeta">지역을 검색하거나 현재 위치를 선택해주세요.</p>
+                <p class="meta" id="locationMeta" aria-live="polite">지역을 검색하거나 현재 위치를 선택해주세요.</p>
                 <div class="favorite-locations" id="favoriteLocations" aria-label="최근 본 장소"></div>
             </div>
             <div class="weather-preview" id="weatherPreview" hidden>
@@ -1173,6 +1379,7 @@
                         <div class="day-tabs" aria-label="예보 날짜">
                             <button class="day-tab selected" type="button" data-day-offset="0">오늘</button>
                             <button class="day-tab" type="button" data-day-offset="1">내일</button>
+                            <button class="day-tab" type="button" data-day-offset="2">모레</button>
                         </div>
                     </div>
                     <div class="weather-preview-main" id="weatherPreviewMain">날씨를 불러오는 중</div>
@@ -1298,6 +1505,24 @@
                     </div>
                 </div>
             </div>
+            <section class="weather-planner" id="weatherPlanner" hidden aria-label="3일 결정 플래너" aria-live="polite">
+                <div class="planner-header">
+                    <div>
+                        <h2>3일 결정 플래너</h2>
+                        <p id="plannerHeadline">언제 움직이면 가장 좋은지 비교하고 있어요.</p>
+                    </div>
+                    <span class="planner-recommendation" id="plannerRecommendation">분석 중</span>
+                </div>
+                <div class="planner-days" id="plannerDays"></div>
+                <div class="planner-actions">
+                    <div class="planner-packing">
+                        <strong>3일 통합 준비물</strong>
+                        <span id="plannerPacking">예보를 분석하고 있어요.</span>
+                    </div>
+                    <button class="calendar-button" type="button" id="addPlannerCalendar">추천 시간 캘린더 저장</button>
+                </div>
+                <p class="planner-error" id="plannerError" hidden></p>
+            </section>
             <section class="route-planner" aria-label="이동 경로 날씨 브리핑">
                 <h2>출발지부터 목적지까지</h2>
                 <p>자동차 이동시간과 양쪽 날씨를 비교해 도착 전에 챙길 것을 알려드립니다.</p>
@@ -1505,10 +1730,39 @@
     const dailyRain = document.getElementById("dailyRain");
     const dailyPeriods = document.getElementById("dailyPeriods");
     const shareWeather = document.getElementById("shareWeather");
+    const weatherPlanner = document.getElementById("weatherPlanner");
+    const plannerHeadline = document.getElementById("plannerHeadline");
+    const plannerRecommendation = document.getElementById("plannerRecommendation");
+    const plannerDays = document.getElementById("plannerDays");
+    const plannerPacking = document.getElementById("plannerPacking");
+    const plannerError = document.getElementById("plannerError");
+    const addPlannerCalendar = document.getElementById("addPlannerCalendar");
+    const installApp = document.getElementById("installApp");
+    const networkStatus = document.getElementById("networkStatus");
     let selectedLocation = null;
     let previewPeriod = "MORNING";
     let forecastDayOffset = 0;
     let dailyForecast = null;
+    let weatherPlannerData = null;
+    let installPrompt = null;
+
+    window.addEventListener("beforeinstallprompt", (event) => {
+        event.preventDefault();
+        installPrompt = event;
+        installApp.hidden = false;
+    });
+    installApp.addEventListener("click", async () => {
+        if (!installPrompt) return;
+        await installPrompt.prompt();
+        installPrompt = null;
+        installApp.hidden = true;
+    });
+    const updateNetworkStatus = () => {
+        networkStatus.hidden = navigator.onLine;
+    };
+    window.addEventListener("online", updateNetworkStatus);
+    window.addEventListener("offline", updateNetworkStatus);
+    updateNetworkStatus();
 
     searchButton.addEventListener("click", searchLocations);
     currentLocationButton.addEventListener("click", useCurrentLocation);
@@ -1535,6 +1789,7 @@
         });
     });
     shareWeather.addEventListener("click", shareCurrentWeather);
+    addPlannerCalendar.addEventListener("click", downloadPlannerCalendar);
     loadRouteBriefingButton.addEventListener("click", loadRouteBriefing);
     locationQuery.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
@@ -1864,6 +2119,7 @@
 
     async function loadWeatherPreview(location) {
         weatherPreview.hidden = false;
+        weatherPreview.setAttribute("aria-busy", "true");
         weatherPreview.className = "weather-preview";
         weatherPreviewTitle.textContent = `${location.locationName} 날씨 미리보기`;
         weatherPreviewMain.textContent = "날씨를 불러오는 중";
@@ -1911,10 +2167,111 @@
             if (!response.ok) throw new Error(getApiError(dailyForecast, "날씨를 불러오지 못했습니다."));
             renderDailyInsight();
             renderSelectedPeriod(location);
+            if (!weatherPlannerData || forecastDayOffset === 0) {
+                loadWeatherPlanner(location);
+            }
         } catch (error) {
             weatherPreviewMain.textContent = "날씨 확인 실패";
             weatherDetail.textContent = error.message;
+        } finally {
+            weatherPreview.setAttribute("aria-busy", "false");
         }
+    }
+
+    async function loadWeatherPlanner(location) {
+        weatherPlanner.hidden = false;
+        weatherPlanner.setAttribute("aria-busy", "true");
+        plannerHeadline.textContent = "오늘부터 모레까지 외출 조건을 비교하고 있어요.";
+        plannerRecommendation.textContent = "분석 중";
+        plannerPacking.textContent = "준비물 계산 중";
+        plannerDays.innerHTML = "";
+        plannerError.hidden = true;
+        addPlannerCalendar.disabled = true;
+        try {
+            const params = new URLSearchParams({
+                nx: location.nx,
+                ny: location.ny,
+                locationName: locationContext(location),
+                ageGroup: "NONE",
+                gender: "NONE",
+                temperatureSensitivity: document.getElementById("temperatureSensitivity").value,
+                activityType: document.getElementById("activityType").value
+            });
+            const response = await fetch(`/api/weather/planner?${params.toString()}`);
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(getApiError(data, "3일 플래너를 만들지 못했습니다."));
+            weatherPlannerData = data;
+            renderWeatherPlanner(data);
+        } catch (error) {
+            weatherPlannerData = null;
+            plannerError.textContent = error.message;
+            plannerError.hidden = false;
+            plannerHeadline.textContent = "3일 비교를 잠시 사용할 수 없어요.";
+            plannerRecommendation.textContent = "재시도 필요";
+        } finally {
+            weatherPlanner.setAttribute("aria-busy", "false");
+        }
+    }
+
+    function renderWeatherPlanner(planner) {
+        plannerHeadline.textContent = planner.headline;
+        plannerRecommendation.textContent = `${planner.recommendedDayLabel} ${planner.recommendedPeriodLabel} 추천`;
+        plannerPacking.textContent = (planner.packingChecklist || []).join(" · ");
+        plannerDays.innerHTML = "";
+        (planner.days || []).forEach((day) => {
+            const card = document.createElement("article");
+            card.className = `planner-day${day.dayLabel === planner.recommendedDayLabel ? " recommended" : ""}`;
+            const top = document.createElement("div");
+            top.className = "planner-day-top";
+            const label = document.createElement("strong");
+            label.textContent = day.dayLabel;
+            const score = document.createElement("span");
+            score.className = "planner-score";
+            score.textContent = `${day.averageScore}점 · ${day.scoreLabel}`;
+            top.append(label, score);
+            const title = document.createElement("h3");
+            title.textContent = `${day.bestPeriodLabel}이 가장 좋아요`;
+            const metrics = document.createElement("small");
+            metrics.textContent = `${day.temperatureRange} · 최고 ${day.bestPeriodScore}점`;
+            const action = document.createElement("p");
+            action.textContent = day.keyAction;
+            card.append(top, title, metrics, action);
+            plannerDays.appendChild(card);
+        });
+        addPlannerCalendar.disabled = false;
+    }
+
+    function downloadPlannerCalendar() {
+        if (!weatherPlannerData || !selectedLocation) return;
+        const day = weatherPlannerData.days.find(
+            (candidate) => candidate.dayLabel === weatherPlannerData.recommendedDayLabel
+        );
+        if (!day) return;
+        const startTime = day.bestPeriod === "MORNING" ? "090000"
+            : day.bestPeriod === "AFTERNOON" ? "120000" : "180000";
+        const endTime = day.bestPeriod === "MORNING" ? "100000"
+            : day.bestPeriod === "AFTERNOON" ? "130000" : "190000";
+        const safeLocation = escapeCalendarText(selectedLocation.locationName);
+        const description = escapeCalendarText(`${weatherPlannerData.headline} ${day.keyAction}`);
+        const calendar = [
+            "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Weather Brief//KR", "X-WR-TIMEZONE:Asia/Seoul",
+            "BEGIN:VEVENT", `UID:${Date.now()}@weather.coders.kr`,
+            `DTSTART;TZID=Asia/Seoul:${day.forecastDate}T${startTime}`,
+            `DTEND;TZID=Asia/Seoul:${day.forecastDate}T${endTime}`,
+            `SUMMARY:${safeLocation} 추천 외출 시간`,
+            `LOCATION:${safeLocation}`, `DESCRIPTION:${description}`,
+            "END:VEVENT", "END:VCALENDAR"
+        ].join("\r\n");
+        const url = URL.createObjectURL(new Blob([calendar], {type: "text/calendar;charset=utf-8"}));
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `weather-plan-${day.forecastDate}.ics`;
+        anchor.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function escapeCalendarText(value) {
+        return String(value || "").replace(/([,;\\])/g, "\\$1").replace(/\n/g, "\\n");
     }
 
     function renderDailyInsight() {
@@ -1981,13 +2338,14 @@
             dailyForecast.rainSummary,
             "날씨한편에서 확인하기"
         ].filter(Boolean).join("\n");
+        const shareUrl = buildWeatherShareUrl();
 
         try {
             if (navigator.share) {
-                await navigator.share({title: "날씨한편 오늘 브리핑", text, url: window.location.href});
+                await navigator.share({title: "날씨한편 오늘 브리핑", text, url: shareUrl});
                 return;
             }
-            await navigator.clipboard.writeText(`${text}\n${window.location.href}`);
+            await navigator.clipboard.writeText(`${text}\n${shareUrl}`);
             shareWeather.textContent = "복사됨";
             window.setTimeout(() => shareWeather.textContent = "공유", 1600);
         } catch (error) {
@@ -1995,6 +2353,62 @@
                 showResult("공유 내용을 복사하지 못했습니다.", false);
             }
         }
+    }
+
+    function buildWeatherShareUrl() {
+        const url = new URL(window.location.origin + window.location.pathname);
+        url.searchParams.set("source", "share");
+        url.searchParams.set("location", selectedLocation.locationName);
+        url.searchParams.set("nx", selectedLocation.nx);
+        url.searchParams.set("ny", selectedLocation.ny);
+        if (selectedLocation.latitude !== null && selectedLocation.latitude !== undefined
+            && Number.isFinite(Number(selectedLocation.latitude))) {
+            url.searchParams.set("lat", Number(selectedLocation.latitude).toFixed(5));
+        }
+        if (selectedLocation.longitude !== null && selectedLocation.longitude !== undefined
+            && Number.isFinite(Number(selectedLocation.longitude))) {
+            url.searchParams.set("lng", Number(selectedLocation.longitude).toFixed(5));
+        }
+        url.searchParams.set("day", forecastDayOffset);
+        url.searchParams.set("period", previewPeriod);
+        return url.toString();
+    }
+
+    function restoreSharedWeather() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("source") !== "share") return;
+        const nx = Number(params.get("nx"));
+        const ny = Number(params.get("ny"));
+        const latitude = params.has("lat") ? Number(params.get("lat")) : null;
+        const longitude = params.has("lng") ? Number(params.get("lng")) : null;
+        const requestedLocationName = (params.get("location") || "공유 위치").trim().slice(0, 100);
+        const locationName = requestedLocationName || "공유 위치";
+        if (!Number.isInteger(nx) || nx < 1 || nx > 149
+            || !Number.isInteger(ny) || ny < 1 || ny > 253) return;
+
+        const requestedDay = Number(params.get("day"));
+        forecastDayOffset = Number.isInteger(requestedDay) && requestedDay >= 0 && requestedDay <= 2
+            ? requestedDay : 0;
+        const requestedPeriod = params.get("period");
+        previewPeriod = ["MORNING", "AFTERNOON", "EVENING"].includes(requestedPeriod)
+            ? requestedPeriod : "MORNING";
+        selectedLocation = {
+            locationName,
+            regionName: locationName,
+            latitude: latitude !== null && Number.isFinite(latitude) ? latitude : null,
+            longitude: longitude !== null && Number.isFinite(longitude) ? longitude : null,
+            nx,
+            ny
+        };
+        locationQuery.value = locationName;
+        locationMeta.textContent = `공유받은 위치: ${locationName}`;
+        document.querySelectorAll(".day-tab").forEach((tab) => {
+            tab.classList.toggle("selected", Number(tab.dataset.dayOffset) === forecastDayOffset);
+        });
+        document.querySelectorAll(".period-tab").forEach((tab) => {
+            tab.classList.toggle("selected", tab.dataset.period === previewPeriod);
+        });
+        loadWeatherPreview(selectedLocation);
     }
 
     function renderWeatherPreview(location, weather) {
@@ -2079,6 +2493,7 @@
 
     function reloadPreviewIfReady() {
         if (selectedLocation) {
+            weatherPlannerData = null;
             loadWeatherPreview(selectedLocation);
         }
     }
@@ -2211,6 +2626,10 @@
 
     renderFavoriteLocations();
     restoreSubscriptionDraft();
+    restoreSharedWeather();
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker.js"));
+    }
 </script>
 </body>
 </html>

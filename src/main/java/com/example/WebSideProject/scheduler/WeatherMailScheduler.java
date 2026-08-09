@@ -66,7 +66,7 @@ public class WeatherMailScheduler {
                 WeatherDto weather = weatherService.getWeather(user.getNx(), user.getNy(), period, user.getLocationName());
                 mailService.sendWeatherMail(user, weather);
             } catch (Exception e) {
-                log.error("사용자 {} 처리 중 오류 발생", user.getEmail(), e);
+                log.error("사용자 메일 처리 중 오류 발생: userId={}", user.getId(), e);
             }
         }
 

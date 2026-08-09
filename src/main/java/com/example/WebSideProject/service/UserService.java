@@ -113,7 +113,7 @@ public class UserService {
                 .build();
 
         User saved = userRepository.save(user);
-        log.info("신규 구독자 등록: {}", saved.getEmail());
+        log.info("신규 구독자 등록: userId={}", saved.getId());
         eventPublisher.publishEvent(new SubscriptionWelcomeMailRequested(saved));
 
         return UserDto.Response.builder()

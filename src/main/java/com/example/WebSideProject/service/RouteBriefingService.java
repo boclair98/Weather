@@ -46,6 +46,9 @@ public class RouteBriefingService {
                 || destinationQuery == null || destinationQuery.isBlank()) {
             throw new IllegalArgumentException("출발지와 목적지를 모두 입력해주세요.");
         }
+        if (originQuery.trim().length() > 100 || destinationQuery.trim().length() > 100) {
+            throw new IllegalArgumentException("장소명은 각각 100자 이내로 입력해주세요.");
+        }
         if (kakaoMobilityKey == null || kakaoMobilityKey.isBlank()) {
             throw new IllegalStateException("경로 브리핑 API가 아직 설정되지 않았습니다.");
         }

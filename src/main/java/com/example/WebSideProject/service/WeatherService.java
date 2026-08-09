@@ -58,6 +58,7 @@ public class WeatherService {
             sync = true
     )
     public WeatherDto getWeather(int nx, int ny, WeatherPeriod period, String locationName) {
+        validateGrid(nx, ny);
         ForecastBase forecastBase = getForecastBase();
         String targetDate = getForecastDate(period).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         return getWeather(nx, ny, period, locationName, forecastBase.date(), forecastBase.time(), targetDate);
@@ -73,6 +74,7 @@ public class WeatherService {
             sync = true
     )
     public DailyWeatherDto getDailyWeather(int nx, int ny, String locationName, int dayOffset) {
+        validateGrid(nx, ny);
         if (dayOffset < 0 || dayOffset > 2) {
             throw new IllegalArgumentException("dayOffset은 0부터 2까지만 지원합니다.");
         }
@@ -109,6 +111,7 @@ public class WeatherService {
             String baseDate,
             String baseTime
     ) {
+        validateGrid(nx, ny);
         validateForecastBase(baseDate, baseTime);
         return getWeather(nx, ny, period, locationName, baseDate, baseTime, baseDate);
     }
@@ -177,6 +180,12 @@ public class WeatherService {
         int minute = Integer.parseInt(baseTime.substring(2, 4));
         if (minute != 0 || !List.of(2, 5, 8, 11, 14, 17, 20, 23).contains(hour)) {
             throw new IllegalArgumentException("baseTime은 0200, 0500, 0800, 1100, 1400, 1700, 2000, 2300 중 하나여야 합니다.");
+        }
+    }
+
+    private void validateGrid(int nx, int ny) {
+        if (nx < 1 || nx > 149 || ny < 1 || ny > 253) {
+            throw new IllegalArgumentException("대한민국 예보 격자 범위의 위치만 조회할 수 있습니다.");
         }
     }
 

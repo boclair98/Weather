@@ -76,14 +76,14 @@ public class MailService {
 
             mailSender.send(message);
             weatherMailHistoryService.recordSuccess(user, weather);
-            log.info("날씨 메일 발송 완료: {}", user.getEmail());
+            log.info("날씨 메일 발송 완료: userId={}", user.getId());
 
         } catch (MessagingException e) {
             weatherMailHistoryService.recordFailure(user, weather, e);
-            log.error("메일 발송 실패: {}", user.getEmail(), e);
+            log.error("메일 발송 실패: userId={}", user.getId(), e);
         } catch (Exception e) {
             weatherMailHistoryService.recordFailure(user, weather, e);
-            log.error("메일 발송 중 예상치 못한 오류 발생: {}", user.getEmail(), e);
+            log.error("메일 발송 중 예상치 못한 오류 발생: userId={}", user.getId(), e);
         }
     }
 

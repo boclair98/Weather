@@ -33,7 +33,7 @@ public class SubscriptionWelcomeMailListener {
             );
             mailService.sendWeatherMail(user, weather);
         } catch (Exception e) {
-            log.error("구독 직후 날씨 메일 발송 준비 실패: {}", user.getEmail(), e);
+            log.error("구독 직후 날씨 메일 발송 준비 실패: userId={}", user.getId(), e);
         }
     }
 }
