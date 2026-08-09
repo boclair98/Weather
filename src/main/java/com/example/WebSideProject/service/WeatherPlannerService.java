@@ -9,6 +9,7 @@ import com.example.WebSideProject.dto.WeatherPlannerDto;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.Cache;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -67,7 +68,7 @@ public class WeatherPlannerService {
             success = true;
             return planner;
         } catch (CompletionException e) {
-            Throwable cause = e.getCause();
+            Throwable cause = unwrapInfrastructureException(e);
             if (cause instanceof RuntimeException runtimeException) {
                 throw runtimeException;
             }
@@ -78,5 +79,15 @@ public class WeatherPlannerService {
                     .tag("status", success ? "success" : "failure")
                     .register(meterRegistry));
         }
+    }
+
+    private Throwable unwrapInfrastructureException(Throwable failure) {
+        Throwable current = failure;
+        while ((current instanceof CompletionException
+                || current instanceof Cache.ValueRetrievalException)
+                && current.getCause() != null) {
+            current = current.getCause();
+        }
+        return current;
     }
 }
