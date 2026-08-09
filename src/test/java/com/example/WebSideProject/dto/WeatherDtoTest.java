@@ -97,4 +97,27 @@ class WeatherDtoTest {
         assertThat(risky.getSmartAlertSummary())
                 .contains("비·우산", "폭염", "대기질", "강풍");
     }
+
+    @Test
+    void safetySignalsChangeScoreAndAdvice() {
+        WeatherDto safe = WeatherDto.builder()
+                .tmp("24")
+                .pop("10")
+                .uvIndex(2)
+                .pollenType("잡초류")
+                .pollenRiskLevel(0)
+                .build();
+        WeatherDto risky = safe.toBuilder()
+                .uvIndex(9)
+                .pollenRiskLevel(3)
+                .weatherWarningTitle("폭염경보")
+                .weatherWarningDetails("폭염경보 : 서울")
+                .build();
+
+        assertThat(risky.getOutingScore()).isLessThan(safe.getOutingScore());
+        assertThat(risky.getUvDisplay()).contains("매우 높음");
+        assertThat(risky.getPollenDisplay()).contains("잡초류", "매우 높음");
+        assertThat(risky.getSafetySummary()).contains("폭염경보", "자외선", "꽃가루");
+        assertThat(risky.getSmartAlertSummary()).contains("폭염경보", "자외선", "꽃가루");
+    }
 }

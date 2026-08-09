@@ -52,9 +52,25 @@ air-quality:
     key: ${AIR_QUALITY_API_KEY:}
     base-url: ${AIR_QUALITY_API_BASE_URL:https://apis.data.go.kr/B552584/ArpltnInforInqireSvc}
 
+weather-safety:
+  warning:
+    api-key: ${WEATHER_WARNING_API_KEY:}
+    base-url: ${WEATHER_WARNING_API_BASE_URL:https://apis.data.go.kr/1360000/WthrWrnInfoService}
+  uv:
+    api-key: ${LIVING_WEATHER_API_KEY:}
+    base-url: ${LIVING_WEATHER_API_BASE_URL:https://apis.data.go.kr/1360000/LivingWthrIdxServiceV5}
+  pollen:
+    api-key: ${POLLEN_API_KEY:}
+    base-url: ${POLLEN_API_BASE_URL:https://apis.data.go.kr/1360000/HealthWthrIdxServiceV3}
+
 location:
   kakao:
     rest-api-key: ${KAKAO_REST_API_KEY:}
+
+route:
+  kakao-mobility:
+    rest-api-key: ${KAKAO_MOBILITY_REST_API_KEY:}
+    base-url: ${KAKAO_MOBILITY_BASE_URL:https://apis-navi.kakaomobility.com/v1}
 app:
   base-url: ${APP_BASE_URL:http://localhost:8080}
 

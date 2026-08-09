@@ -33,6 +33,11 @@ public class WeatherDto {
     private String pm25Value;
     private String pm25Grade;
     private String airQualityStation;
+    private Integer uvIndex;
+    private String pollenType;
+    private Integer pollenRiskLevel;
+    private String weatherWarningTitle;
+    private String weatherWarningDetails;
     private String styleHeadline;
     private String styleRecommendation;
     private TemperatureSensitivity temperatureSensitivity;
@@ -86,6 +91,26 @@ public class WeatherDto {
         return valueOrDash(airQualityStation);
     }
 
+    public int getUvIndex() {
+        return uvIndex == null ? -1 : uvIndex;
+    }
+
+    public String getPollenType() {
+        return valueOrDash(pollenType);
+    }
+
+    public int getPollenRiskLevel() {
+        return pollenRiskLevel == null ? -1 : pollenRiskLevel;
+    }
+
+    public String getWeatherWarningTitle() {
+        return valueOrDash(weatherWarningTitle);
+    }
+
+    public String getWeatherWarningDetails() {
+        return valueOrDash(weatherWarningDetails);
+    }
+
     public String getStyleHeadline() {
         return valueOrDash(styleHeadline);
     }
@@ -129,6 +154,9 @@ public class WeatherDto {
         if (getRehValue() >= 85) score -= 6;
         if (isBadAirQuality()) score -= 22;
         else if (isModerateAirQuality()) score -= 8;
+        if (isUvRisk()) score -= getUvIndex() >= 11 ? 14 : 8;
+        if (isPollenRisk()) score -= getPollenRiskLevel() >= 3 ? 12 : 7;
+        if (hasWeatherWarning()) score -= 16;
 
         return Math.max(20, Math.min(100, score));
     }
@@ -160,7 +188,62 @@ public class WeatherDto {
         appendChecklist(checklist, "옷차림: " + getClothingAdvice());
         appendChecklist(checklist, "우산: " + getUmbrellaAdvice());
         appendChecklist(checklist, "마스크: " + getMaskAdvice());
+        appendChecklist(checklist, "자외선: " + getUvAdvice());
+        appendChecklist(checklist, "꽃가루: " + getPollenAdvice());
         return checklist.toString();
+    }
+
+    public String getUvGrade() {
+        int value = getUvIndex();
+        if (value < 0) return "정보 없음";
+        if (value <= 2) return "낮음";
+        if (value <= 5) return "보통";
+        if (value <= 7) return "높음";
+        if (value <= 10) return "매우 높음";
+        return "위험";
+    }
+
+    public String getUvDisplay() {
+        return getUvIndex() < 0 ? "-" : getUvIndex() + " · " + getUvGrade();
+    }
+
+    public String getUvAdvice() {
+        if (getUvIndex() < 0) return "외출 전 자외선지수를 확인하세요.";
+        if (getUvIndex() >= 8) return "선크림·모자 필수, 한낮 노출을 줄이세요.";
+        if (getUvIndex() >= 6) return "선크림과 모자를 챙기는 편이 좋아요.";
+        return "일상적인 자외선 차단이면 충분해요.";
+    }
+
+    public String getPollenGrade() {
+        return switch (getPollenRiskLevel()) {
+            case 0 -> "낮음";
+            case 1 -> "보통";
+            case 2 -> "높음";
+            case 3 -> "매우 높음";
+            default -> "정보 없음";
+        };
+    }
+
+    public String getPollenDisplay() {
+        return getPollenRiskLevel() < 0 ? "-" : getPollenType() + " · " + getPollenGrade();
+    }
+
+    public String getPollenAdvice() {
+        if (getPollenRiskLevel() < 0) return "계절성 꽃가루 정보를 확인하세요.";
+        if (getPollenRiskLevel() >= 2) return "알레르기 민감군은 마스크와 세안 준비를 권장해요.";
+        return "꽃가루 부담은 낮은 편이에요.";
+    }
+
+    public boolean hasWeatherWarning() {
+        return !"-".equals(getWeatherWarningTitle());
+    }
+
+    public String getSafetySummary() {
+        List<String> insights = new ArrayList<>();
+        if (hasWeatherWarning()) insights.add(getWeatherWarningTitle());
+        if (getUvIndex() >= 0) insights.add("자외선 " + getUvGrade());
+        if (getPollenRiskLevel() >= 0) insights.add(getPollenType() + " 꽃가루 " + getPollenGrade());
+        return insights.isEmpty() ? "추가 생활안전 정보 없음" : String.join(" · ", insights);
     }
 
     public String getWeatherMood() {
@@ -602,6 +685,15 @@ public class WeatherDto {
         double windSpeed = getWsdValue();
         int humidity = getRehValue();
 
+        if (hasWeatherWarning()) {
+            return getWeatherWarningTitle() + " 발효 중이에요. 공식 안전수칙을 먼저 확인하세요.";
+        }
+        if (isUvRisk()) {
+            return "자외선이 강해 그늘 중심으로 움직이고 한낮 노출을 줄여주세요.";
+        }
+        if (isPollenRisk()) {
+            return "꽃가루 위험이 높아 민감군은 야외 활동 시간을 줄이는 편이 좋아요.";
+        }
         if (isBadAirQuality()) {
             return "미세먼지가 높아 야외 활동은 짧게 조절하는 편이 좋아요.";
         }
@@ -636,12 +728,27 @@ public class WeatherDto {
         return getWsdValue() >= 8.0;
     }
 
+    public boolean isUvRisk() {
+        return getUvIndex() >= 8;
+    }
+
+    public boolean isPollenRisk() {
+        return getPollenRiskLevel() >= 2;
+    }
+
+    public boolean isOfficialWarningRisk() {
+        return hasWeatherWarning();
+    }
+
     public String getSmartAlertSummary() {
         List<String> alerts = new ArrayList<>();
         if (isRainRisk()) alerts.add(isSnowy() ? "눈·빙판" : "비·우산");
         if (isTemperatureRisk()) alerts.add(getTmpValue() >= 30 ? "폭염" : "한파");
         if (isAirQualityRisk()) alerts.add("대기질");
         if (isWindRisk()) alerts.add("강풍");
+        if (isUvRisk()) alerts.add("자외선");
+        if (isPollenRisk()) alerts.add("꽃가루");
+        if (isOfficialWarningRisk()) alerts.add(getWeatherWarningTitle());
         return alerts.isEmpty() ? "특별한 위험 신호 없음" : String.join(" · ", alerts) + " 주의";
     }
 

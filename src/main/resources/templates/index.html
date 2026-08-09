@@ -829,6 +829,141 @@
             line-height: 1.35;
         }
 
+        .safety-board {
+            margin-top: 14px;
+            padding: 16px;
+            border: 1px solid #dbeafe;
+            border-radius: 16px;
+            background: linear-gradient(145deg, #f8fbff, #f0fdf4);
+        }
+
+        .safety-board-header,
+        .route-result-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .safety-board-header span,
+        .route-result-header span {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .safety-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .safety-item {
+            padding: 12px;
+            border-radius: 12px;
+            background: #ffffff;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, .05);
+        }
+
+        .safety-item span,
+        .safety-item strong,
+        .safety-item small {
+            display: block;
+        }
+
+        .safety-item span {
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .safety-item strong {
+            margin-top: 5px;
+            color: #0f172a;
+            font-size: 14px;
+        }
+
+        .safety-item small {
+            margin-top: 5px;
+            color: #64748b;
+            line-height: 1.45;
+        }
+
+        .warning-banner {
+            margin-top: 12px;
+            padding: 12px 14px;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            color: #991b1b;
+            background: #fff1f2;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .route-planner {
+            margin-top: 22px;
+            padding: 20px;
+            border: 1px solid #dbeafe;
+            border-radius: 22px;
+            background: #ffffff;
+            box-shadow: 0 18px 45px rgba(30, 64, 175, .09);
+        }
+
+        .route-planner h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .route-planner > p {
+            margin: 7px 0 16px;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .route-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 8px;
+        }
+
+        .route-result {
+            margin-top: 14px;
+            padding: 16px;
+            border-radius: 16px;
+            background: #eff6ff;
+        }
+
+        .route-result h3 {
+            margin: 0;
+            color: #172554;
+            font-size: 16px;
+        }
+
+        .route-metrics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .route-metric {
+            padding: 7px 10px;
+            border-radius: 999px;
+            color: #1e3a8a;
+            background: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .route-checklist {
+            margin: 0;
+            padding-left: 20px;
+            color: #334155;
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
         .style-personalizer {
             display: grid;
             gap: 12px;
@@ -963,6 +1098,11 @@
                 grid-template-columns: 1fr;
             }
 
+            .safety-grid,
+            .route-form {
+                grid-template-columns: 1fr;
+            }
+
             .weather-header-top {
                 flex-direction: column;
             }
@@ -1002,12 +1142,14 @@
     </div>
     <div class="layout">
         <section>
-            <p class="eyebrow">오늘을 결정하는 날씨 브리핑</p>
+            <p class="eyebrow">외출과 이동을 결정하는 날씨 브리핑</p>
             <h1>지금 필요한 건<br><span class="hero-accent">기온보다 행동</span>이에요</h1>
-            <p class="intro">어느 시간에 나갈지, 우산과 마스크는 필요한지, 무엇을 입을지 한 화면에서 결정하세요.</p>
+            <p class="intro">어느 시간에 나갈지, 공식 특보와 자외선은 어떤지, 목적지까지 무엇을 챙길지 한 화면에서 결정하세요.</p>
             <div class="hero-badges" aria-label="서비스 특징">
                 <span class="hero-badge">3초 외출 판단</span>
                 <span class="hero-badge">체감 맞춤 코디</span>
+                <span class="hero-badge">공식 안전지수</span>
+                <span class="hero-badge">경로 날씨</span>
                 <span class="hero-badge">필요할 때만 이메일</span>
             </div>
             <div class="dashboard-search-card">
@@ -1072,6 +1214,30 @@
                             <strong id="weatherAir">-</strong>
                         </div>
                     </div>
+                    <div class="safety-board" aria-label="생활안전 브리핑">
+                        <div class="safety-board-header">
+                            <strong>생활안전 브리핑</strong>
+                            <span>기상청 공식 데이터</span>
+                        </div>
+                        <div class="warning-banner" id="warningBanner" hidden></div>
+                        <div class="safety-grid">
+                            <div class="safety-item">
+                                <span>자외선</span>
+                                <strong id="uvDisplay">확인 중</strong>
+                                <small id="uvAdvice">외출 시간을 분석하고 있어요.</small>
+                            </div>
+                            <div class="safety-item">
+                                <span>꽃가루</span>
+                                <strong id="pollenDisplay">확인 중</strong>
+                                <small id="pollenAdvice">알레르기 위험을 분석하고 있어요.</small>
+                            </div>
+                            <div class="safety-item">
+                                <span>종합 안전 신호</span>
+                                <strong id="safetySummary">확인 중</strong>
+                                <small>공식 특보와 생활기상지수를 함께 반영합니다.</small>
+                            </div>
+                        </div>
+                    </div>
                     <div class="action-grid" aria-label="외출 준비">
                         <div class="action-card"><span>우산</span><strong id="actionUmbrella">확인 중</strong></div>
                         <div class="action-card"><span>마스크</span><strong id="actionMask">확인 중</strong></div>
@@ -1132,6 +1298,23 @@
                     </div>
                 </div>
             </div>
+            <section class="route-planner" aria-label="이동 경로 날씨 브리핑">
+                <h2>출발지부터 목적지까지</h2>
+                <p>자동차 이동시간과 양쪽 날씨를 비교해 도착 전에 챙길 것을 알려드립니다.</p>
+                <div class="route-form">
+                    <input id="routeOrigin" aria-label="출발지" placeholder="출발지 · 예: 강남역">
+                    <input id="routeDestination" aria-label="목적지" placeholder="목적지 · 예: 서울시청">
+                    <button class="primary" type="button" id="loadRouteBriefing">경로 분석</button>
+                </div>
+                <div class="route-result" id="routeResult" hidden role="status">
+                    <div class="route-result-header">
+                        <h3 id="routeHeadline">경로를 분석하고 있어요.</h3>
+                        <span id="routePlaces"></span>
+                    </div>
+                    <div class="route-metrics" id="routeMetrics"></div>
+                    <ul class="route-checklist" id="routeChecklist"></ul>
+                </div>
+            </section>
         </section>
 
         <section class="panel" aria-label="날씨 구독 신청">
@@ -1186,7 +1369,7 @@
 
                 <div class="smart-alert-card">
                     <strong>스마트 위험 알림</strong>
-                    <span>정해진 시간 외에도 위험 신호가 새로 잡히면 중복 없이 알려드립니다.</span>
+                    <span>비·폭염뿐 아니라 공식 특보·자외선·꽃가루 위험도 중복 없이 알려드립니다.</span>
                     <div class="smart-alert-master">
                         <input id="smartAlertEnabled" type="checkbox">
                         <label for="smartAlertEnabled">스마트 위험 알림 사용</label>
@@ -1257,11 +1440,11 @@
         </div>
         <div class="benefit-card">
             <strong>외출 판단을 한눈에</strong>
-            <span>강수 확률과 체감 정보를 종합한 외출 점수를 제공합니다.</span>
+            <span>강수·특보·자외선·꽃가루·대기질을 종합한 외출 점수를 제공합니다.</span>
         </div>
         <div class="benefit-card">
-            <strong>간편한 구독 관리</strong>
-            <span>같은 이메일로 다시 등록하면 위치, 스타일, 알림 시간이 새롭게 반영됩니다.</span>
+            <strong>출발부터 도착까지</strong>
+            <span>경로 시간과 양쪽 날씨를 비교해 도착지 준비물을 알려드립니다.</span>
         </div>
     </section>
     <p class="site-footer">날씨한편 · 데이터 제공: 기상청 · 예보는 실제 관측과 다를 수 있습니다.</p>
@@ -1290,6 +1473,20 @@
     const weatherTemp = document.getElementById("weatherTemp");
     const weatherRain = document.getElementById("weatherRain");
     const weatherAir = document.getElementById("weatherAir");
+    const warningBanner = document.getElementById("warningBanner");
+    const uvDisplay = document.getElementById("uvDisplay");
+    const uvAdvice = document.getElementById("uvAdvice");
+    const pollenDisplay = document.getElementById("pollenDisplay");
+    const pollenAdvice = document.getElementById("pollenAdvice");
+    const safetySummary = document.getElementById("safetySummary");
+    const routeOrigin = document.getElementById("routeOrigin");
+    const routeDestination = document.getElementById("routeDestination");
+    const loadRouteBriefingButton = document.getElementById("loadRouteBriefing");
+    const routeResult = document.getElementById("routeResult");
+    const routeHeadline = document.getElementById("routeHeadline");
+    const routePlaces = document.getElementById("routePlaces");
+    const routeMetrics = document.getElementById("routeMetrics");
+    const routeChecklist = document.getElementById("routeChecklist");
     const styleHeadline = document.getElementById("styleHeadline");
     const styleSummary = document.getElementById("styleSummary");
     const styleTop = document.getElementById("styleTop");
@@ -1338,6 +1535,7 @@
         });
     });
     shareWeather.addEventListener("click", shareCurrentWeather);
+    loadRouteBriefingButton.addEventListener("click", loadRouteBriefing);
     locationQuery.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -1369,7 +1567,7 @@
         const payload = {
             name: document.getElementById("name").value.trim(),
             email: "",
-            locationName: selectedLocation.locationName,
+            locationName: locationContext(selectedLocation),
             latitude: selectedLocation.latitude,
             longitude: selectedLocation.longitude,
             nx: selectedLocation.nx,
@@ -1658,6 +1856,12 @@
         result.className = ok ? "result ok" : "result error";
     }
 
+    function locationContext(location) {
+        return [location.locationName, location.regionName]
+            .filter((value, index, values) => value && values.indexOf(value) === index)
+            .join(" · ");
+    }
+
     async function loadWeatherPreview(location) {
         weatherPreview.hidden = false;
         weatherPreview.className = "weather-preview";
@@ -1669,6 +1873,13 @@
         weatherTemp.textContent = "-";
         weatherRain.textContent = "-";
         weatherAir.textContent = "-";
+        warningBanner.hidden = true;
+        warningBanner.textContent = "";
+        uvDisplay.textContent = "확인 중";
+        uvAdvice.textContent = "외출 시간을 분석하고 있어요.";
+        pollenDisplay.textContent = "확인 중";
+        pollenAdvice.textContent = "알레르기 위험을 분석하고 있어요.";
+        safetySummary.textContent = "확인 중";
         styleHeadline.textContent = "스타일 추천을 준비 중입니다.";
         styleSummary.textContent = "날씨와 취향 정보를 조합하고 있어요.";
         styleTop.textContent = "-";
@@ -1688,7 +1899,7 @@
             const params = new URLSearchParams({
                 nx: location.nx,
                 ny: location.ny,
-                locationName: location.locationName,
+                locationName: locationContext(location),
                 ageGroup: "NONE",
                 gender: "NONE",
                 temperatureSensitivity: document.getElementById("temperatureSensitivity").value,
@@ -1798,6 +2009,15 @@
         weatherTemp.textContent = `${weather.tmp || "-"}°C`;
         weatherRain.textContent = `강수 ${weather.pop || "-"}%`;
         weatherAir.textContent = weather.airQualitySummary || "-";
+        uvDisplay.textContent = weather.uvDisplay || "-";
+        uvAdvice.textContent = weather.uvAdvice || "자외선 정보를 확인해주세요.";
+        pollenDisplay.textContent = weather.pollenDisplay || "-";
+        pollenAdvice.textContent = weather.pollenAdvice || "꽃가루 정보를 확인해주세요.";
+        safetySummary.textContent = weather.safetySummary || "추가 생활안전 정보 없음";
+        warningBanner.hidden = !weather.officialWarningRisk;
+        warningBanner.textContent = weather.officialWarningRisk
+            ? `${weather.weatherWarningTitle} · ${weather.weatherWarningDetails}`
+            : "";
         styleHeadline.textContent = weather.styleHeadline || "오늘의 스타일 추천";
         styleSummary.textContent = weather.styleRecommendation || weather.materialAdvice || "날씨에 맞는 코디를 추천해드려요.";
         styleTop.textContent = weather.topAdvice || "-";
@@ -1809,6 +2029,52 @@
         actionUmbrella.textContent = weather.umbrellaAdvice || "확인 필요";
         actionMask.textContent = weather.maskAdvice || "확인 필요";
         actionOutdoor.textContent = weather.outdoorAdvice || "확인 필요";
+    }
+
+    async function loadRouteBriefing() {
+        const originQuery = routeOrigin.value.trim();
+        const destinationQuery = routeDestination.value.trim();
+        if (!originQuery || !destinationQuery) {
+            showResult("출발지와 목적지를 모두 입력해주세요.", false);
+            return;
+        }
+        routeResult.hidden = false;
+        routeHeadline.textContent = "경로와 날씨를 함께 분석하고 있어요.";
+        routePlaces.textContent = "";
+        routeMetrics.innerHTML = "";
+        routeChecklist.innerHTML = "";
+        loadRouteBriefingButton.disabled = true;
+        loadRouteBriefingButton.textContent = "분석 중";
+        try {
+            const params = new URLSearchParams({originQuery, destinationQuery, period: previewPeriod});
+            const response = await fetch(`/api/routes/briefing?${params.toString()}`);
+            const briefing = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(getApiError(briefing, "경로 브리핑을 만들지 못했습니다."));
+            routeHeadline.textContent = briefing.headline;
+            routePlaces.textContent = `${briefing.origin.locationName} → ${briefing.destination.locationName}`;
+            const metrics = [
+                `예상 ${briefing.durationLabel}`,
+                `거리 ${briefing.distanceLabel}`,
+                `출발 ${briefing.originWeather.tmp}°C`,
+                `도착 ${briefing.destinationWeather.tmp}°C · ${briefing.destinationWeather.outingScore}점`
+            ];
+            metrics.forEach((text) => {
+                const span = document.createElement("span");
+                span.className = "route-metric";
+                span.textContent = text;
+                routeMetrics.appendChild(span);
+            });
+            (briefing.checklist || []).forEach((text) => {
+                const item = document.createElement("li");
+                item.textContent = text;
+                routeChecklist.appendChild(item);
+            });
+        } catch (error) {
+            routeHeadline.textContent = error.message;
+        } finally {
+            loadRouteBriefingButton.disabled = false;
+            loadRouteBriefingButton.textContent = "경로 분석";
+        }
     }
 
     function reloadPreviewIfReady() {

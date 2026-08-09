@@ -11,6 +11,7 @@ public class LocationDto {
     @Jacksonized
     public static class Response {
         private String locationName;
+        private String regionName;
         private double latitude;
         private double longitude;
         private int nx;
