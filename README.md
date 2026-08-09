@@ -160,7 +160,7 @@ flowchart LR
 | --- | --- |
 | Backend | Java 17, Spring Boot 3.2.5, Spring Web, Validation |
 | Persistence | Spring Data JPA, PostgreSQL, MySQL, H2 |
-| Cache | Redis, Caffeine Cache |
+| Cache | bounded Caffeine Cache |
 | Scheduling | Spring Scheduler, ShedLock |
 | Mail | Spring Mail, Thymeleaf HTML |
 | HTTP | Apache HttpClient 5 |
@@ -175,7 +175,7 @@ flowchart LR
     G --> A["Spring Boot App"]
 
     A --> DB["PostgreSQL"]
-    A --> RC["Redis Cache"]
+    A --> RC["Bounded Caffeine Cache"]
     A --> SMTP["SMTP"]
 
     A --> KMA["기상청 예보·특보·생활지수"]
@@ -186,11 +186,11 @@ flowchart LR
     SCH["Scheduler + ShedLock"] --> A
 ```
 
-- 날씨 응답은 Redis/Caffeine에 캐시해 외부 API와 애플리케이션 부하를 낮춥니다.
+- 날씨 응답은 인스턴스별 bounded Caffeine 캐시에 저장해 외부 캐시 장애가 요청 경로를 막지 않으면서 API 부하를 낮춥니다.
 - 공개 조회 응답은 `stale-while-revalidate`와 `stale-if-error`를 제공해 재검증 중이거나 외부 API가 잠시 실패해도 기존 정보를 활용합니다.
 - 예약 작업은 DB 분산 락으로 보호해 여러 인스턴스에서도 한 번만 실행됩니다.
 - 메일 작업은 bounded executor와 backpressure를 사용합니다.
-- 3일 플래너는 별도 bounded executor와 잠금 영역을 분리한 Redis/Caffeine 캐시를 사용하며, 기상청 단기예보 1회 응답을 오늘·내일·모레로 분해해 외부 API 왕복을 최소화합니다.
+- 3일 플래너는 별도 bounded executor와 인스턴스별 Caffeine 캐시를 사용하며, 기상청 단기예보 1회 응답을 오늘·내일·모레로 분해해 외부 API 왕복을 최소화합니다.
 - 읽기와 쓰기 API에 서로 다른 분당 요청 한도를 적용합니다.
 - Actuator health probe, graceful shutdown, 응답 압축을 적용했습니다.
 - 운영 프로필은 필수 기상청 키 누락을 health `DOWN`으로 감지해 잘못된 배포를 차단합니다.
@@ -344,7 +344,7 @@ Content-Type: application/json
 - 전 요청 `X-Request-Id` 전파와 MDC 상관관계로 필터·컨트롤러·외부 API 로그 연결
 - 운영 로그에는 이메일 대신 내부 사용자 ID만 기록해 개인정보 노출 최소화
 - 요청별 CSP nonce로 인라인 스크립트 허용 범위를 제한하고 `unsafe-inline` 제거
-- Redis 분산 rate limit으로 다중 인스턴스에서도 동일한 요청 예산 적용
+- Redis 분산 rate limit을 우선 적용하되 300ms 안에 응답하지 않으면 bounded 로컬 제한기로 즉시 전환
 - 외부 기상 API 재시도·circuit breaker·2시간 이내 마지막 정상자료 fallback
 - Flyway 스키마 버전 관리와 운영 JPA `validate` 적용
 - Prometheus, readiness/liveness, CycloneDX SBOM, dependency review 제공

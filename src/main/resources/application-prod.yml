@@ -49,7 +49,7 @@ management:
     health:
       group:
         readiness:
-          include: readinessState,db,redis,weatherApi
+          include: readinessState,db,weatherApi
         liveness:
           include: livenessState
 
