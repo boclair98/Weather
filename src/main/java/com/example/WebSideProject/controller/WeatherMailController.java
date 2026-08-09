@@ -6,9 +6,12 @@ import com.example.WebSideProject.dto.WeatherMailHistoryDto;
 import com.example.WebSideProject.entity.User;
 import com.example.WebSideProject.scheduler.WeatherMailScheduler;
 import com.example.WebSideProject.service.MailService;
-import com.example.WebSideProject.service.UserService;
 import com.example.WebSideProject.service.WeatherMailHistoryService;
 import com.example.WebSideProject.service.WeatherService;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.Map;
@@ -27,11 +31,11 @@ import java.security.MessageDigest;
 @RestController
 @RequestMapping("/api/weather-mails")
 @RequiredArgsConstructor
+@Validated
 public class WeatherMailController {
 
     private final WeatherMailScheduler weatherMailScheduler;
     private final WeatherMailHistoryService weatherMailHistoryService;
-    private final UserService userService;
     private final WeatherService weatherService;
     private final MailService mailService;
 
@@ -62,24 +66,32 @@ public class WeatherMailController {
 
     @PostMapping("/send-test")
     public ResponseEntity<Map<String, String>> sendTest(
-            @RequestParam String email,
+            @RequestParam @Email @Size(max = 254) String email,
             @RequestParam(defaultValue = "MORNING") WeatherPeriod period,
-            @RequestParam String baseDate,
-            @RequestParam String baseTime,
+            @RequestParam(required = false) String baseDate,
+            @RequestParam(required = false) String baseTime,
+            @RequestParam(defaultValue = "60") @Min(1) @Max(200) int nx,
+            @RequestParam(defaultValue = "127") @Min(1) @Max(300) int ny,
+            @RequestParam(defaultValue = "서울특별시 중구 을지로3가") @Size(max = 200) String locationName,
             @RequestHeader(value = "X-Admin-Key", required = false) String adminKey
     ) {
         validateAdminKey(adminKey);
-        User user = userService.getUserByEmail(email);
-        WeatherDto weather = weatherService.getWeatherForBase(
-                user.getNx(),
-                user.getNy(),
-                period,
-                user.getLocationName(),
-                baseDate,
-                baseTime
-        );
+        User user = User.builder()
+                .name("테스트 수신자")
+                .email(email)
+                .locationName(locationName)
+                .nx(nx)
+                .ny(ny)
+                .build();
+        WeatherDto weather = baseDate != null && !baseDate.isBlank()
+                && baseTime != null && !baseTime.isBlank()
+                ? weatherService.getWeatherForBase(nx, ny, period, locationName, baseDate, baseTime)
+                : weatherService.getWeather(nx, ny, period, locationName);
         mailService.sendWeatherMail(user, weather);
-        return ResponseEntity.ok(Map.of("message", email + " 테스트 메일 발송을 시작했습니다."));
+        return ResponseEntity.ok(Map.of(
+                "message", "테스트 메일 발송을 시작했습니다.",
+                "locationName", locationName
+        ));
     }
 
     @GetMapping("/histories")
