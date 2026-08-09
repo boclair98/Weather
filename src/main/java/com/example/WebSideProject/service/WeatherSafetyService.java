@@ -176,7 +176,7 @@ public class WeatherSafetyService {
         String encodedKey = apiKey.contains("%")
                 ? apiKey
                 : UriUtils.encode(apiKey, StandardCharsets.UTF_8);
-        return UriComponentsBuilder.fromHttpUrl(url).queryParam("serviceKey", encodedKey);
+        return UriComponentsBuilder.fromUriString(url).queryParam("serviceKey", encodedKey);
     }
 
     private JSONArray responseItems(String response) {

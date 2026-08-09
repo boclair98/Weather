@@ -11,11 +11,18 @@ RUN ./gradlew bootJar --no-daemon && \
 
 FROM eclipse-temurin:17-jre-alpine
 
-RUN addgroup -S weather && adduser -S weather -G weather
+LABEL org.opencontainers.image.title="Weather Decision Service" \
+      org.opencontainers.image.source="https://github.com/boclair98/Weather" \
+      org.opencontainers.image.description="Traceable KMA-based weather decision and notification service"
+
+RUN addgroup -g 10001 -S weather && adduser -u 10001 -S weather -G weather
 WORKDIR /app
 COPY --from=build --chown=weather:weather /workspace/app.jar /app/app.jar
 
 USER weather
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:8080/actuator/health/readiness || exit 1
+
+ENTRYPOINT ["java", "-XX:+ExitOnOutOfMemoryError", "-jar", "/app/app.jar"]

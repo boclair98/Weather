@@ -12,7 +12,8 @@ public record WeatherPlannerDto(
         String recommendedPeriodLabel,
         String headline,
         List<DayPlan> days,
-        List<String> packingChecklist
+        List<String> packingChecklist,
+        ForecastProvenanceDto provenance
 ) {
 
     public static WeatherPlannerDto from(String locationName, List<DailyWeatherDto> forecasts) {
@@ -32,7 +33,8 @@ public record WeatherPlannerDto(
                 recommended.dayLabel() + " " + recommended.bestPeriodLabel()
                         + "이 3일 중 가장 움직이기 좋아요.",
                 plans,
-                buildPackingChecklist(forecasts)
+                buildPackingChecklist(forecasts),
+                ForecastProvenanceDto.from(forecasts)
         );
     }
 

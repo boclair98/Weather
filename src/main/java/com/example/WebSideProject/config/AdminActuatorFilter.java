@@ -32,7 +32,9 @@ public class AdminActuatorFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getRequestURI().startsWith("/actuator/metrics");
+        String uri = request.getRequestURI();
+        return !uri.startsWith("/actuator/metrics")
+                && !uri.startsWith("/actuator/prometheus");
     }
 
     @Override

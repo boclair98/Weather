@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.AssertTrue;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -68,6 +69,9 @@ public class UserDto {
         private boolean afternoonEnabled = false;
 
         private boolean eveningEnabled = false;
+
+        @AssertTrue(message = "개인정보 수집·이용에 동의해주세요")
+        private boolean privacyConsent;
     }
 
     @Getter
@@ -165,6 +169,8 @@ public class UserDto {
         private boolean afternoonEnabled;
         private boolean eveningEnabled;
         private String message;
+        private String privacyConsentVersion;
+        private java.time.LocalDateTime privacyConsentAt;
     }
 
     @Getter

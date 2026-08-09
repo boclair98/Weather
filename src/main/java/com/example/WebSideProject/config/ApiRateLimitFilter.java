@@ -7,15 +7,21 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 20)
@@ -24,17 +30,31 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
     private static final long WINDOW_MILLIS = Duration.ofMinutes(1).toMillis();
     private final int readLimit;
     private final int writeLimit;
+    private final boolean distributed;
+    private final StringRedisTemplate redisTemplate;
     private final Cache<String, WindowCounter> counters = Caffeine.newBuilder()
             .maximumSize(100_000)
             .expireAfterAccess(Duration.ofMinutes(3))
             .build();
 
+    @Autowired
     public ApiRateLimitFilter(
             @Value("${app.rate-limit.read-per-minute:180}") int readLimit,
-            @Value("${app.rate-limit.write-per-minute:20}") int writeLimit
+            @Value("${app.rate-limit.write-per-minute:20}") int writeLimit,
+            @Value("${app.rate-limit.distributed:false}") boolean distributed,
+            ObjectProvider<StringRedisTemplate> redisTemplateProvider
     ) {
         this.readLimit = Math.max(1, readLimit);
         this.writeLimit = Math.max(1, writeLimit);
+        this.distributed = distributed;
+        this.redisTemplate = redisTemplateProvider.getIfAvailable();
+    }
+
+    ApiRateLimitFilter(int readLimit, int writeLimit) {
+        this.readLimit = Math.max(1, readLimit);
+        this.writeLimit = Math.max(1, writeLimit);
+        this.distributed = false;
+        this.redisTemplate = null;
     }
 
     @Override
@@ -50,16 +70,44 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         boolean readRequest = "GET".equalsIgnoreCase(request.getMethod());
         int limit = readRequest ? readLimit : writeLimit;
-        String key = clientKey(request) + ":" + (readRequest ? "read" : "write");
-        WindowCounter counter = counters.get(key, ignored -> new WindowCounter(System.currentTimeMillis()));
+        String key = hashClientKey(clientKey(request)) + ":" + (readRequest ? "read" : "write");
+        long count = increment(key);
 
-        if (counter != null && counter.increment(System.currentTimeMillis()) > limit) {
+        if (count > limit) {
             writeRateLimitResponse(response);
             return;
         }
 
         response.setHeader("X-RateLimit-Limit", String.valueOf(limit));
+        response.setHeader("X-RateLimit-Remaining", String.valueOf(Math.max(0, limit - count)));
         filterChain.doFilter(request, response);
+    }
+
+    private long increment(String key) {
+        if (distributed && redisTemplate != null) {
+            try {
+                String redisKey = "rate-limit:" + key + ":" + (System.currentTimeMillis() / WINDOW_MILLIS);
+                Long count = redisTemplate.opsForValue().increment(redisKey);
+                if (count != null && count == 1) {
+                    redisTemplate.expire(redisKey, Duration.ofSeconds(70));
+                }
+                return count == null ? 1 : count;
+            } catch (RuntimeException ignored) {
+                // Availability wins over the distributed limiter. The bounded local limiter remains active.
+            }
+        }
+        WindowCounter counter = counters.get(key, ignored -> new WindowCounter(System.currentTimeMillis()));
+        return counter == null ? 1 : counter.increment(System.currentTimeMillis());
+    }
+
+    private String hashClientKey(String value) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                    .digest(value.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest, 0, 12);
+        } catch (Exception e) {
+            throw new IllegalStateException("요청 식별자 해시 생성에 실패했습니다.", e);
+        }
     }
 
     private String clientKey(HttpServletRequest request) {

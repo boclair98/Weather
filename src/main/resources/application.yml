@@ -7,6 +7,9 @@ spring:
       mode: always
       schema-locations: classpath:schema-shedlock.sql
 
+  flyway:
+    enabled: false
+
   datasource:
     url: ${DB_URL:jdbc:h2:mem:weather;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
     driver-class-name: ${DB_DRIVER:org.h2.Driver}
@@ -76,6 +79,7 @@ app:
   rate-limit:
     read-per-minute: ${RATE_LIMIT_READ_PER_MINUTE:180}
     write-per-minute: ${RATE_LIMIT_WRITE_PER_MINUTE:20}
+    distributed: ${RATE_LIMIT_DISTRIBUTED:false}
 
 admin:
   api-key: ${ADMIN_API_KEY:}
@@ -108,12 +112,22 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus
   endpoint:
     health:
       probes:
         enabled: true
       show-details: never
+      status:
+        order: DOWN,OUT_OF_SERVICE,DEGRADED,UP,UNKNOWN
+        http-mapping:
+          DEGRADED: 200
+
+info:
+  app:
+    name: Weather Decision Service
+    api-schema: weather-briefing/1.0
+    data-source: Korea Meteorological Administration
 
 logging:
   pattern:

@@ -27,6 +27,11 @@ class FrontendContractTest {
                 .contains("href=\"#weatherSearch\"")
                 .contains("prefers-reduced-motion")
                 .contains("aria-busy");
+        assertThat(html)
+                .contains("th:attr=\"nonce=${cspNonce}\"")
+                .contains("id=\"plannerQuality\"")
+                .contains("id=\"privacyConsent\"")
+                .contains("/api/users/me/data");
     }
 
     @Test

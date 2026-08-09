@@ -106,7 +106,7 @@ public class LocationService {
     }
 
     private List<LocationDto.Response> requestKakao(String url, String query) {
-        URI uri = UriComponentsBuilder.fromHttpUrl(url)
+        URI uri = UriComponentsBuilder.fromUriString(url)
                 .queryParam("query", query)
                 .queryParam("size", KAKAO_RESULT_SIZE)
                 .build()

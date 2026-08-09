@@ -3,6 +3,7 @@ package com.example.WebSideProject.controller;
 import com.example.WebSideProject.config.RequestIdFilter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.dao.DataAccessException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.Instant;
 
 
 @Slf4j
@@ -98,10 +101,26 @@ public class GlobalExceptionHandler {
         }
 
         return ResponseEntity.status(status)
-                .header("X-Request-Id", requestId)
-                .body(new ApiErrorResponse(code, message, requestId));
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(new ApiErrorResponse(
+                        "https://weather.coders.kr/problems/" + code.toLowerCase(),
+                        status.getReasonPhrase(),
+                        status.value(),
+                        code,
+                        message,
+                        requestId,
+                        Instant.now()
+                ));
     }
 
-    public record ApiErrorResponse(String code, String message, String requestId) {
+    public record ApiErrorResponse(
+            String type,
+            String title,
+            int status,
+            String code,
+            String message,
+            String requestId,
+            Instant timestamp
+    ) {
     }
 }

@@ -20,7 +20,14 @@ class SecurityHeadersFilterTest {
 
         filter.doFilter(request, response, mock(FilterChain.class));
 
-        assertThat(response.getHeader("Content-Security-Policy")).contains("default-src 'self'");
+        assertThat(response.getHeader("Content-Security-Policy"))
+                .contains("default-src 'self'")
+                .contains("'nonce-")
+                .doesNotContain("'unsafe-inline'");
+        assertThat(request.getAttribute(SecurityHeadersFilter.CSP_NONCE_ATTRIBUTE))
+                .isInstanceOf(String.class)
+                .asString()
+                .hasSize(24);
         assertThat(response.getHeader("Strict-Transport-Security")).contains("max-age=31536000");
         assertThat(response.getHeader("Permissions-Policy")).contains("camera=()");
         assertThat(response.getHeader("Cross-Origin-Opener-Policy")).isEqualTo("same-origin");
