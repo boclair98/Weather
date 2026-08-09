@@ -4,6 +4,7 @@ import com.example.WebSideProject.dto.DailyWeatherDto;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,6 +32,25 @@ class WeatherServicePlannerTest {
         assertThat(forecasts).extracting(DailyWeatherDto::dayLabel)
                 .containsExactly("오늘", "내일", "모레");
         assertThat(restTemplate.requestCount()).isEqualTo(1);
+    }
+
+    @Test
+    void plannerResultAndSourceUseDifferentCacheLocks() throws NoSuchMethodException {
+        Cacheable plannerCache = WeatherPlannerService.class
+                .getMethod(
+                        "getPlanner", int.class, int.class, String.class,
+                        com.example.WebSideProject.Enum.AgeGroup.class,
+                        com.example.WebSideProject.Enum.GenderType.class,
+                        com.example.WebSideProject.Enum.TemperatureSensitivity.class,
+                        com.example.WebSideProject.Enum.ActivityType.class
+                )
+                .getAnnotation(Cacheable.class);
+        Cacheable sourceCache = WeatherService.class
+                .getMethod("getPlannerDailyWeatherList", int.class, int.class, String.class)
+                .getAnnotation(Cacheable.class);
+
+        assertThat(plannerCache.cacheNames()).containsExactly("weather");
+        assertThat(sourceCache.cacheNames()).containsExactly("plannerSource");
     }
 
     private String forecastResponse() {

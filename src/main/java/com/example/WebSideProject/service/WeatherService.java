@@ -83,20 +83,7 @@ public class WeatherService {
     }
 
     @Cacheable(
-            cacheNames = "weather",
-            key = "'planner-basic:' + #nx + ':' + #ny + ':' + #dayOffset + ':' + (#locationName == null ? '' : #locationName)",
-            sync = true
-    )
-    public DailyWeatherDto getPlannerDailyWeather(int nx, int ny, String locationName, int dayOffset) {
-        validateGrid(nx, ny);
-        if (dayOffset < 0 || dayOffset > 2) {
-            throw new IllegalArgumentException("dayOffset은 0부터 2까지만 지원합니다.");
-        }
-        return buildDailyWeather(nx, ny, locationName, dayOffset, false);
-    }
-
-    @Cacheable(
-            cacheNames = "weather",
+            cacheNames = "plannerSource",
             key = "'planner-three-day:' + #nx + ':' + #ny + ':' + (#locationName == null ? '' : #locationName)",
             sync = true
     )

@@ -39,6 +39,10 @@ public class ProdCacheConfig {
                         "locations",
                         configuration.entryTtl(Duration.ofHours(1))
                 )
+                .withCacheConfiguration(
+                        "plannerSource",
+                        configuration.entryTtl(Duration.ofMinutes(10))
+                )
                 .build();
     }
 }
