@@ -7,6 +7,8 @@ import com.example.WebSideProject.Enum.TemperatureSensitivity;
 import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.dto.DailyWeatherDto;
 import com.example.WebSideProject.dto.WeatherDto;
+import com.example.WebSideProject.dto.WeatherPlannerDto;
+import com.example.WebSideProject.service.WeatherPlannerService;
 import com.example.WebSideProject.service.WeatherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.CacheControl;
@@ -23,7 +25,14 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class WeatherController {
 
+    private static final CacheControl WEATHER_CACHE = CacheControl
+            .maxAge(5, TimeUnit.MINUTES)
+            .staleWhileRevalidate(10, TimeUnit.MINUTES)
+            .staleIfError(30, TimeUnit.MINUTES)
+            .cachePublic();
+
     private final WeatherService weatherService;
+    private final WeatherPlannerService weatherPlannerService;
 
     @GetMapping
     public ResponseEntity<WeatherDto> getWeather(
@@ -37,7 +46,7 @@ public class WeatherController {
             @RequestParam(defaultValue = "DAILY") ActivityType activityType
     ) {
         return ResponseEntity.ok()
-                .cacheControl(CacheControl.maxAge(5, TimeUnit.MINUTES).cachePublic())
+                .cacheControl(WEATHER_CACHE)
                 .body(weatherService.getWeather(nx, ny, period, locationName)
                         .withStylePreference(ageGroup, gender, temperatureSensitivity, activityType));
     }
@@ -54,9 +63,26 @@ public class WeatherController {
             @RequestParam(defaultValue = "0") int dayOffset
     ) {
         return ResponseEntity.ok()
-                .cacheControl(CacheControl.maxAge(5, TimeUnit.MINUTES).cachePublic())
+                .cacheControl(WEATHER_CACHE)
                 .body(weatherService.getDailyWeather(nx, ny, locationName, dayOffset)
                         .withStylePreference(ageGroup, gender, temperatureSensitivity, activityType));
+    }
+
+    @GetMapping("/planner")
+    public ResponseEntity<WeatherPlannerDto> getPlanner(
+            @RequestParam(defaultValue = "60") int nx,
+            @RequestParam(defaultValue = "127") int ny,
+            @RequestParam(required = false) String locationName,
+            @RequestParam(defaultValue = "NONE") AgeGroup ageGroup,
+            @RequestParam(defaultValue = "NONE") GenderType gender,
+            @RequestParam(defaultValue = "NONE") TemperatureSensitivity temperatureSensitivity,
+            @RequestParam(defaultValue = "DAILY") ActivityType activityType
+    ) {
+        return ResponseEntity.ok()
+                .cacheControl(WEATHER_CACHE)
+                .body(weatherPlannerService.getPlanner(
+                        nx, ny, locationName, ageGroup, gender, temperatureSensitivity, activityType
+                ));
     }
 
     @GetMapping("/test")

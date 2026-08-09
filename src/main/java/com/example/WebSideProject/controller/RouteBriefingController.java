@@ -18,6 +18,12 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class RouteBriefingController {
 
+    private static final CacheControl ROUTE_CACHE = CacheControl
+            .maxAge(10, TimeUnit.MINUTES)
+            .staleWhileRevalidate(10, TimeUnit.MINUTES)
+            .staleIfError(30, TimeUnit.MINUTES)
+            .cachePublic();
+
     private final RouteBriefingService routeBriefingService;
 
     @GetMapping("/briefing")
@@ -27,7 +33,7 @@ public class RouteBriefingController {
             @RequestParam(defaultValue = "MORNING") WeatherPeriod period
     ) {
         return ResponseEntity.ok()
-                .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).cachePublic())
+                .cacheControl(ROUTE_CACHE)
                 .body(routeBriefingService.getBriefing(originQuery, destinationQuery, period));
     }
 }

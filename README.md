@@ -35,8 +35,9 @@
 | 단계 | 사용자가 얻는 결과 |
 | --- | --- |
 | 위치 선택 | 동네·역·건물명 검색, 현재 위치, 최근 장소 바로가기 |
-| 외출 판단 | 아침·점심·저녁 비교, 외출 점수, 강수·대기질·안전 신호 |
+| 외출 판단 | 오늘·내일·모레 비교, 시간대별 외출 점수, 강수·대기질·안전 신호 |
 | 맞춤 준비 | 우산·마스크·야외활동 조언, 체감·일정 기반 동적 코디 |
+| 일정 계획 | 3일 중 가장 좋은 날·시간 추천, 통합 준비물, 캘린더 저장 |
 | 경로 분석 | 출발지→목적지 거리·시간, 양쪽 날씨, 도착 준비 체크리스트 |
 | 알림 구독 | 아침·점심·저녁 선택 발송, 최대 10개 이메일, 스마트 위험 알림 |
 
@@ -52,7 +53,7 @@ flowchart LR
 
 ## 주요 기능
 
-### 1. 오늘·내일 행동형 날씨 대시보드
+### 1. 오늘·내일·모레 행동형 날씨 대시보드
 
 - 아침·점심·저녁 기온, 강수확률과 외출 점수 비교
 - 하루 중 가장 나가기 좋은 시간대 추천
@@ -60,7 +61,19 @@ flowchart LR
 - 날씨에 따라 맑음·비·눈·흐림 테마 자동 전환
 - 최근 본 장소 5개를 브라우저에 저장
 
-### 2. 공식 생활안전 브리핑
+### 2. 3일 결정 플래너
+
+세 날짜의 예보를 따로 열어 비교할 필요 없이 “언제 움직일지”를 한 화면에서 정할 수 있습니다.
+
+- 오늘·내일·모레의 시간대 평균 외출 점수와 최고 시간 비교
+- 3일 중 가장 좋은 날짜와 아침·점심·저녁 추천
+- 특보, 비·눈, 대기질, 자외선, 기온, 바람을 우선순위에 따라 행동으로 변환
+- 3일 동안 필요한 준비물을 중복 없이 통합
+- 추천 외출 시간을 `.ics` 캘린더 일정으로 저장
+- 선택 위치·날짜·시간대를 그대로 복원하는 공유 링크 생성
+- 3일 API 호출을 전용 bounded executor에서 병렬 처리하고 결과를 캐시
+
+### 3. 공식 생활안전 브리핑
 
 - 지역별 기상특보
 - 최대 자외선지수와 행동 요령
@@ -68,7 +81,7 @@ flowchart LR
 - 미세먼지·초미세먼지와 마스크 안내
 - 안전 신호를 외출 점수, 코디, 이메일, 스마트 알림에 함께 반영
 
-### 3. 출발지→목적지 경로 날씨
+### 4. 출발지→목적지 경로 날씨
 
 카카오모빌리티 길찾기 결과와 양쪽 날씨를 결합해 이동 전에 확인할 정보를 한 번에 제공합니다.
 
@@ -77,7 +90,7 @@ flowchart LR
 - 비, 대기질, 자외선, 꽃가루, 기상특보 체크
 - 두 장소의 기온 차가 큰 경우 겉옷 안내
 
-### 4. 동적 스타일링
+### 5. 동적 스타일링
 
 정적인 계절별 문구가 아니라 실제 날씨와 사용자 설정을 조합합니다.
 
@@ -86,7 +99,7 @@ flowchart LR
 - 상의, 하의, 겉옷, 신발, 추천 컬러와 피해야 할 스타일
 - 기온, 비·눈, 바람, 습도, 대기질을 모두 반영
 
-### 5. 구독과 스마트 알림
+### 6. 구독과 스마트 알림
 
 - Google 로그인으로 구독 소유권 보호
 - 한 계정에 최대 10개 수신 이메일 연결
@@ -95,6 +108,14 @@ flowchart LR
 - 이메일 입력 또는 메일의 토큰 링크로 구독 취소
 - 비·눈, 폭염·한파, 대기질, 강풍, 공식 특보, 자외선, 꽃가루 위험 감지
 - 같은 위험을 반복 발송하지 않는 fingerprint 기반 중복 방지
+
+### 7. 설치형 웹 앱과 오프라인 안내
+
+- 웹 앱 매니페스트와 서비스 워커를 통한 홈 화면 설치
+- 정적 앱 셸 network-first 캐시와 이전 버전 자동 정리
+- 오프라인일 때 저장된 화면 제공 및 명확한 연결 상태 표시
+- API 오프라인 오류를 공통 JSON 형태로 반환
+- 키보드 건너뛰기 링크, focus-visible, live/busy 상태, reduced-motion 접근성 지원
 
 ## 새 모바일 메일 UI
 
@@ -163,9 +184,14 @@ flowchart LR
 ```
 
 - 날씨 응답은 Redis/Caffeine에 캐시해 외부 API와 애플리케이션 부하를 낮춥니다.
+- 공개 조회 응답은 `stale-while-revalidate`와 `stale-if-error`를 제공해 재검증 중이거나 외부 API가 잠시 실패해도 기존 정보를 활용합니다.
 - 예약 작업은 DB 분산 락으로 보호해 여러 인스턴스에서도 한 번만 실행됩니다.
 - 메일 작업은 bounded executor와 backpressure를 사용합니다.
+- 3일 플래너는 별도 bounded executor와 Redis/Caffeine 캐시를 사용합니다.
+- 읽기와 쓰기 API에 서로 다른 분당 요청 한도를 적용합니다.
 - Actuator health probe, graceful shutdown, 응답 압축을 적용했습니다.
+- 운영 프로필은 필수 기상청 키 누락을 health `DOWN`으로 감지해 잘못된 배포를 차단합니다.
+- Actuator metrics에 3일 플래너 cold-cache 생성 시간과 성공·실패 상태를 기록합니다.
 
 ## 빠른 시작
 
@@ -189,7 +215,7 @@ $env:WEATHER_API_KEY="your_kma_api_key"
 $env:KAKAO_REST_API_KEY="your_kakao_rest_api_key"
 $env:SMTP_USERNAME="your_email@gmail.com"
 $env:SMTP_PASSWORD="your_gmail_app_password"
-./gradlew.bat bootRun
+.\gradlew.bat bootRun
 ```
 
 실행 후 [http://localhost:8080](http://localhost:8080)에서 확인합니다.
@@ -207,7 +233,7 @@ $env:DB_URL="jdbc:mysql://localhost:3306/weatherdb?useSSL=false&serverTimezone=A
 $env:DB_DRIVER="com.mysql.cj.jdbc.Driver"
 $env:DB_USERNAME="root"
 $env:DB_PASSWORD="your_mysql_password"
-./gradlew.bat bootRun
+.\gradlew.bat bootRun
 ```
 
 ## 환경변수
@@ -230,6 +256,8 @@ SMTP_PASSWORD=your_gmail_app_password
 
 APP_BASE_URL=http://localhost:8080
 ADMIN_API_KEY=generate_a_long_random_key
+RATE_LIMIT_READ_PER_MINUTE=180
+RATE_LIMIT_WRITE_PER_MINUTE=20
 ```
 
 로컬 전용 값은 Git에서 제외되는 `application-local.yml`에 보관할 수도 있습니다. 운영 키는 coders.kr secret 환경변수로 등록합니다.
@@ -242,6 +270,7 @@ ADMIN_API_KEY=generate_a_long_random_key
 | `GET` | `/api/locations/coordinates` | 위도·경도를 장소와 격자로 변환 |
 | `GET` | `/api/weather` | 위치·시간대별 맞춤 날씨 |
 | `GET` | `/api/weather/daily` | 아침·점심·저녁 일일 브리핑 |
+| `GET` | `/api/weather/planner` | 오늘·내일·모레 결정 플래너와 통합 준비물 |
 | `GET` | `/api/routes/briefing` | 출발지→목적지 경로 날씨 |
 | `POST` | `/api/users/subscribe` | 최대 10개 이메일 구독 |
 | `POST` | `/api/users/unsubscribe` | 여러 이메일 구독 취소 |
@@ -260,6 +289,12 @@ GET /api/weather/daily?nx=61&ny=125&locationName=강남역&dayOffset=0&temperatu
 
 ```http
 GET /api/routes/briefing?originQuery=강남역&destinationQuery=서울시청&period=MORNING
+```
+
+### 3일 결정 플래너
+
+```http
+GET /api/weather/planner?nx=61&ny=125&locationName=강남역&temperatureSensitivity=COLD&activityType=COMMUTE
 ```
 
 ### 여러 메일함 구독
@@ -293,13 +328,18 @@ Content-Type: application/json
 
 - Google 로그인과 coders native identity로 구독 소유권 확인
 - 관리자 API key constant-time 비교와 fail-closed 정책
+- `/actuator/metrics` 관리자 키 보호, 공개 health probe 분리
 - 저장소 밖 secret 환경변수 관리
 - 토큰 기반 이메일 수신 거부
 - 입력 길이·이메일·좌표·격자 범위 검증
-- 보안 응답 헤더 적용
+- 요청 주체별 읽기·쓰기 API rate limit과 `Retry-After` 응답
+- CSP, HSTS, Permissions Policy, COOP/CORP 등 보안 응답 헤더 적용
 - 외부 API 연결 풀과 연결·응답 타임아웃
+- service worker 무효화 정책과 오프라인 API 오류 표준화
 - 사용자 응답에서 내부 예외와 비밀값 제거
 - 오류 코드와 `requestId`를 통한 운영 로그 추적
+- 전 요청 `X-Request-Id` 전파와 MDC 상관관계로 필터·컨트롤러·외부 API 로그 연결
+- 운영 로그에는 이메일 대신 내부 사용자 ID만 기록해 개인정보 노출 최소화
 
 ## 테스트와 CI
 
@@ -307,7 +347,7 @@ Content-Type: application/json
 ./gradlew clean test bootJar --no-daemon
 ```
 
-현재 자동화 테스트는 DTO 계산, 사용자 식별, 예외 처리, 컨트롤러, 기상 안전 데이터 파싱, 경로 브리핑, 메일 HTML 렌더링을 포함합니다.
+현재 자동화 테스트는 DTO 계산, 3일 플래너, API 요청 제한, 사용자 식별, 예외 처리, 컨트롤러, 기상 안전 데이터 파싱, 경로 브리핑, 메일 HTML 렌더링을 포함합니다.
 
 GitHub Actions는 모든 Pull Request에서 다음을 검증합니다.
 
@@ -355,13 +395,15 @@ src/main/java/com/example/WebSideProject
 src/main/resources
 ├── application.yml
 ├── application-prod.yml
+├── static/manifest.webmanifest
+├── static/service-worker.js
 ├── templates/index.html
 └── templates/weather-mail.html
 ```
 
 ## 다음 개선 후보
 
-- 주간 예보와 일정 기반 외출 계획
+- 주간 예보와 실제 Google Calendar 양방향 연동
 - 사용자별 분 단위 발송 시간
 - 운영자용 발송 성공률·API 장애 대시보드
 - 메일 제목·정보 순서 A/B 테스트

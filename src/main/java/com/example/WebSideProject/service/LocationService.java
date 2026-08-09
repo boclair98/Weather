@@ -60,6 +60,9 @@ public class LocationService {
             throw new IllegalArgumentException("검색할 지역명을 입력해주세요.");
         }
         String normalizedQuery = query.trim();
+        if (normalizedQuery.length() > 100) {
+            throw new IllegalArgumentException("지역 검색어는 100자 이내로 입력해주세요.");
+        }
         if (kakaoRestApiKey == null || kakaoRestApiKey.isBlank()) {
             return searchFallback(normalizedQuery);
         }

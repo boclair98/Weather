@@ -1,5 +1,6 @@
 package com.example.WebSideProject.controller;
 
+import com.example.WebSideProject.config.RequestIdFilter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.dao.DataAccessException;
@@ -11,7 +12,6 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.UUID;
 
 @Slf4j
 @RestControllerAdvice
@@ -50,6 +50,17 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiErrorResponse> handleUnavailableFeature(IllegalStateException e) {
+        return error(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "FEATURE_UNAVAILABLE",
+                e.getMessage(),
+                e,
+                false
+        );
+    }
+
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleNotFound(NoResourceFoundException e) {
         return error(
@@ -79,7 +90,7 @@ public class GlobalExceptionHandler {
             Exception exception,
             boolean logStackTrace
     ) {
-        String requestId = UUID.randomUUID().toString().substring(0, 8);
+        String requestId = RequestIdFilter.currentOrNew();
         if (logStackTrace) {
             log.error("API 오류 requestId={}, code={}", requestId, code, exception);
         } else {

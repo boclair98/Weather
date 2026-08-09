@@ -73,6 +73,9 @@ route:
     base-url: ${KAKAO_MOBILITY_BASE_URL:https://apis-navi.kakaomobility.com/v1}
 app:
   base-url: ${APP_BASE_URL:http://localhost:8080}
+  rate-limit:
+    read-per-minute: ${RATE_LIMIT_READ_PER_MINUTE:180}
+    write-per-minute: ${RATE_LIMIT_WRITE_PER_MINUTE:20}
 
 admin:
   api-key: ${ADMIN_API_KEY:}
@@ -94,6 +97,9 @@ server:
     max-connections: ${SERVER_MAX_CONNECTIONS:10000}
 
 management:
+  metrics:
+    tags:
+      application: weather
   health:
     mail:
       enabled: false
@@ -110,5 +116,7 @@ management:
       show-details: never
 
 logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%X{requestId:-system}] [%thread] %logger{36} - %msg%n"
   level:
     com.example.WebSideProject: DEBUG
