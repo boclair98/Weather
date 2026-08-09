@@ -1,0 +1,3 @@
+ALTER TABLE users ADD COLUMN IF NOT EXISTS privacy_consent_version VARCHAR(32);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS privacy_consent_at TIMESTAMP;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS unsubscribed_at TIMESTAMP;

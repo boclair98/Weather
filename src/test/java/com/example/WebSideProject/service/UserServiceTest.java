@@ -116,6 +116,27 @@ class UserServiceTest {
                 .hasMessageContaining("본인의 구독");
     }
 
+    @Test
+    void deletesCurrentUsersStoredPersonalData() {
+        UserRepository repository = mock(UserRepository.class);
+        UserService service = new UserService(repository, mock(ApplicationEventPublisher.class));
+        ReflectionTestUtils.setField(service, "codersIdentityRequired", true);
+        User owned = User.builder()
+                .name("삭제 사용자")
+                .email("delete@example.com")
+                .ownerId("validated-user")
+                .nx(60)
+                .ny(127)
+                .build();
+        when(repository.findFirstByOwnerIdOrderByIdAsc("validated-user"))
+                .thenReturn(Optional.of(owned));
+
+        service.deleteCurrentData("validated-user");
+
+        verify(repository).deleteMailHistoriesByEmail("delete@example.com");
+        verify(repository).delete(owned);
+    }
+
     private UserDto.RegisterRequest request(String emails) {
         UserDto.RegisterRequest request = new UserDto.RegisterRequest();
         request.setName("날씨 사용자");
@@ -123,6 +144,7 @@ class UserServiceTest {
         request.setLocationName("서울특별시 중구");
         request.setNx(60);
         request.setNy(127);
+        request.setPrivacyConsent(true);
         return request;
     }
 }

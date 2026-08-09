@@ -4,12 +4,17 @@ import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ApiRateLimitFilterTest {
 
@@ -44,6 +49,29 @@ class ApiRateLimitFilterTest {
 
         assertThat(responseB.getStatus()).isEqualTo(200);
         verify(chain, times(2)).doFilter(any(), any());
+    }
+
+    @Test
+    void usesRedisAndHashesIdentityForDistributedLimit() throws Exception {
+        @SuppressWarnings("unchecked")
+        ObjectProvider<StringRedisTemplate> provider = mock(ObjectProvider.class);
+        StringRedisTemplate redis = mock(StringRedisTemplate.class);
+        @SuppressWarnings("unchecked")
+        ValueOperations<String, String> operations = mock(ValueOperations.class);
+        when(provider.getIfAvailable()).thenReturn(redis);
+        when(redis.opsForValue()).thenReturn(operations);
+        when(operations.increment(any())).thenReturn(1L);
+        ApiRateLimitFilter filter = new ApiRateLimitFilter(5, 2, true, provider);
+        MockHttpServletRequest request = request("GET");
+        request.addHeader("X-Coders-User", "sensitive-user-id");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, mock(FilterChain.class));
+
+        ArgumentCaptor<String> key = ArgumentCaptor.forClass(String.class);
+        verify(operations).increment(key.capture());
+        assertThat(key.getValue()).startsWith("rate-limit:").doesNotContain("sensitive-user-id");
+        assertThat(response.getHeader("X-RateLimit-Remaining")).isEqualTo("4");
     }
 
     private MockHttpServletRequest request(String method) {

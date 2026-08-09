@@ -13,10 +13,12 @@
   <a href="https://weather.coders.kr"><img src="https://img.shields.io/badge/LIVE-weather.coders.kr-2563EB?style=for-the-badge" alt="운영 사이트"></a>
   <a href="https://github.com/boclair98/Weather/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/boclair98/Weather/ci.yml?branch=main&style=for-the-badge&label=CI" alt="CI"></a>
   <img src="https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 17">
-  <img src="https://img.shields.io/badge/Spring_Boot-3.2.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot 3.2.5">
+  <img src="https://img.shields.io/badge/Spring_Boot-3.5.16-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot 3.5.16">
 </p>
 
 > **운영 중:** [https://weather.coders.kr](https://weather.coders.kr)
+
+> **표시 원칙:** 기상청 원천자료를 활용한 독립 서비스이며 기상청 공식 홈페이지나 기상청의 구매·인증 제품이라고 표시하지 않습니다. 공공기관 도입 준비도와 남은 외부 인증은 [`docs/PUBLIC_SECTOR_READINESS.md`](docs/PUBLIC_SECTOR_READINESS.md)를 확인하세요.
 
 ## 서비스 소개
 
@@ -71,7 +73,8 @@ flowchart LR
 - 3일 동안 필요한 준비물을 중복 없이 통합
 - 추천 외출 시간을 `.ics` 캘린더 일정으로 저장
 - 선택 위치·날짜·시간대를 그대로 복원하는 공유 링크 생성
-- 3일 API 호출을 전용 bounded executor에서 병렬 처리하고 결과를 캐시
+- 기상청 단기예보 1회 응답을 3일로 분해하고 별도 잠금영역에 캐시
+- 출처, 발표·수집시각, 완전성, 신선도, 마지막 정상자료 사용 여부 표시
 
 ### 3. 공식 생활안전 브리핑
 
@@ -340,6 +343,20 @@ Content-Type: application/json
 - 오류 코드와 `requestId`를 통한 운영 로그 추적
 - 전 요청 `X-Request-Id` 전파와 MDC 상관관계로 필터·컨트롤러·외부 API 로그 연결
 - 운영 로그에는 이메일 대신 내부 사용자 ID만 기록해 개인정보 노출 최소화
+- 요청별 CSP nonce로 인라인 스크립트 허용 범위를 제한하고 `unsafe-inline` 제거
+- Redis 분산 rate limit으로 다중 인스턴스에서도 동일한 요청 예산 적용
+- 외부 기상 API 재시도·circuit breaker·2시간 이내 마지막 정상자료 fallback
+- Flyway 스키마 버전 관리와 운영 JPA `validate` 적용
+- Prometheus, readiness/liveness, CycloneDX SBOM, dependency review 제공
+- 개인정보 동의 버전·시각 기록과 구독·메일이력 완전삭제 지원
+
+## 기관 연계와 도입 자료
+
+- 버전 고정 API: `GET /api/v1/weather/briefing`
+- API 계약: [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md)
+- 운영 런북: [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
+- 개인정보 설계: [`docs/PRIVACY.md`](docs/PRIVACY.md)
+- 보안 제보: [`SECURITY.md`](SECURITY.md)
 
 ## 테스트와 CI
 
@@ -354,8 +371,10 @@ GitHub Actions는 모든 Pull Request에서 다음을 검증합니다.
 1. Gradle Wrapper 검증
 2. Java 17 전체 테스트
 3. 실행 JAR 패키징
-4. 프로덕션 Docker 이미지 빌드
-5. 테스트 리포트 업로드
+4. 신규 의존성 취약점 review
+5. 프로덕션 Docker 이미지 빌드
+6. CycloneDX 컨테이너 SBOM 생성
+7. 테스트 리포트 업로드
 
 ## coders.kr 배포
 

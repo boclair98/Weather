@@ -4,6 +4,8 @@ import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.dto.DailyWeatherDto;
 import com.example.WebSideProject.dto.SafetyInsightDto;
 import com.example.WebSideProject.dto.WeatherDto;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -18,7 +20,11 @@ import org.springframework.web.util.UriUtils;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -29,6 +35,10 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class WeatherService {
+
+    private static final String KMA_SOURCE_NAME = "기상청 단기예보";
+    private static final String KMA_SOURCE_URL = "https://www.weather.go.kr/w/weather/forecast/short-term.do";
+    private static final Duration FALLBACK_MAX_AGE = Duration.ofHours(2);
 
     @Value("${weather.api.key}")
     private String apiKey;
@@ -44,6 +54,11 @@ public class WeatherService {
 
     private final RestTemplate restTemplate;
     private final WeatherSafetyService weatherSafetyService;
+    private final ExternalApiGuard externalApiGuard;
+    private final Cache<String, ForecastPayload> latestForecastSnapshots = Caffeine.newBuilder()
+            .maximumSize(10_000)
+            .expireAfterWrite(FALLBACK_MAX_AGE)
+            .build();
 
     public WeatherDto getWeather(int nx, int ny) {
         return getWeather(nx, ny, WeatherPeriod.MORNING);
@@ -93,7 +108,7 @@ public class WeatherService {
 
         // A single village-forecast response already contains today through the day after tomorrow.
         // Reusing it avoids three network round trips and keeps cold planner requests below gateways.
-        String response = requestForecast(nx, ny, forecastBase.date(), forecastBase.time(), null);
+        ForecastPayload response = requestForecast(nx, ny, forecastBase.date(), forecastBase.time(), null);
         List<DailyWeatherDto> forecasts = new ArrayList<>(3);
         for (int dayOffset = 0; dayOffset <= 2; dayOffset++) {
             String targetDate = LocalDate.now().plusDays(dayOffset)
@@ -121,7 +136,7 @@ public class WeatherService {
         ForecastBase forecastBase = getDailyForecastBase();
         String targetDate = LocalDate.now().plusDays(dayOffset)
                 .format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String response = requestForecast(nx, ny, forecastBase.date(), forecastBase.time(), targetDate);
+        ForecastPayload response = requestForecast(nx, ny, forecastBase.date(), forecastBase.time(), targetDate);
 
         WeatherDto morning = parseWeatherResponse(response, targetDate, WeatherPeriod.MORNING);
         WeatherDto afternoon = parseWeatherResponse(response, targetDate, WeatherPeriod.AFTERNOON);
@@ -168,7 +183,7 @@ public class WeatherService {
             String baseTime,
             String targetDate
     ) {
-        String response = requestForecast(nx, ny, baseDate, baseTime, targetDate);
+        ForecastPayload response = requestForecast(nx, ny, baseDate, baseTime, targetDate);
         WeatherDto weather = parseWeatherResponse(response, targetDate, period);
         int dayOffset = Math.max(0, Math.min(2,
                 (int) java.time.temporal.ChronoUnit.DAYS.between(
@@ -177,7 +192,7 @@ public class WeatherService {
         return applySafetyInsight(enrichAirQuality(weather, locationName), safetyInsight);
     }
 
-    private String requestForecast(
+    private ForecastPayload requestForecast(
             int nx,
             int ny,
             String baseDate,
@@ -186,7 +201,7 @@ public class WeatherService {
     ) {
         String encodedApiKey = UriUtils.encode(apiKey, StandardCharsets.UTF_8);
 
-        URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl + "/getVilageFcst")
+        URI uri = UriComponentsBuilder.fromUriString(baseUrl + "/getVilageFcst")
                 .queryParam("serviceKey", encodedApiKey)
                 .queryParam("pageNo", 1)
                 .queryParam("numOfRows", 1000)
@@ -203,12 +218,67 @@ public class WeatherService {
                 nx, ny, baseDate, baseTime, targetDate
         );
 
+        String snapshotKey = nx + ":" + ny;
         try {
-            return restTemplate.getForObject(uri, String.class);
-        } catch (Exception e) {
-            log.error("기상청 API 호출 실패", e);
-            throw new RuntimeException("날씨 정보를 가져오는데 실패했습니다.", e);
+            String response = externalApiGuard.execute("kma-forecast", () -> {
+                String body = restTemplate.getForObject(uri, String.class);
+                validateForecastResponse(body);
+                return body;
+            });
+            ForecastPayload payload = new ForecastPayload(
+                    response,
+                    forecastIssuedAt(baseDate, baseTime),
+                    Instant.now(),
+                    false
+            );
+            latestForecastSnapshots.put(snapshotKey, payload);
+            return payload;
+        } catch (RuntimeException e) {
+            ForecastPayload snapshot = latestForecastSnapshots.getIfPresent(snapshotKey);
+            if (snapshot != null
+                    && Duration.between(snapshot.fetchedAt(), Instant.now()).compareTo(FALLBACK_MAX_AGE) <= 0) {
+                log.warn(
+                        "기상청 API 장애로 마지막 정상 예보 사용: nx={}, ny={}, fetchedAt={}",
+                        nx, ny, snapshot.fetchedAt()
+                );
+                return snapshot.asFallback();
+            }
+            log.error("기상청 API 호출 실패: nx={}, ny={}", nx, ny, e);
+            throw new IllegalStateException(
+                    "기상청 예보를 가져오지 못했고 사용 가능한 최근 자료도 없습니다.",
+                    e
+            );
         }
+    }
+
+    private void validateForecastResponse(String response) {
+        if (response == null || response.isBlank()) {
+            throw new IllegalStateException("기상청이 빈 응답을 반환했습니다.");
+        }
+        try {
+            JSONObject responseNode = new JSONObject(response).getJSONObject("response");
+            String resultCode = responseNode.getJSONObject("header").optString("resultCode", "00");
+            if (!"00".equals(resultCode)) {
+                String resultMessage = responseNode.getJSONObject("header")
+                        .optString("resultMsg", "원천 API 오류");
+                throw new IllegalStateException("기상청 응답 오류: " + resultCode + " " + resultMessage);
+            }
+            responseNode.getJSONObject("body").getJSONObject("items").getJSONArray("item");
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IllegalStateException("기상청 응답 형식이 계약과 다릅니다.", e);
+        }
+    }
+
+    private String forecastIssuedAt(String baseDate, String baseTime) {
+        return LocalDateTime.parse(
+                        baseDate + baseTime,
+                        DateTimeFormatter.ofPattern("yyyyMMddHHmm")
+                )
+                .atZone(ZoneId.of("Asia/Seoul"))
+                .toOffsetDateTime()
+                .toString();
     }
 
     private void validateForecastBase(String baseDate, String baseTime) {
@@ -277,7 +347,7 @@ public class WeatherService {
         String sidoName = extractSidoName(locationName);
         String encodedApiKey = UriUtils.encode(airQualityApiKey, StandardCharsets.UTF_8);
 
-        URI uri = UriComponentsBuilder.fromHttpUrl(airQualityBaseUrl + "/getCtprvnRltmMesureDnsty")
+        URI uri = UriComponentsBuilder.fromUriString(airQualityBaseUrl + "/getCtprvnRltmMesureDnsty")
                 .queryParam("serviceKey", encodedApiKey)
                 .queryParam("returnType", "json")
                 .queryParam("numOfRows", 100)
@@ -324,9 +394,9 @@ public class WeatherService {
         );
     }
 
-    private WeatherDto parseWeatherResponse(String response, String targetDate, WeatherPeriod period) {
+    private WeatherDto parseWeatherResponse(ForecastPayload payload, String targetDate, WeatherPeriod period) {
         String targetTime = period.getTargetTime();
-        JSONObject json = new JSONObject(response);
+        JSONObject json = new JSONObject(payload.body());
         JSONArray items = json
                 .getJSONObject("response")
                 .getJSONObject("body")
@@ -375,7 +445,29 @@ public class WeatherService {
                 .pop(getForecastValue(weatherMap, nearbyMap, dailyMap, "POP", "0"))
                 .reh(getForecastValue(weatherMap, nearbyMap, dailyMap, "REH", "-"))
                 .wsd(getForecastValue(weatherMap, nearbyMap, dailyMap, "WSD", "-"))
+                .dataSourceName(KMA_SOURCE_NAME)
+                .dataSourceUrl(KMA_SOURCE_URL)
+                .forecastIssuedAt(payload.forecastIssuedAt())
+                .dataFetchedAt(payload.fetchedAt().toString())
+                .fallbackData(payload.fallback())
+                .sourceFieldCount(countSourceFields(weatherMap, nearbyMap, dailyMap))
                 .build();
+    }
+
+    private int countSourceFields(
+            Map<String, String> exactMap,
+            Map<String, ForecastValue> nearbyMap,
+            Map<String, String> dailyMap
+    ) {
+        int count = 0;
+        for (String category : List.of("TMP", "POP", "REH", "WSD", "SKY", "PTY")) {
+            if (exactMap.containsKey(category)
+                    || nearbyMap.containsKey(category)
+                    || dailyMap.containsKey(category)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private String getForecastValue(
@@ -467,6 +559,17 @@ public class WeatherService {
     }
 
     private record ForecastBase(String date, String time) {
+    }
+
+    private record ForecastPayload(
+            String body,
+            String forecastIssuedAt,
+            Instant fetchedAt,
+            boolean fallback
+    ) {
+        private ForecastPayload asFallback() {
+            return new ForecastPayload(body, forecastIssuedAt, fetchedAt, true);
+        }
     }
 
     private record ForecastValue(String value, int distance) {

@@ -77,7 +77,7 @@ public class RouteBriefingService {
     }
 
     private RouteSummary requestRoute(LocationDto.Response origin, LocationDto.Response destination) {
-        URI uri = UriComponentsBuilder.fromHttpUrl(kakaoMobilityBaseUrl + "/directions")
+        URI uri = UriComponentsBuilder.fromUriString(kakaoMobilityBaseUrl + "/directions")
                 .queryParam("origin", origin.getLongitude() + "," + origin.getLatitude())
                 .queryParam("destination", destination.getLongitude() + "," + destination.getLatitude())
                 .queryParam("summary", true)

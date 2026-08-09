@@ -118,4 +118,12 @@ public class UserController {
     ) {
         return ResponseEntity.ok(userService.unsubscribeCurrent(codersUserId));
     }
+
+    @DeleteMapping("/me/data")
+    public ResponseEntity<Void> deleteCurrentData(
+            @RequestHeader(value = "X-Coders-User", required = false) String codersUserId
+    ) {
+        userService.deleteCurrentData(codersUserId);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 public class UserService {
 
     private static final int MAX_RECIPIENTS = 10;
+    private static final String PRIVACY_CONSENT_VERSION = "2026-08-09";
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
 
     private final UserRepository userRepository;
@@ -79,6 +80,7 @@ public class UserService {
                     request.isAfternoonEnabled(),
                     request.isEveningEnabled()
             );
+            user.recordPrivacyConsent(PRIVACY_CONSENT_VERSION);
             user.subscribe();
             eventPublisher.publishEvent(new SubscriptionWelcomeMailRequested(user));
             return toResponse(user, "구독 정보가 새롭게 업데이트되었습니다.");
@@ -111,6 +113,7 @@ public class UserService {
                 .afternoonEnabled(request.isAfternoonEnabled())
                 .eveningEnabled(request.isEveningEnabled())
                 .build();
+        user.recordPrivacyConsent(PRIVACY_CONSENT_VERSION);
 
         User saved = userRepository.save(user);
         log.info("신규 구독자 등록: userId={}", saved.getId());
@@ -298,6 +301,14 @@ public class UserService {
         return toResponse(user, "구독이 취소되었습니다.");
     }
 
+    @Transactional
+    public void deleteCurrentData(String codersUserId) {
+        User user = findCurrentUser(codersUserId);
+        userRepository.deleteMailHistoriesByEmail(user.getEmail());
+        userRepository.delete(user);
+        log.info("사용자 요청에 따라 구독 개인정보 완전 삭제: userId={}", user.getId());
+    }
+
     private void requireCodersIdentity(String codersUserId) {
         if (codersIdentityRequired && normalizeCodersUserId(codersUserId) == null) {
             throw new SecurityException("로그인 후 이용해주세요.");
@@ -407,6 +418,8 @@ public class UserService {
                 .morningEnabled(user.isMorningEnabled())
                 .afternoonEnabled(user.isAfternoonEnabled())
                 .eveningEnabled(user.isEveningEnabled())
+                .privacyConsentVersion(user.getPrivacyConsentVersion())
+                .privacyConsentAt(user.getPrivacyConsentAt())
                 .message(message)
                 .build();
     }

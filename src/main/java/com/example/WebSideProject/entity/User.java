@@ -105,6 +105,13 @@ public class User {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(length = 32)
+    private String privacyConsentVersion;
+
+    private LocalDateTime privacyConsentAt;
+
+    private LocalDateTime unsubscribedAt;
+
     @PrePersist
     protected void onCreate() {
         normalizeStylePreference();
@@ -184,8 +191,20 @@ public class User {
         ensureUnsubscribeToken();
     }
 
-    public void unsubscribe() { this.subscribed = false; }
-    public void subscribe()   { this.subscribed = true; }
+    public void unsubscribe() {
+        this.subscribed = false;
+        this.unsubscribedAt = LocalDateTime.now();
+    }
+
+    public void subscribe() {
+        this.subscribed = true;
+        this.unsubscribedAt = null;
+    }
+
+    public void recordPrivacyConsent(String version) {
+        this.privacyConsentVersion = version;
+        this.privacyConsentAt = LocalDateTime.now();
+    }
 
     public AgeGroup getAgeGroup() {
         return ageGroup == null ? AgeGroup.NONE : ageGroup;

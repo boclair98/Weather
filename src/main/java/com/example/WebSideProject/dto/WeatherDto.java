@@ -42,6 +42,12 @@ public class WeatherDto {
     private String styleRecommendation;
     private TemperatureSensitivity temperatureSensitivity;
     private ActivityType activityType;
+    private String dataSourceName;
+    private String dataSourceUrl;
+    private String forecastIssuedAt;
+    private String dataFetchedAt;
+    private Boolean fallbackData;
+    private Integer sourceFieldCount;
 
     public String getDate() {
         return valueOrDash(date);
@@ -125,6 +131,31 @@ public class WeatherDto {
 
     public ActivityType getActivityType() {
         return activityType == null ? ActivityType.DAILY : activityType;
+    }
+
+    public String getDataSourceName() {
+        return dataSourceName == null || dataSourceName.isBlank() ? "기상청 단기예보" : dataSourceName;
+    }
+
+    public String getDataSourceUrl() {
+        return dataSourceUrl == null || dataSourceUrl.isBlank()
+                ? "https://www.weather.go.kr" : dataSourceUrl;
+    }
+
+    public String getForecastIssuedAt() {
+        return valueOrDash(forecastIssuedAt);
+    }
+
+    public String getDataFetchedAt() {
+        return valueOrDash(dataFetchedAt);
+    }
+
+    public boolean isFallbackData() {
+        return Boolean.TRUE.equals(fallbackData);
+    }
+
+    public int getSourceFieldCount() {
+        return sourceFieldCount == null ? -1 : Math.max(0, Math.min(6, sourceFieldCount));
     }
 
     public String getPm10Display() {

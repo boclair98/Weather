@@ -10,10 +10,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
 public class SecurityHeadersFilter extends OncePerRequestFilter {
+    public static final String CSP_NONCE_ATTRIBUTE = "cspNonce";
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Override
     protected void doFilterInternal(
@@ -21,6 +25,10 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
+        byte[] nonceBytes = new byte[18];
+        SECURE_RANDOM.nextBytes(nonceBytes);
+        String nonce = Base64.getUrlEncoder().withoutPadding().encodeToString(nonceBytes);
+        request.setAttribute(CSP_NONCE_ATTRIBUTE, nonce);
         response.setHeader("X-Content-Type-Options", "nosniff");
         response.setHeader("X-Frame-Options", "DENY");
         response.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -35,8 +43,8 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
         }
         response.setHeader(
                 "Content-Security-Policy",
-                "default-src 'self'; style-src 'self' 'unsafe-inline'; " +
-                        "script-src 'self' 'unsafe-inline'; connect-src 'self'; " +
+                "default-src 'self'; style-src 'self' 'nonce-" + nonce + "'; " +
+                        "script-src 'self' 'nonce-" + nonce + "'; connect-src 'self'; " +
                         "img-src 'self' data:; font-src 'self'"
         );
         filterChain.doFilter(request, response);

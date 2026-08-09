@@ -51,4 +51,18 @@ class AdminActuatorFilterTest {
 
         verify(chain).doFilter(request, response);
     }
+
+    @Test
+    void protectsPrometheusEndpointToo() throws Exception {
+        AdminActuatorFilter filter = new AdminActuatorFilter("secret", true);
+        FilterChain chain = mock(FilterChain.class);
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/actuator/prometheus");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, chain);
+
+        assertThat(response.getStatus()).isEqualTo(403);
+        assertThat(response.getContentAsString()).contains("ACCESS_DENIED");
+        verify(chain, never()).doFilter(request, response);
+    }
 }

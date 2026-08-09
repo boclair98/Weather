@@ -1,5 +1,7 @@
 package com.example.WebSideProject.controller;
 
+import com.example.WebSideProject.config.SecurityHeadersFilter;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,6 +24,7 @@ public class HomeController {
     @GetMapping("/")
     public String home(
             @RequestHeader(value = "X-Coders-User", required = false) String codersUserId,
+            HttpServletRequest request,
             Model model
     ) {
         boolean signedIn = codersUserId != null && !codersUserId.isBlank();
@@ -30,6 +33,7 @@ public class HomeController {
         model.addAttribute("signedIn", signedIn);
         model.addAttribute("loginUrl", buildPlatformUrl(GOOGLE_LOGIN_URL, returnUrl));
         model.addAttribute("logoutUrl", buildPlatformUrl(LOGOUT_URL, returnUrl));
+        model.addAttribute("cspNonce", request.getAttribute(SecurityHeadersFilter.CSP_NONCE_ATTRIBUTE));
         return "index";
     }
 
