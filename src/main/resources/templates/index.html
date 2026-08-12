@@ -282,6 +282,102 @@
             line-height: 20px;
         }
 
+        .hourly-weather {
+            margin: 18px 0;
+            padding: 16px;
+            border: 1px solid #dbeafe;
+            border-radius: 14px;
+            background: #f8fbff;
+        }
+
+        .hourly-weather-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .hourly-weather-header strong {
+            display: block;
+            color: #0f172a;
+            font-size: 15px;
+        }
+
+        .hourly-weather-header span,
+        .hourly-source {
+            display: block;
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .hourly-rain-summary {
+            flex: 0 0 auto;
+            padding: 7px 9px;
+            border-radius: 999px;
+            color: #1e3a8a !important;
+            background: #dbeafe;
+            font-weight: 800;
+        }
+
+        .hourly-track {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(92px, 1fr);
+            gap: 8px;
+            margin-top: 14px;
+            padding-bottom: 5px;
+            overflow-x: auto;
+            overscroll-behavior-inline: contain;
+            scrollbar-width: thin;
+        }
+
+        .hourly-item {
+            min-height: 126px;
+            padding: 11px 9px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #ffffff;
+            text-align: center;
+        }
+
+        .hourly-item.rain-risk {
+            border-color: #93c5fd;
+            background: #eff6ff;
+        }
+
+        .hourly-item time,
+        .hourly-item strong,
+        .hourly-item span {
+            display: block;
+        }
+
+        .hourly-item time {
+            color: #475569;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .hourly-item strong {
+            margin-top: 8px;
+            color: #0f172a;
+            font-size: 19px;
+        }
+
+        .hourly-item span {
+            margin-top: 5px;
+            color: #64748b;
+            font-size: 10px;
+            line-height: 1.45;
+        }
+
+        .hourly-error {
+            margin: 10px 0 0;
+            color: #b91c1c;
+            font-size: 12px;
+        }
+
         .weather-score {
             display: flex;
             align-items: baseline;
@@ -1517,14 +1613,14 @@
     </div>
     <div class="layout">
         <section>
-            <p class="eyebrow">외출과 이동을 결정하는 날씨 브리핑</p>
-            <h1>지금 필요한 건<br><span class="hero-accent">기온보다 행동</span>이에요</h1>
-            <p class="intro">어느 시간에 나갈지, 공식 특보와 자외선은 어떤지, 목적지까지 무엇을 챙길지 한 화면에서 결정하세요.</p>
+            <p class="eyebrow">내 위치의 정확한 생활 날씨</p>
+            <h1>오늘 날씨를<br><span class="hero-accent">한눈에 확인</span>하세요</h1>
+            <p class="intro">시간별 기온과 비, 대기질, 자외선, 공식 기상특보를 한 화면에서 빠르게 확인하세요.</p>
             <div class="hero-badges" aria-label="서비스 특징">
-                <span class="hero-badge">3초 외출 판단</span>
-                <span class="hero-badge">체감 맞춤 코디</span>
-                <span class="hero-badge">공식 안전지수</span>
-                <span class="hero-badge">경로 날씨</span>
+                <span class="hero-badge">시간별 예보</span>
+                <span class="hero-badge">강수 시작·종료</span>
+                <span class="hero-badge">대기질·자외선</span>
+                <span class="hero-badge">공식 기상특보</span>
                 <span class="hero-badge">필요할 때만 이메일</span>
                 <button class="hero-install" type="button" id="installApp" hidden>앱으로 설치</button>
             </div>
@@ -1572,6 +1668,18 @@
                         <p id="dailyRain">시간대별 우산 필요 여부를 확인합니다.</p>
                     </div>
                     <div class="daily-periods" id="dailyPeriods" hidden aria-label="시간대별 날씨"></div>
+                    <section class="hourly-weather" id="hourlyWeather" hidden aria-label="시간별 상세 예보" aria-live="polite">
+                        <div class="hourly-weather-header">
+                            <div>
+                                <strong>시간별 상세 예보</strong>
+                                <span id="hourlyHeadline">기온과 강수 흐름을 불러오고 있어요.</span>
+                            </div>
+                            <span class="hourly-rain-summary" id="hourlyRainSummary">강수 확인 중</span>
+                        </div>
+                        <div class="hourly-track" id="hourlyTrack"></div>
+                        <span class="hourly-source" id="hourlySource">기상청 발표 시각 확인 중</span>
+                        <p class="hourly-error" id="hourlyError" hidden></p>
+                    </section>
                     <div class="weather-score">
                         <strong id="outingScore">-점</strong>
                         <span id="outingScoreLabel">-</span>
@@ -1751,7 +1859,7 @@
                 </div>
                 <p class="planner-error" id="plannerError" hidden></p>
             </section>
-            <section class="route-planner" aria-label="이동 경로 날씨 브리핑">
+            <section class="route-planner" id="routePlanner" aria-label="이동 경로 날씨 브리핑">
                 <h2>출발지부터 목적지까지</h2>
                 <p>자동차 이동시간과 양쪽 날씨를 비교해 도착 전에 챙길 것을 알려드립니다.</p>
                 <div class="route-form">
@@ -1966,6 +2074,12 @@
     const dailyTrend = document.getElementById("dailyTrend");
     const dailyRain = document.getElementById("dailyRain");
     const dailyPeriods = document.getElementById("dailyPeriods");
+    const hourlyWeather = document.getElementById("hourlyWeather");
+    const hourlyHeadline = document.getElementById("hourlyHeadline");
+    const hourlyRainSummary = document.getElementById("hourlyRainSummary");
+    const hourlyTrack = document.getElementById("hourlyTrack");
+    const hourlySource = document.getElementById("hourlySource");
+    const hourlyError = document.getElementById("hourlyError");
     const shareWeather = document.getElementById("shareWeather");
     const weatherPlanner = document.getElementById("weatherPlanner");
     const plannerHeadline = document.getElementById("plannerHeadline");
@@ -1991,6 +2105,7 @@
     const decisionPacking = document.getElementById("decisionPacking");
     const decisionError = document.getElementById("decisionError");
     const addDecisionCalendar = document.getElementById("addDecisionCalendar");
+    const routePlanner = document.getElementById("routePlanner");
     const installApp = document.getElementById("installApp");
     const networkStatus = document.getElementById("networkStatus");
     let selectedLocation = null;
@@ -2000,6 +2115,9 @@
     let weatherPlannerData = null;
     let weatherDecisionData = null;
     let installPrompt = null;
+
+    // Decision tools are useful, but the primary flow remains weather information.
+    routePlanner.insertAdjacentElement("afterend", decisionWindow);
 
     function localDateValue(dayOffset = 0) {
         const value = new Date();
@@ -2428,6 +2546,12 @@
         actionOutdoor.textContent = "확인 중";
         dailyInsight.hidden = true;
         dailyPeriods.hidden = true;
+        hourlyWeather.hidden = false;
+        hourlyHeadline.textContent = "시간별 기온과 강수 흐름을 불러오고 있어요.";
+        hourlyRainSummary.textContent = "강수 확인 중";
+        hourlyTrack.innerHTML = "";
+        hourlySource.textContent = "기상청 발표 시각 확인 중";
+        hourlyError.hidden = true;
         dailyForecast = null;
 
         try {
@@ -2446,6 +2570,7 @@
             if (!response.ok) throw new Error(getApiError(dailyForecast, "날씨를 불러오지 못했습니다."));
             renderDailyInsight();
             renderSelectedPeriod(location);
+            loadHourlyForecast(location);
             if (!weatherPlannerData || forecastDayOffset === 0) {
                 loadWeatherPlanner(location);
             }
@@ -2455,6 +2580,55 @@
         } finally {
             weatherPreview.setAttribute("aria-busy", "false");
         }
+    }
+
+    async function loadHourlyForecast(location) {
+        hourlyWeather.setAttribute("aria-busy", "true");
+        try {
+            const params = new URLSearchParams({
+                nx: location.nx,
+                ny: location.ny,
+                locationName: locationContext(location),
+                dayOffset: forecastDayOffset
+            });
+            const response = await fetch(`/api/weather/hourly?${params.toString()}`);
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(getApiError(data, "시간별 예보를 불러오지 못했습니다."));
+            renderHourlyForecast(data);
+        } catch (error) {
+            hourlyHeadline.textContent = "시간별 상세 예보를 잠시 사용할 수 없어요.";
+            hourlyRainSummary.textContent = "재시도 필요";
+            hourlyError.textContent = error.message;
+            hourlyError.hidden = false;
+        } finally {
+            hourlyWeather.setAttribute("aria-busy", "false");
+        }
+    }
+
+    function renderHourlyForecast(forecast) {
+        hourlyHeadline.textContent = forecast.headline;
+        hourlyRainSummary.textContent = forecast.precipitationSummary;
+        hourlyTrack.innerHTML = "";
+        (forecast.hours || []).forEach((hour) => {
+            const item = document.createElement("article");
+            const rainRisk = hour.precipitation !== "없음" || hour.precipitationProbability >= 60;
+            item.className = `hourly-item${rainRisk ? " rain-risk" : ""}`;
+            const time = document.createElement("time");
+            time.textContent = hour.time;
+            const temperature = document.createElement("strong");
+            temperature.textContent = `${hour.temperature}°`;
+            const sky = document.createElement("span");
+            sky.textContent = rainRisk ? `${hour.precipitation} · ${hour.precipitationProbability}%` : hour.sky;
+            const details = document.createElement("span");
+            details.textContent = `습도 ${hour.humidity}% · 바람 ${hour.windSpeed}m/s`;
+            item.append(time, temperature, sky, details);
+            hourlyTrack.appendChild(item);
+        });
+        const provenance = forecast.provenance || {};
+        hourlySource.textContent = provenance.fallback
+            ? `기상청 마지막 정상자료 · ${formatIssuedAt(provenance.forecastIssuedAt)}`
+            : `기상청 단기예보 · 발표 ${formatIssuedAt(provenance.forecastIssuedAt)} · 완전성 ${provenance.completenessPercent ?? 0}%`;
+        hourlyError.hidden = true;
     }
 
     async function loadWeatherPlanner(location) {

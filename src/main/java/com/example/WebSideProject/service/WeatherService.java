@@ -6,6 +6,7 @@ import com.example.WebSideProject.dto.SafetyInsightDto;
 import com.example.WebSideProject.dto.WeatherDto;
 import com.example.WebSideProject.dto.ForecastProvenanceDto;
 import com.example.WebSideProject.dto.WeatherDecisionDto;
+import com.example.WebSideProject.dto.HourlyWeatherDto;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
@@ -129,6 +130,60 @@ public class WeatherService {
             forecasts.add(DailyWeatherDto.from(morning, afternoon, evening, dayLabel, targetDate));
         }
         return List.copyOf(forecasts);
+    }
+
+    @Cacheable(
+            cacheNames = "weather",
+            key = "'hourly:' + #nx + ':' + #ny + ':' + #dayOffset + ':'"
+                    + " + (#locationName == null ? '' : #locationName)",
+            sync = true
+    )
+    public HourlyWeatherDto getHourlyWeather(int nx, int ny, String locationName, int dayOffset) {
+        validateGrid(nx, ny);
+        if (dayOffset < 0 || dayOffset > 2) {
+            throw new IllegalArgumentException("dayOffset은 0부터 2까지만 지원합니다.");
+        }
+        LocalDate targetDate = LocalDate.now().plusDays(dayOffset);
+        ForecastBase forecastBase = getDailyForecastBase();
+        ForecastPayload payload = requestForecast(
+                nx, ny, forecastBase.date(), forecastBase.time(),
+                targetDate.format(DateTimeFormatter.BASIC_ISO_DATE)
+        );
+        List<HourlyForecast> forecasts = parseHourlyForecasts(payload, targetDate);
+        if (forecasts.isEmpty()) {
+            throw new IllegalStateException("선택한 날짜의 시간별 예보가 없습니다.");
+        }
+
+        int minimum = forecasts.stream().mapToInt(HourlyForecast::temperature).min().orElse(0);
+        int maximum = forecasts.stream().mapToInt(HourlyForecast::temperature).max().orElse(0);
+        int maximumPop = forecasts.stream().mapToInt(HourlyForecast::pop).max().orElse(0);
+        List<HourlyForecast> rainHours = forecasts.stream().filter(this::hasPrecipitationRisk).toList();
+        String precipitationSummary = buildHourlyPrecipitationSummary(rainHours);
+        String headline = minimum + "°C ~ " + maximum + "°C · " + precipitationSummary;
+
+        List<HourlyWeatherDto.Hour> hours = forecasts.stream()
+                .map(forecast -> new HourlyWeatherDto.Hour(
+                        forecast.time().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                        forecast.temperature(),
+                        forecast.pop(),
+                        precipitationLabel(forecast.pty()),
+                        forecast.humidity(),
+                        Math.round(forecast.wind() * 10.0) / 10.0,
+                        skyLabel(forecast.sky())
+                ))
+                .toList();
+
+        return new HourlyWeatherDto(
+                locationName == null || locationName.isBlank() ? "선택 위치" : locationName,
+                targetDate.toString(),
+                headline,
+                precipitationSummary,
+                minimum,
+                maximum,
+                maximumPop,
+                hours,
+                hourlyProvenance(payload, forecasts)
+        );
     }
 
     @Cacheable(
@@ -599,6 +654,7 @@ public class WeatherService {
                             safeParseInt(values.get("TMP"), 20),
                             safeParseInt(values.get("REH"), 50),
                             safeParseDouble(values.get("WSD"), 0.0),
+                            values.getOrDefault("SKY", "1"),
                             (int) List.of("TMP", "POP", "PTY", "REH", "WSD", "SKY").stream()
                                     .filter(values::containsKey)
                                     .count()
@@ -606,6 +662,50 @@ public class WeatherService {
                 })
                 .sorted(Comparator.comparing(HourlyForecast::time))
                 .toList();
+    }
+
+    private boolean hasPrecipitationRisk(HourlyForecast forecast) {
+        return !"0".equals(forecast.pty()) || forecast.pop() >= 60;
+    }
+
+    private String buildHourlyPrecipitationSummary(List<HourlyForecast> rainHours) {
+        if (rainHours.isEmpty()) {
+            return "뚜렷한 강수 시간대 없음";
+        }
+        String start = rainHours.get(0).time().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+        String end = rainHours.get(rainHours.size() - 1).time().plusHours(1)
+                .toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+        String type = rainHours.stream().map(HourlyForecast::pty)
+                .filter(code -> !"0".equals(code))
+                .findFirst().map(this::precipitationLabel).orElse("비");
+        return start + "~" + end + " " + type + " 가능성";
+    }
+
+    private String skyLabel(String sky) {
+        return switch (sky) {
+            case "1" -> "맑음";
+            case "3" -> "구름많음";
+            case "4" -> "흐림";
+            default -> "하늘 상태 확인 필요";
+        };
+    }
+
+    private ForecastProvenanceDto hourlyProvenance(ForecastPayload payload, List<HourlyForecast> hourly) {
+        int available = hourly.stream().mapToInt(HourlyForecast::sourceFieldCount).sum();
+        int expected = hourly.size() * 6;
+        int completeness = expected == 0 ? 0 : (int) Math.round(available * 100.0 / expected);
+        long ageSeconds = Math.max(0, Duration.between(payload.fetchedAt(), Instant.now()).getSeconds());
+        String freshness = payload.fallback() ? "STALE_FALLBACK"
+                : ageSeconds <= 900 ? "FRESH" : ageSeconds <= 3600 ? "RECENT" : "STALE";
+        String quality = payload.fallback() ? "DEGRADED"
+                : completeness >= 90 ? "VERIFIED" : completeness >= 70 ? "PARTIAL" : "DEGRADED";
+        return new ForecastProvenanceDto(
+                KMA_SOURCE_NAME, KMA_SOURCE_URL, payload.forecastIssuedAt(), payload.fetchedAt().toString(),
+                ageSeconds, freshness, quality, completeness, payload.fallback(),
+                payload.fallback()
+                        ? "원천 장애로 마지막 정상 시간별 예보를 제공합니다."
+                        : "기상청 단기예보의 시간별 원천자료입니다."
+        );
     }
 
     private List<DecisionCandidate> buildDecisionCandidates(
@@ -871,6 +971,7 @@ public class WeatherService {
             int temperature,
             int humidity,
             double wind,
+            String sky,
             int sourceFieldCount
     ) {
     }
