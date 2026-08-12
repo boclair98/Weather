@@ -7,6 +7,7 @@ import com.example.WebSideProject.Enum.TemperatureSensitivity;
 import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.dto.DailyWeatherDto;
 import com.example.WebSideProject.dto.WeatherDto;
+import com.example.WebSideProject.dto.WeatherDecisionDto;
 import com.example.WebSideProject.dto.WeatherPlannerDto;
 import com.example.WebSideProject.service.WeatherPlannerService;
 import com.example.WebSideProject.service.WeatherService;
@@ -82,6 +83,23 @@ public class WeatherController {
                 .cacheControl(WEATHER_CACHE)
                 .body(weatherPlannerService.getPlanner(
                         nx, ny, locationName, ageGroup, gender, temperatureSensitivity, activityType
+                ));
+    }
+
+    @GetMapping("/decision-window")
+    public ResponseEntity<WeatherDecisionDto> getDecisionWindow(
+            @RequestParam(defaultValue = "60") int nx,
+            @RequestParam(defaultValue = "127") int ny,
+            @RequestParam(required = false) String locationName,
+            @RequestParam(required = false) String targetDate,
+            @RequestParam(defaultValue = "18:00") String targetTime,
+            @RequestParam(defaultValue = "90") int flexMinutes,
+            @RequestParam(defaultValue = "60") int durationMinutes
+    ) {
+        return ResponseEntity.ok()
+                .cacheControl(WEATHER_CACHE)
+                .body(weatherService.getDecisionWindow(
+                        nx, ny, locationName, targetDate, targetTime, flexMinutes, durationMinutes
                 ));
     }
 

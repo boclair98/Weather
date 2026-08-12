@@ -1253,6 +1253,150 @@
             text-underline-offset: 3px;
         }
 
+        .decision-window {
+            margin-top: 22px;
+            padding: 24px;
+            overflow: hidden;
+            border: 1px solid #a7f3d0;
+            border-radius: 24px;
+            background: linear-gradient(145deg, #ecfdf5, #f0fdfa 48%, #eff6ff);
+            box-shadow: 0 20px 48px rgba(5, 150, 105, .12);
+        }
+
+        .decision-window-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .decision-window h2,
+        .decision-window h3 {
+            margin: 0;
+            color: #064e3b;
+        }
+
+        .decision-window-header p {
+            max-width: 620px;
+            margin: 7px 0 0;
+            color: #475569;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .decision-badge {
+            flex: 0 0 auto;
+            padding: 7px 10px;
+            border-radius: 999px;
+            color: #065f46;
+            background: #d1fae5;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .decision-form {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+            margin-top: 18px;
+        }
+
+        .decision-field label {
+            display: block;
+            margin: 0 0 6px;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .decision-field input,
+        .decision-field select {
+            width: 100%;
+        }
+
+        .decision-result {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid #a7f3d0;
+        }
+
+        .decision-summary {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .decision-summary p {
+            margin: 7px 0 0;
+            color: #475569;
+            font-size: 13px;
+        }
+
+        .decision-improvement {
+            flex: 0 0 auto;
+            padding: 11px 13px;
+            border-radius: 14px;
+            color: #ffffff;
+            background: #047857;
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .decision-candidates {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 9px;
+            margin-top: 16px;
+        }
+
+        .decision-candidate {
+            padding: 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, .72);
+        }
+
+        .decision-candidate.recommended {
+            border-color: #059669;
+            background: #ffffff;
+            box-shadow: inset 0 0 0 1px #059669;
+        }
+
+        .decision-candidate strong,
+        .decision-candidate span {
+            display: block;
+        }
+
+        .decision-candidate strong {
+            color: #0f172a;
+            font-size: 15px;
+        }
+
+        .decision-candidate span {
+            margin-top: 5px;
+            color: #64748b;
+            font-size: 11px;
+            line-height: 1.45;
+        }
+
+        .decision-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            margin-top: 15px;
+            color: #334155;
+            font-size: 12px;
+        }
+
+        .decision-error {
+            margin: 14px 0 0;
+            color: #b91c1c;
+            font-size: 13px;
+        }
+
         .hero-install {
             min-height: auto;
             padding: 7px 11px;
@@ -1308,12 +1452,17 @@
 
             .safety-grid,
             .route-form,
-            .planner-days {
+            .planner-days,
+            .decision-form,
+            .decision-candidates {
                 grid-template-columns: 1fr;
             }
 
             .planner-header,
-            .planner-actions {
+            .planner-actions,
+            .decision-window-header,
+            .decision-summary,
+            .decision-actions {
                 align-items: stretch;
                 flex-direction: column;
             }
@@ -1526,6 +1675,59 @@
                     </div>
                 </div>
             </div>
+            <section class="decision-window" id="decisionWindow" hidden aria-label="비를 피하는 외출 시간 추천" aria-live="polite">
+                <div class="decision-window-header">
+                    <div>
+                        <h2>비 피해서 나가기</h2>
+                        <p>원하는 출발 시각을 기준으로 강수·바람·기온을 비교해 가장 부담이 적은 시간을 찾습니다.</p>
+                    </div>
+                    <span class="decision-badge">일정 맞춤 결정</span>
+                </div>
+                <div class="decision-form">
+                    <div class="decision-field">
+                        <label for="decisionDate">외출 날짜</label>
+                        <input id="decisionDate" type="date">
+                    </div>
+                    <div class="decision-field">
+                        <label for="decisionTime">희망 출발</label>
+                        <input id="decisionTime" type="time" value="18:00">
+                    </div>
+                    <div class="decision-field">
+                        <label for="decisionFlex">조정 가능</label>
+                        <select id="decisionFlex">
+                            <option value="60">전후 1시간</option>
+                            <option value="90" selected>전후 1시간 30분</option>
+                            <option value="120">전후 2시간</option>
+                            <option value="180">전후 3시간</option>
+                        </select>
+                    </div>
+                    <div class="decision-field">
+                        <label for="decisionDuration">외출 시간</label>
+                        <select id="decisionDuration">
+                            <option value="30">30분</option>
+                            <option value="60" selected>1시간</option>
+                            <option value="90">1시간 30분</option>
+                            <option value="120">2시간</option>
+                        </select>
+                    </div>
+                    <button class="primary" type="button" id="loadDecisionWindow">최적 시간 찾기</button>
+                </div>
+                <div class="decision-result" id="decisionResult" hidden>
+                    <div class="decision-summary">
+                        <div>
+                            <h3 id="decisionHeadline">가장 좋은 시간을 계산하고 있어요.</h3>
+                            <p id="decisionRationale"></p>
+                        </div>
+                        <span class="decision-improvement" id="decisionImprovement">비교 중</span>
+                    </div>
+                    <div class="decision-candidates" id="decisionCandidates"></div>
+                    <div class="decision-actions">
+                        <span><strong>챙길 것</strong> · <span id="decisionPacking">기본 외출 준비</span></span>
+                        <button class="secondary" type="button" id="addDecisionCalendar">추천 시간 캘린더 저장</button>
+                    </div>
+                </div>
+                <p class="decision-error" id="decisionError" hidden></p>
+            </section>
             <section class="weather-planner" id="weatherPlanner" hidden aria-label="3일 결정 플래너" aria-live="polite">
                 <div class="planner-header">
                     <div>
@@ -1775,6 +1977,20 @@
     const plannerFreshness = document.getElementById("plannerFreshness");
     const plannerSource = document.getElementById("plannerSource");
     const addPlannerCalendar = document.getElementById("addPlannerCalendar");
+    const decisionWindow = document.getElementById("decisionWindow");
+    const decisionDate = document.getElementById("decisionDate");
+    const decisionTime = document.getElementById("decisionTime");
+    const decisionFlex = document.getElementById("decisionFlex");
+    const decisionDuration = document.getElementById("decisionDuration");
+    const loadDecisionWindowButton = document.getElementById("loadDecisionWindow");
+    const decisionResult = document.getElementById("decisionResult");
+    const decisionHeadline = document.getElementById("decisionHeadline");
+    const decisionRationale = document.getElementById("decisionRationale");
+    const decisionImprovement = document.getElementById("decisionImprovement");
+    const decisionCandidates = document.getElementById("decisionCandidates");
+    const decisionPacking = document.getElementById("decisionPacking");
+    const decisionError = document.getElementById("decisionError");
+    const addDecisionCalendar = document.getElementById("addDecisionCalendar");
     const installApp = document.getElementById("installApp");
     const networkStatus = document.getElementById("networkStatus");
     let selectedLocation = null;
@@ -1782,7 +1998,18 @@
     let forecastDayOffset = 0;
     let dailyForecast = null;
     let weatherPlannerData = null;
+    let weatherDecisionData = null;
     let installPrompt = null;
+
+    function localDateValue(dayOffset = 0) {
+        const value = new Date();
+        value.setDate(value.getDate() + dayOffset);
+        return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
+    }
+
+    decisionDate.value = localDateValue();
+    decisionDate.min = localDateValue();
+    decisionDate.max = localDateValue(2);
 
     window.addEventListener("beforeinstallprompt", (event) => {
         event.preventDefault();
@@ -1828,6 +2055,8 @@
     });
     shareWeather.addEventListener("click", shareCurrentWeather);
     addPlannerCalendar.addEventListener("click", downloadPlannerCalendar);
+    loadDecisionWindowButton.addEventListener("click", loadWeatherDecision);
+    addDecisionCalendar.addEventListener("click", downloadDecisionCalendar);
     loadRouteBriefingButton.addEventListener("click", loadRouteBriefing);
     locationQuery.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
@@ -2157,6 +2386,9 @@
     }
 
     async function loadWeatherPreview(location) {
+        weatherDecisionData = null;
+        decisionResult.hidden = true;
+        decisionError.hidden = true;
         weatherPreview.hidden = false;
         weatherPreview.setAttribute("aria-busy", "true");
         weatherPreview.className = "weather-preview";
@@ -2218,6 +2450,7 @@
     }
 
     async function loadWeatherPlanner(location) {
+        decisionWindow.hidden = false;
         weatherPlanner.hidden = false;
         weatherPlanner.setAttribute("aria-busy", "true");
         plannerHeadline.textContent = "오늘부터 모레까지 외출 조건을 비교하고 있어요.";
@@ -2289,6 +2522,93 @@
             plannerDays.appendChild(card);
         });
         addPlannerCalendar.disabled = false;
+    }
+
+    async function loadWeatherDecision() {
+        if (!selectedLocation) {
+            decisionWindow.hidden = false;
+            decisionError.textContent = "먼저 날씨를 확인할 위치를 선택해주세요.";
+            decisionError.hidden = false;
+            return;
+        }
+        decisionWindow.setAttribute("aria-busy", "true");
+        decisionError.hidden = true;
+        decisionResult.hidden = true;
+        loadDecisionWindowButton.disabled = true;
+        loadDecisionWindowButton.textContent = "비교 중";
+        try {
+            const params = new URLSearchParams({
+                nx: selectedLocation.nx,
+                ny: selectedLocation.ny,
+                locationName: locationContext(selectedLocation),
+                targetDate: decisionDate.value,
+                targetTime: decisionTime.value,
+                flexMinutes: decisionFlex.value,
+                durationMinutes: decisionDuration.value
+            });
+            const response = await fetch(`/api/weather/decision-window?${params.toString()}`);
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(getApiError(data, "최적 출발 시간을 계산하지 못했습니다."));
+            weatherDecisionData = data;
+            renderWeatherDecision(data);
+        } catch (error) {
+            weatherDecisionData = null;
+            decisionError.textContent = error.message;
+            decisionError.hidden = false;
+        } finally {
+            decisionWindow.setAttribute("aria-busy", "false");
+            loadDecisionWindowButton.disabled = false;
+            loadDecisionWindowButton.textContent = "최적 시간 찾기";
+        }
+    }
+
+    function renderWeatherDecision(decision) {
+        decisionHeadline.textContent = decision.headline;
+        decisionRationale.textContent = decision.rationale;
+        decisionImprovement.textContent = decision.improvementPoints > 0
+            ? `부담 ${decision.improvementPoints}점 감소`
+            : `추천 ${decision.recommendedScore}점`;
+        decisionPacking.textContent = (decision.packingChecklist || []).join(" · ");
+        decisionCandidates.innerHTML = "";
+        (decision.candidates || []).forEach((candidate) => {
+            const card = document.createElement("article");
+            card.className = `decision-candidate${candidate.recommended ? " recommended" : ""}`;
+            const time = document.createElement("strong");
+            time.textContent = `${candidate.start}–${candidate.end}${candidate.recommended ? " · 추천" : ""}`;
+            const score = document.createElement("span");
+            score.textContent = `${candidate.score}점 · ${candidate.scoreLabel}`;
+            const weather = document.createElement("span");
+            weather.textContent = `${candidate.temperature}°C · 강수 ${candidate.precipitationProbability}% · 바람 ${candidate.windSpeed}m/s`;
+            card.append(time, score, weather);
+            decisionCandidates.appendChild(card);
+        });
+        decisionResult.hidden = false;
+    }
+
+    function downloadDecisionCalendar() {
+        if (!weatherDecisionData || !selectedLocation) return;
+        const compactDate = weatherDecisionData.targetDate.replaceAll("-", "");
+        const start = weatherDecisionData.recommendedStart.replace(":", "") + "00";
+        const end = weatherDecisionData.recommendedEnd.replace(":", "") + "00";
+        const safeLocation = escapeCalendarText(selectedLocation.locationName);
+        const description = escapeCalendarText(
+            `${weatherDecisionData.headline} ${weatherDecisionData.rationale} 챙길 것: ${(weatherDecisionData.packingChecklist || []).join(", ")}`
+        );
+        const calendar = [
+            "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Weather Brief//KR", "X-WR-TIMEZONE:Asia/Seoul",
+            "BEGIN:VEVENT", `UID:${Date.now()}@weather.coders.kr`,
+            `DTSTART;TZID=Asia/Seoul:${compactDate}T${start}`,
+            `DTEND;TZID=Asia/Seoul:${compactDate}T${end}`,
+            `SUMMARY:${safeLocation} 비 피하는 추천 외출`,
+            `LOCATION:${safeLocation}`, `DESCRIPTION:${description}`,
+            "END:VEVENT", "END:VCALENDAR"
+        ].join("\r\n");
+        const url = URL.createObjectURL(new Blob([calendar], {type: "text/calendar;charset=utf-8"}));
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `weather-safe-window-${compactDate}.ics`;
+        anchor.click();
+        URL.revokeObjectURL(url);
     }
 
     function formatIssuedAt(value) {
