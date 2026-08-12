@@ -1,465 +1,207 @@
 <p align="center">
-  <img src="docs/images/service-overview-preview.svg" alt="날씨한편 서비스 미리보기" width="100%">
+  <a href="https://weather.coders.kr">
+    <img src="docs/images/service-overview-preview.svg" alt="날씨한편 운영 서비스 화면" width="100%">
+  </a>
 </p>
 
 <h1 align="center">날씨한편</h1>
 
 <p align="center">
-  내 위치의 날씨를 빠르고 정확하게<br>
-  <strong>시간별 기온·강수·대기질·기상특보</strong>로 보여주는 생활 날씨 서비스
+  내 위치의 <strong>시간별 날씨·강수·대기질·기상특보</strong>를 한눈에 보여주고<br>
+  필요한 날씨만 이메일로 전달하는 생활 날씨 서비스
 </p>
 
 <p align="center">
-  <a href="https://weather.coders.kr"><img src="https://img.shields.io/badge/LIVE-weather.coders.kr-2563EB?style=for-the-badge" alt="운영 사이트"></a>
+  <a href="https://weather.coders.kr"><img src="https://img.shields.io/badge/운영_사이트-weather.coders.kr-2563EB?style=for-the-badge" alt="운영 사이트"></a>
   <a href="https://github.com/boclair98/Weather/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/boclair98/Weather/ci.yml?branch=main&style=for-the-badge&label=CI" alt="CI"></a>
   <img src="https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 17">
   <img src="https://img.shields.io/badge/Spring_Boot-3.5.16-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot 3.5.16">
 </p>
 
-> **운영 중:** [https://weather.coders.kr](https://weather.coders.kr)
+## 바로 사용하기
 
-> **표시 원칙:** 기상청 원천자료를 활용한 독립 서비스이며 기상청 공식 홈페이지나 기상청의 구매·인증 제품이라고 표시하지 않습니다. 공공기관 도입 준비도와 남은 외부 인증은 [`docs/PUBLIC_SECTOR_READINESS.md`](docs/PUBLIC_SECTOR_READINESS.md)를 확인하세요.
+**운영 서비스:** [https://weather.coders.kr](https://weather.coders.kr)
 
-## 서비스 소개
+1. 동네, 역 또는 건물명을 검색합니다.
+2. 오늘·내일·모레와 시간별 날씨를 확인합니다.
+3. 원하는 경우 여러 이메일에 아침·점심·저녁 브리핑을 구독합니다.
 
-날씨한편은 **날씨 정보 제공이 중심인 서비스**입니다. 위치별 시간 예보와 오늘·내일·모레 흐름, 기상특보, 자외선, 꽃가루, 대기질을 먼저 보여주고 코디·경로·일정 추천은 그 정보를 활용하는 보조 기능으로 제공합니다.
+> 기상청·에어코리아 원천자료를 활용한 독립 서비스입니다. 기상청 공식 홈페이지나 인증·납품 제품을 의미하지 않습니다.
 
-사용자가 가장 먼저 확인하는 질문에 답합니다.
+## 이 서비스가 알려주는 것
 
-- 지금부터 시간별 기온은 어떻게 변할까?
-- 비가 몇 시에 시작하고 언제 그칠까?
-- 우산이나 마스크를 챙겨야 할까?
-- 공식 특보나 강한 자외선이 있는가?
-- 오늘·내일·모레의 날씨 차이는 무엇인가?
-
-## 핵심 경험
-
-| 단계 | 사용자가 얻는 결과 |
+| 사용자의 질문 | 제공 정보 |
 | --- | --- |
-| 위치 선택 | 동네·역·건물명 검색, 현재 위치, 최근 장소 바로가기 |
-| 날씨 확인 | 시간별 기온·하늘·강수확률·습도·바람과 강수 예상 구간 |
-| 날짜 비교 | 오늘·내일·모레의 기온, 강수, 대기질과 안전 신호 |
-| 공식 정보 | 기상특보, 자외선, 꽃가루와 기상청 자료 발표시각·완전성 |
-| 맞춤 준비 | 우산·마스크·야외활동 조언, 체감·일정 기반 동적 코디 |
-| 일정 계획 | 3일 중 가장 좋은 날·시간 추천, 통합 준비물, 캘린더 저장 |
-| 경로 분석 | 출발지→목적지 거리·시간, 양쪽 날씨, 도착 준비 체크리스트 |
-| 알림 구독 | 아침·점심·저녁 선택 발송, 최대 10개 이메일, 스마트 위험 알림 |
+| 지금부터 날씨가 어떻게 변할까? | 시간별 기온, 하늘, 강수확률, 습도, 풍속 |
+| 비는 언제 시작하고 끝날까? | 비·눈 가능성이 높은 첫 시간과 마지막 시간 |
+| 공기는 괜찮을까? | 에어코리아 PM10·PM2.5, 등급, 측정소 |
+| 위험한 날씨가 있나? | 기상특보, 자외선, 꽃가루와 행동 안내 |
+| 오늘과 내일 중 언제가 좋을까? | 3일 예보와 아침·점심·저녁 비교 |
+| 무엇을 준비해야 할까? | 우산, 마스크, 야외활동, 동적 코디 추천 |
+| 메일로 받을 수 있나? | 최대 10개 이메일, 선택 시간, 위험 스마트 알림 |
 
-```mermaid
-flowchart LR
-    A["장소 선택"] --> B["시간별·3일 예보"]
-    B --> C["강수·대기질·특보"]
-    C --> D["코디·준비물"]
-    C --> E["경로·일정 보조 기능"]
-    D --> F["모바일 이메일 브리핑"]
-    E --> F
-```
+## 핵심 기능
 
-## 주요 기능
+### 시간별·3일 날씨
 
-### 1. 내 위치 시간별 날씨
+- 동네·역·건물 검색과 현재 위치
+- 오늘부터 모레까지 시간별 기온·강수·습도·바람
+- 강수 시작·종료 예상 구간과 일 최저·최고기온
+- 아침·점심·저녁 비교와 날씨 테마 자동 전환
+- 기상청 발표·수집시각, 자료 완전성, fallback 여부
 
-날씨 카드를 열면 선택 날짜의 시간별 변화를 먼저 확인할 수 있습니다.
+### 공기질과 생활안전
 
-- 시간별 기온, 하늘 상태, 강수확률과 강수 형태
-- 습도와 풍속을 함께 표시
-- 비·눈 가능성이 높은 첫 시간과 마지막 시간을 요약
-- 하루 최저·최고기온과 최대 강수확률 제공
-- 기상청 발표시각, 자료 완전성, 장애 시 마지막 정상자료 여부 표시
+- 에어코리아 PM10·PM2.5, 등급, 측정소 표시
+- 지역별 공식 기상특보
+- 자외선지수와 계절성 꽃가루 위험
+- 외부 보조 API 장애 시에도 기본 날씨는 계속 제공
 
-API: `GET /api/weather/hourly`
+### 날씨 이메일
 
-### 2. 오늘·내일·모레 행동형 날씨 대시보드
-
-- 아침·점심·저녁 기온, 강수확률과 외출 점수 비교
-- 하루 중 가장 나가기 좋은 시간대 추천
-- 우산, 마스크, 야외활동 준비를 행동 문장으로 제공
-- 날씨에 따라 맑음·비·눈·흐림 테마 자동 전환
-- 최근 본 장소 5개를 브라우저에 저장
-
-### 3. 3일 결정 플래너
-
-세 날짜의 예보를 따로 열어 비교할 필요 없이 “언제 움직일지”를 한 화면에서 정할 수 있습니다.
-
-- 오늘·내일·모레의 시간대 평균 외출 점수와 최고 시간 비교
-- 3일 중 가장 좋은 날짜와 아침·점심·저녁 추천
-- 단기예보의 비·눈, 기온, 바람을 우선순위에 따라 행동으로 변환하고 상세 안전정보는 선택 날짜 카드에서 제공
-- 3일 동안 필요한 준비물을 중복 없이 통합
-- 추천 외출 시간을 `.ics` 캘린더 일정으로 저장
-- 선택 위치·날짜·시간대를 그대로 복원하는 공유 링크 생성
-- 기상청 단기예보 1회 응답을 3일로 분해하고 별도 잠금영역에 캐시
-- 출처, 발표·수집시각, 완전성, 신선도, 마지막 정상자료 사용 여부 표시
-
-### 4. 공식 생활안전 브리핑
-
-- 지역별 기상특보
-- 최대 자외선지수와 행동 요령
-- 계절성 꽃가루 위험지수
-- 미세먼지·초미세먼지와 마스크 안내
-- 안전 신호를 외출 점수, 코디, 이메일, 스마트 알림에 함께 반영
-
-### 5. 출발지→목적지 경로 날씨
-
-카카오모빌리티 길찾기 결과와 양쪽 날씨를 결합해 이동 전에 확인할 정보를 한 번에 제공합니다.
-
-- 자동차 예상 거리와 시간
-- 출발지·목적지 기온과 외출 점수 비교
-- 비, 대기질, 자외선, 꽃가루, 기상특보 체크
-- 두 장소의 기온 차가 큰 경우 겉옷 안내
-
-### 6. 비 피해서 나가기: 일정 보조
-
-날씨 정보 확인 후 필요한 사용자가 선택해서 쓰는 보조 기능입니다.
-
-- 희망 출발 시각 전후의 시간별 강수·기온·바람 비교
-- 원래 시각 대비 부담 감소 점수와 추천 이유
-- 추천 일정의 `.ics` 캘린더 저장
-
-API: `GET /api/weather/decision-window`
-
-### 7. 동적 스타일링
-
-정적인 계절별 문구가 아니라 실제 날씨와 사용자 설정을 조합합니다.
-
-- 체감 성향: `NONE`, `COLD`, `HEAT`
-- 일정 유형: `DAILY`, `COMMUTE`, `OUTDOOR`, `FORMAL`
-- 상의, 하의, 겉옷, 신발, 추천 컬러와 피해야 할 스타일
-- 기온, 비·눈, 바람, 습도, 대기질을 모두 반영
-
-### 8. 구독과 스마트 알림
-
-- Google 로그인으로 구독 소유권 보호
-- 한 계정에 최대 10개 수신 이메일 연결
-- 아침 06:30, 점심 11:30, 저녁 18:30 중 선택
-- 같은 이메일 재등록 시 위치·시간·스타일 설정 업데이트
-- 이메일 입력 또는 메일의 토큰 링크로 구독 취소
-- 비·눈, 폭염·한파, 대기질, 강풍, 공식 특보, 자외선, 꽃가루 위험 감지
-- 같은 위험을 반복 발송하지 않는 fingerprint 기반 중복 방지
-
-### 9. 설치형 웹 앱과 오프라인 안내
-
-- 웹 앱 매니페스트와 서비스 워커를 통한 홈 화면 설치
-- 정적 앱 셸 network-first 캐시와 이전 버전 자동 정리
-- 오프라인일 때 저장된 화면 제공 및 명확한 연결 상태 표시
-- API 오프라인 오류를 공통 JSON 형태로 반환
-- 키보드 건너뛰기 링크, focus-visible, live/busy 상태, reduced-motion 접근성 지원
-
-## 새 모바일 메일 UI
-
-메일은 Gmail·네이버 메일에서 안정적으로 보이도록 `table`과 인라인 스타일을 중심으로 구성했습니다. 지원 편차가 큰 `grid`, `flex`, `gradient`, JavaScript는 사용하지 않습니다.
+- 한 계정에 최대 10개 수신 이메일
+- 아침 06:30, 점심 11:30, 저녁 18:30 선택
+- 모바일 Gmail·네이버 메일 호환 HTML
+- 같은 위험의 중복 발송을 막는 fingerprint
+- 이메일 입력 또는 토큰 링크를 통한 구독 취소
 
 <p align="center">
-  <img src="docs/images/weather-mail-preview.svg" alt="새 모바일 날씨 메일 미리보기" width="760">
+  <img src="docs/images/weather-mail-preview.svg" alt="날씨한편 모바일 이메일 화면" width="760">
 </p>
 
-메일을 열면 다음 순서로 정보를 읽을 수 있습니다.
+### 보조 도구
 
-1. 큰 기온과 외출 점수
-2. 30초 날씨 요약과 위험 신호
-3. 우산·마스크·야외활동 준비
-4. 기상특보·자외선·꽃가루·대기질
-5. 체감 성향과 일정에 맞춘 오늘의 코디
-6. 운영 사이트 바로가기와 수신 거부
+- 출발지와 목적지의 날씨·이동시간 비교
+- 희망 일정 주변에서 비·바람이 덜한 출발 시간 제안
+- 체감 성향과 활동 목적에 맞춘 상·하의, 아우터, 신발 추천
+- 추천 시간을 `.ics` 캘린더 파일로 저장
+- 홈 화면 설치와 오프라인 상태 안내
 
-템플릿 테스트는 실제 데이터로 최종 HTML을 렌더링하고, 메일 호환성을 해치는 CSS가 다시 들어오지 않도록 검사합니다.
+## 데이터 출처
 
-## 데이터 소스
-
-| 데이터 | 사용처 | 환경변수 |
+| 제공기관 | 데이터 | 환경변수 |
 | --- | --- | --- |
-| 기상청 단기예보 | 기온, 하늘, 강수, 습도, 풍속 | `WEATHER_API_KEY` |
-| 기상청 기상특보 | 지역별 공식 주의·경보 | `WEATHER_WARNING_API_KEY` |
-| 기상청 생활기상지수 | 자외선지수 | `LIVING_WEATHER_API_KEY` |
-| 기상청 보건기상지수 | 계절성 꽃가루 위험 | `POLLEN_API_KEY` |
-| 에어코리아 | 미세먼지·초미세먼지 | `AIR_QUALITY_API_KEY` |
+| 기상청 | 단기예보 | `WEATHER_API_KEY` |
+| 기상청 | 기상특보 | `WEATHER_WARNING_API_KEY` |
+| 기상청 | 자외선 생활기상지수 | `LIVING_WEATHER_API_KEY` |
+| 기상청 | 꽃가루 보건기상지수 | `POLLEN_API_KEY` |
+| 한국환경공단 에어코리아 | PM10·PM2.5 실시간 정보 | `AIR_QUALITY_API_KEY` |
 | Kakao Local | 장소·주소 검색 | `KAKAO_REST_API_KEY` |
-| Kakao Mobility | 자동차 경로 거리·시간 | `KAKAO_MOBILITY_REST_API_KEY` |
-| SMTP | 브리핑·위험 알림 발송 | `SMTP_USERNAME`, `SMTP_PASSWORD` |
+| Kakao Mobility | 자동차 경로 | `KAKAO_MOBILITY_REST_API_KEY` |
+| SMTP | 날씨 브리핑 발송 | `SMTP_USERNAME`, `SMTP_PASSWORD` |
 
-안전정보나 대기질처럼 보조 데이터가 일시적으로 실패해도 기본 날씨 조회는 유지되도록 구성했습니다.
+공공데이터포털의 Encoding/Decoding 인증키를 모두 처리하며, 비밀값은 저장소가 아닌 환경변수로 관리합니다.
 
-## 기술 스택
+## 기술 구성
 
 | 영역 | 기술 |
 | --- | --- |
-| Backend | Java 17, Spring Boot 3.2.5, Spring Web, Validation |
-| Persistence | Spring Data JPA, PostgreSQL, MySQL, H2 |
-| Cache | bounded Caffeine Cache |
+| Backend | Java 17, Spring Boot 3.5.16, Spring Web, Validation |
+| UI | Thymeleaf, HTML, CSS, Vanilla JavaScript, PWA |
+| Database | PostgreSQL 운영, MySQL 선택, H2 로컬 기본값 |
+| Cache | Caffeine, Redis |
 | Scheduling | Spring Scheduler, ShedLock |
 | Mail | Spring Mail, Thymeleaf HTML |
-| HTTP | Apache HttpClient 5 |
-| Operations | Actuator, Docker, coders.kr |
+| Operations | Docker, coders.kr, Actuator, Prometheus |
 | Quality | JUnit 5, AssertJ, GitHub Actions, Dependabot |
-
-## 운영 아키텍처
 
 ```mermaid
 flowchart LR
-    U["사용자"] --> G["coders.kr Gateway"]
-    G --> A["Spring Boot App"]
-
+    U["웹·모바일 사용자"] --> G["coders.kr Gateway"]
+    G --> A["Spring Boot"]
     A --> DB["PostgreSQL"]
-    A --> RC["Bounded Caffeine Cache"]
-    A --> SMTP["SMTP"]
-
-    A --> KMA["기상청 예보·특보·생활지수"]
-    A --> AIR["에어코리아"]
-    A --> KL["Kakao Local"]
-    A --> KM["Kakao Mobility"]
-
+    A --> C["Caffeine·Redis"]
+    A --> K["기상청"]
+    A --> E["에어코리아"]
+    A --> M["Kakao API"]
+    A --> S["SMTP"]
     SCH["Scheduler + ShedLock"] --> A
 ```
 
-- 날씨 응답은 인스턴스별 bounded Caffeine 캐시에 저장해 외부 캐시 장애가 요청 경로를 막지 않으면서 API 부하를 낮춥니다.
-- 공개 조회 응답은 `stale-while-revalidate`와 `stale-if-error`를 제공해 재검증 중이거나 외부 API가 잠시 실패해도 기존 정보를 활용합니다.
-- 예약 작업은 DB 분산 락으로 보호해 여러 인스턴스에서도 한 번만 실행됩니다.
-- 메일 작업은 bounded executor와 backpressure를 사용합니다.
-- 3일 플래너는 별도 bounded executor와 인스턴스별 Caffeine 캐시를 사용하며, 기상청 단기예보 1회 응답을 오늘·내일·모레로 분해해 외부 API 왕복을 최소화합니다.
-- 읽기와 쓰기 API에 서로 다른 분당 요청 한도를 적용합니다.
-- Actuator health probe, graceful shutdown, 응답 압축을 적용했습니다.
-- 운영 프로필은 필수 기상청 키 누락을 health `DOWN`으로 감지해 잘못된 배포를 차단합니다.
-- Actuator metrics에 3일 플래너 cold-cache 생성 시간과 성공·실패 상태를 기록합니다.
+## 운영 안정성
 
-## 빠른 시작
+- 외부 API 연결·응답 timeout, 1회 재시도, circuit breaker
+- 기상청 장애 시 2시간 이내 마지막 정상자료 fallback
+- bounded Caffeine 캐시와 Redis 분산 요청 제한
+- 공개 응답의 `stale-while-revalidate`, `stale-if-error`
+- DB 분산 락으로 다중 인스턴스 예약메일 중복 방지
+- bounded 메일 executor와 backpressure
+- Flyway 스키마 버전 관리, readiness/liveness probe
+- CSP nonce, HSTS, 입력 검증, 관리자 API fail-closed
+- request ID·Prometheus·SBOM·dependency review
+
+상세 운영 자료: [운영 런북](docs/OPERATIONS.md) · [API 계약](docs/API_CONTRACT.md) · [개인정보 설계](docs/PRIVACY.md) · [공공기관 도입 준비도](docs/PUBLIC_SECTOR_READINESS.md) · [보안 정책](SECURITY.md)
+
+## 로컬 실행
 
 ### 요구사항
 
 - Java 17
-- 별도 DB 없이 시작 가능: 기본값은 H2 인메모리 DB
-- 실제 날씨 조회에는 기상청 API 키 필요
-- 메일 발송에는 Gmail 앱 비밀번호 또는 호환 SMTP 계정 필요
-
-### 실행
-
-```bash
-./gradlew bootRun
-```
-
-Windows PowerShell:
+- 기본 실행은 별도 DB가 필요 없는 H2 사용
+- 실제 외부 데이터를 사용하려면 해당 API 키 필요
 
 ```powershell
 $env:WEATHER_API_KEY="your_kma_api_key"
-$env:KAKAO_REST_API_KEY="your_kakao_rest_api_key"
+$env:AIR_QUALITY_API_KEY="your_airkorea_api_key"
+$env:KAKAO_REST_API_KEY="your_kakao_api_key"
 $env:SMTP_USERNAME="your_email@gmail.com"
-$env:SMTP_PASSWORD="your_gmail_app_password"
+$env:SMTP_PASSWORD="your_app_password"
 .\gradlew.bat bootRun
 ```
 
-실행 후 [http://localhost:8080](http://localhost:8080)에서 확인합니다.
+실행 후 [http://localhost:8080](http://localhost:8080)에서 확인합니다. 전체 환경변수는 [.env.example](.env.example)을 참고하세요. 실제 키와 비밀번호는 커밋하지 않습니다.
 
-MySQL을 사용할 경우:
-
-```sql
-CREATE DATABASE weatherdb
-  DEFAULT CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-```
+### 테스트
 
 ```powershell
-$env:DB_URL="jdbc:mysql://localhost:3306/weatherdb?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true"
-$env:DB_DRIVER="com.mysql.cj.jdbc.Driver"
-$env:DB_USERNAME="root"
-$env:DB_PASSWORD="your_mysql_password"
-.\gradlew.bat bootRun
+.\gradlew.bat clean test bootJar --no-daemon
 ```
 
-## 환경변수
+CI는 Gradle Wrapper, 전체 테스트, 실행 JAR, Docker 이미지, 의존성 취약점과 CycloneDX SBOM을 검증합니다.
 
-전체 예시는 [.env.example](.env.example)을 참고하세요. 실제 키와 비밀번호는 Git에 커밋하지 않습니다.
-
-```env
-WEATHER_API_KEY=your_kma_api_key
-AIR_QUALITY_API_KEY=your_airkorea_api_key
-KAKAO_REST_API_KEY=your_kakao_rest_api_key
-KAKAO_MOBILITY_REST_API_KEY=your_kakao_mobility_rest_api_key
-WEATHER_WARNING_API_KEY=your_kma_warning_api_key
-LIVING_WEATHER_API_KEY=your_kma_living_weather_api_key
-POLLEN_API_KEY=your_kma_pollen_api_key
-
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=your_email@gmail.com
-SMTP_PASSWORD=your_gmail_app_password
-
-APP_BASE_URL=http://localhost:8080
-ADMIN_API_KEY=generate_a_long_random_key
-RATE_LIMIT_READ_PER_MINUTE=180
-RATE_LIMIT_WRITE_PER_MINUTE=20
-```
-
-로컬 전용 값은 Git에서 제외되는 `application-local.yml`에 보관할 수도 있습니다. 운영 키는 coders.kr secret 환경변수로 등록합니다.
-
-## API 요약
+## 주요 API
 
 | Method | Endpoint | 설명 |
 | --- | --- | --- |
 | `GET` | `/api/locations/search?query=강남역` | 장소 검색과 기상청 격자 변환 |
-| `GET` | `/api/locations/coordinates` | 위도·경도를 장소와 격자로 변환 |
-| `GET` | `/api/weather` | 위치·시간대별 맞춤 날씨 |
-| `GET` | `/api/weather/daily` | 아침·점심·저녁 일일 브리핑 |
-| `GET` | `/api/weather/hourly` | 선택 날짜의 시간별 기온·강수·습도·바람 |
-| `GET` | `/api/weather/planner` | 오늘·내일·모레 결정 플래너와 통합 준비물 |
-| `GET` | `/api/weather/decision-window` | 희망 일정 주변의 날씨 비교 보조 기능 |
+| `GET` | `/api/weather/daily` | 아침·점심·저녁 일일 날씨 |
+| `GET` | `/api/weather/hourly` | 날짜별 시간 예보 |
+| `GET` | `/api/weather/planner` | 오늘·내일·모레 비교 |
+| `GET` | `/api/weather/decision-window` | 일정 주변 날씨 비교 보조 기능 |
 | `GET` | `/api/routes/briefing` | 출발지→목적지 경로 날씨 |
 | `POST` | `/api/users/subscribe` | 최대 10개 이메일 구독 |
-| `POST` | `/api/users/unsubscribe` | 여러 이메일 구독 취소 |
-| `GET` | `/api/users/me` | 로그인 계정의 대표 구독 조회 |
+| `POST` | `/api/users/unsubscribe` | 이메일 구독 취소 |
 | `PATCH` | `/api/users/me/notifications` | 알림 시간 변경 |
-| `PATCH` | `/api/users/me/smart-alerts` | 스마트 위험 알림 변경 |
-| `DELETE` | `/api/users/me/subscription` | 현재 계정 구독 취소 |
+| `PATCH` | `/api/users/me/smart-alerts` | 위험 알림 설정 |
+| `DELETE` | `/api/users/me/data` | 구독과 개인정보 삭제 |
 
-### 일일 브리핑
-
-```http
-GET /api/weather/daily?nx=61&ny=125&locationName=강남역&dayOffset=0&temperatureSensitivity=HEAT&activityType=OUTDOOR
-```
-
-### 시간별 상세 예보
-
-```http
-GET /api/weather/hourly?nx=61&ny=125&locationName=강남역&dayOffset=0
-```
-
-### 경로 날씨
-
-```http
-GET /api/routes/briefing?originQuery=강남역&destinationQuery=서울시청&period=MORNING
-```
-
-### 3일 결정 플래너
-
-```http
-GET /api/weather/planner?nx=61&ny=125&locationName=강남역&temperatureSensitivity=COLD&activityType=COMMUTE
-```
-
-### 여러 메일함 구독
-
-```http
-POST /api/users/subscribe
-Content-Type: application/json
-```
-
-```json
-{
-  "name": "사용자",
-  "emails": ["me@example.com", "family@example.com"],
-  "locationName": "강남역",
-  "latitude": 37.4979,
-  "longitude": 127.0276,
-  "nx": 61,
-  "ny": 125,
-  "temperatureSensitivity": "COLD",
-  "activityType": "COMMUTE",
-  "smartAlertEnabled": true,
-  "morningEnabled": true,
-  "afternoonEnabled": false,
-  "eveningEnabled": true
-}
-```
-
-운영용 메일 수동 발송과 이력 조회 API는 `ADMIN_API_KEY`가 설정된 환경에서 `X-Admin-Key` 헤더가 필요합니다. 키가 없으면 운영 관리자 API는 fail-closed로 비활성화됩니다.
-
-## 보안과 안정성
-
-- Google 로그인과 coders native identity로 구독 소유권 확인
-- 관리자 API key constant-time 비교와 fail-closed 정책
-- `/actuator/metrics` 관리자 키 보호, 공개 health probe 분리
-- 저장소 밖 secret 환경변수 관리
-- 토큰 기반 이메일 수신 거부
-- 입력 길이·이메일·좌표·격자 범위 검증
-- 요청 주체별 읽기·쓰기 API rate limit과 `Retry-After` 응답
-- CSP, HSTS, Permissions Policy, COOP/CORP 등 보안 응답 헤더 적용
-- 외부 API 연결 풀과 연결·응답 타임아웃
-- service worker 무효화 정책과 오프라인 API 오류 표준화
-- 사용자 응답에서 내부 예외와 비밀값 제거
-- 오류 코드와 `requestId`를 통한 운영 로그 추적
-- 전 요청 `X-Request-Id` 전파와 MDC 상관관계로 필터·컨트롤러·외부 API 로그 연결
-- 운영 로그에는 이메일 대신 내부 사용자 ID만 기록해 개인정보 노출 최소화
-- 요청별 CSP nonce로 인라인 스크립트 허용 범위를 제한하고 `unsafe-inline` 제거
-- Redis 분산 rate limit을 우선 적용하되 300ms 안에 응답하지 않으면 bounded 로컬 제한기로 즉시 전환
-- 외부 기상 API 재시도·circuit breaker·2시간 이내 마지막 정상자료 fallback
-- Flyway 스키마 버전 관리와 운영 JPA `validate` 적용
-- Prometheus, readiness/liveness, CycloneDX SBOM, dependency review 제공
-- 개인정보 동의 버전·시각 기록과 구독·메일이력 완전삭제 지원
-
-## 기관 연계와 도입 자료
-
-- 버전 고정 API: `GET /api/v1/weather/briefing`
-- API 계약: [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md)
-- 운영 런북: [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
-- 개인정보 설계: [`docs/PRIVACY.md`](docs/PRIVACY.md)
-- 보안 제보: [`SECURITY.md`](SECURITY.md)
-
-## 테스트와 CI
-
-```bash
-./gradlew clean test bootJar --no-daemon
-```
-
-현재 자동화 테스트는 DTO 계산, 3일 플래너, API 요청 제한, 사용자 식별, 예외 처리, 컨트롤러, 기상 안전 데이터 파싱, 경로 브리핑, 메일 HTML 렌더링을 포함합니다.
-
-GitHub Actions는 모든 Pull Request에서 다음을 검증합니다.
-
-1. Gradle Wrapper 검증
-2. Java 17 전체 테스트
-3. 실행 JAR 패키징
-4. 신규 의존성 취약점 review
-5. 프로덕션 Docker 이미지 빌드
-6. CycloneDX 컨테이너 SBOM 생성
-7. 테스트 리포트 업로드
-
-## coders.kr 배포
-
-[`coders.yaml`](coders.yaml)은 native Spring Boot 서비스, 관리형 PostgreSQL, Redis 구성을 선언합니다.
-
-필수 운영 secret:
-
-```text
-WEATHER_API_KEY
-AIR_QUALITY_API_KEY
-KAKAO_REST_API_KEY
-KAKAO_MOBILITY_REST_API_KEY
-WEATHER_WARNING_API_KEY
-LIVING_WEATHER_API_KEY
-POLLEN_API_KEY
-SMTP_USERNAME
-SMTP_PASSWORD
-ADMIN_API_KEY
-APP_BASE_URL=https://weather.coders.kr
-```
-
-coders.kr의 scale-to-zero 환경에서 예약 메일을 정확히 실행하려면 프로젝트 정책의 `always_warm` 설정과 예산 상태를 확인해야 합니다.
+관리자 메일 API는 `ADMIN_API_KEY`와 `X-Admin-Key`가 필요하며 운영에서 fail-closed로 동작합니다.
 
 ## 프로젝트 구조
 
 ```text
 src/main/java/com/example/WebSideProject
-├── config/       # 캐시, HTTP, 비동기 실행, 보안 헤더, 분산 락
-├── controller/   # 위치, 날씨, 경로, 구독, 메일 API
-├── dto/          # 날씨·안전·경로·사용자 응답과 계산 모델
-├── entity/       # 구독 사용자, 메일 발송 이력
-├── event/        # 비동기 웰컴 메일 이벤트
-├── repository/   # JPA 저장소
-├── scheduler/    # 정기 메일, 스마트 위험 알림
-└── service/      # 외부 API, 추천, 구독, 메일 비즈니스 로직
+├── config/       캐시, 비동기 실행, 보안, 분산 락
+├── controller/   위치, 날씨, 경로, 구독, 메일 API
+├── dto/          날씨·안전·경로 응답과 계산 모델
+├── entity/       구독 사용자와 메일 이력
+├── repository/   JPA 저장소
+├── scheduler/    정기 브리핑과 스마트 알림
+└── service/      외부 API와 비즈니스 로직
 
 src/main/resources
 ├── application.yml
 ├── application-prod.yml
-├── static/manifest.webmanifest
-├── static/service-worker.js
-├── templates/index.html
-└── templates/weather-mail.html
+├── static/
+└── templates/
 ```
 
-## 다음 개선 후보
+## 배포
 
-- 주간 예보와 실제 Google Calendar 양방향 연동
-- 사용자별 분 단위 발송 시간
-- 운영자용 발송 성공률·API 장애 대시보드
-- 메일 제목·정보 순서 A/B 테스트
-- Flyway 기반 명시적 스키마 마이그레이션
+[`coders.yaml`](coders.yaml)은 Spring Boot 애플리케이션, 관리형 PostgreSQL, Redis를 선언합니다. 운영 비밀값은 coders.kr Secret으로 저장한 뒤 재배포합니다.
+
+scale-to-zero 환경에서 예약메일을 항상 정확하게 실행하려면 프로젝트의 `always_warm` 정책과 예산 상태를 별도로 확인해야 합니다.
 
 ---
 
-날씨한편은 “날씨를 확인하는 서비스”보다 **외출을 결정하고 준비하는 서비스**를 지향합니다.
+**날씨한편은 날씨 정보가 중심이고, 추천 기능은 그 정보를 이해하고 활용하도록 돕는 보조 기능입니다.**
