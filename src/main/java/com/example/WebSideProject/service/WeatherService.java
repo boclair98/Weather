@@ -4,6 +4,8 @@ import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.dto.DailyWeatherDto;
 import com.example.WebSideProject.dto.SafetyInsightDto;
 import com.example.WebSideProject.dto.WeatherDto;
+import com.example.WebSideProject.dto.ForecastProvenanceDto;
+import com.example.WebSideProject.dto.WeatherDecisionDto;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +30,11 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -124,6 +129,94 @@ public class WeatherService {
             forecasts.add(DailyWeatherDto.from(morning, afternoon, evening, dayLabel, targetDate));
         }
         return List.copyOf(forecasts);
+    }
+
+    @Cacheable(
+            cacheNames = "weather",
+            key = "'decision:' + #nx + ':' + #ny + ':' + #targetDate + ':' + #targetTime + ':'"
+                    + " + #flexMinutes + ':' + #durationMinutes",
+            sync = true
+    )
+    public WeatherDecisionDto getDecisionWindow(
+            int nx,
+            int ny,
+            String locationName,
+            String targetDate,
+            String targetTime,
+            int flexMinutes,
+            int durationMinutes
+    ) {
+        validateGrid(nx, ny);
+        LocalDate date = parseDecisionDate(targetDate);
+        LocalTime requestedTime = parseDecisionTime(targetTime);
+        if (flexMinutes < 0 || flexMinutes > 180) {
+            throw new IllegalArgumentException("조정 가능 시간은 0분부터 180분까지 지원합니다.");
+        }
+        if (durationMinutes < 30 || durationMinutes > 180 || durationMinutes % 30 != 0) {
+            throw new IllegalArgumentException("외출 시간은 30분 단위로 30분부터 180분까지 지원합니다.");
+        }
+
+        ForecastBase forecastBase = getDailyForecastBase();
+        ForecastPayload payload = requestForecast(
+                nx, ny, forecastBase.date(), forecastBase.time(), date.format(DateTimeFormatter.BASIC_ISO_DATE)
+        );
+        List<HourlyForecast> hourly = parseHourlyForecasts(payload, date);
+        if (hourly.isEmpty()) {
+            throw new IllegalStateException("선택한 시간에 사용할 수 있는 시간별 예보가 없습니다.");
+        }
+
+        LocalDateTime requested = LocalDateTime.of(date, requestedTime);
+        List<DecisionCandidate> candidates = buildDecisionCandidates(
+                hourly, requested, flexMinutes, durationMinutes
+        );
+        if (candidates.isEmpty()) {
+            throw new IllegalStateException("선택한 범위에 완전한 시간별 예보가 없습니다. 시간을 조금 뒤로 조정해주세요.");
+        }
+
+        DecisionCandidate baseline = candidates.stream()
+                .min(Comparator.comparingLong(candidate -> Math.abs(candidate.shiftMinutes())))
+                .orElseThrow();
+        DecisionCandidate recommended = candidates.stream()
+                .max(Comparator.comparingInt(DecisionCandidate::score)
+                        .thenComparingLong(candidate -> -Math.abs(candidate.shiftMinutes())))
+                .orElseThrow();
+        int improvement = Math.max(0, recommended.score() - baseline.score());
+        List<String> checklist = buildDecisionChecklist(recommended);
+        String headline = buildDecisionHeadline(recommended, improvement);
+        String rationale = buildDecisionRationale(baseline, recommended);
+
+        List<WeatherDecisionDto.WindowCandidate> responseCandidates = candidates.stream()
+                .sorted(Comparator.comparing(DecisionCandidate::start))
+                .map(candidate -> new WeatherDecisionDto.WindowCandidate(
+                        candidate.start().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                        candidate.end().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                        candidate.score(),
+                        scoreLabel(candidate.score()),
+                        candidate.maxPop(),
+                        precipitationLabel(candidate.pty()),
+                        candidate.temperature(),
+                        Math.round(candidate.maxWind() * 10.0) / 10.0,
+                        candidate.start().equals(recommended.start())
+                ))
+                .toList();
+
+        return new WeatherDecisionDto(
+                locationName == null || locationName.isBlank() ? "선택 위치" : locationName,
+                date.toString(),
+                requestedTime.format(DateTimeFormatter.ofPattern("HH:mm")),
+                recommended.start().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                recommended.end().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                durationMinutes,
+                (int) recommended.shiftMinutes(),
+                baseline.score(),
+                recommended.score(),
+                improvement,
+                headline,
+                rationale,
+                checklist,
+                responseCandidates,
+                decisionProvenance(payload, hourly)
+        );
     }
 
     private DailyWeatherDto buildDailyWeather(
@@ -454,6 +547,202 @@ public class WeatherService {
                 .build();
     }
 
+    private LocalDate parseDecisionDate(String value) {
+        LocalDate date;
+        try {
+            date = value == null || value.isBlank() ? LocalDate.now() : LocalDate.parse(value);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("날짜는 yyyy-MM-dd 형식으로 입력해주세요.");
+        }
+        LocalDate today = LocalDate.now();
+        if (date.isBefore(today) || date.isAfter(today.plusDays(2))) {
+            throw new IllegalArgumentException("일정 최적화는 오늘부터 모레까지만 지원합니다.");
+        }
+        return date;
+    }
+
+    private LocalTime parseDecisionTime(String value) {
+        try {
+            String normalized = value == null || value.isBlank() ? "18:00" : value.trim();
+            return LocalTime.parse(normalized, DateTimeFormatter.ofPattern("HH:mm"));
+        } catch (Exception e) {
+            throw new IllegalArgumentException("시간은 HH:mm 형식으로 입력해주세요.");
+        }
+    }
+
+    private List<HourlyForecast> parseHourlyForecasts(ForecastPayload payload, LocalDate targetDate) {
+        JSONArray items = new JSONObject(payload.body())
+                .getJSONObject("response")
+                .getJSONObject("body")
+                .getJSONObject("items")
+                .getJSONArray("item");
+        String dateKey = targetDate.format(DateTimeFormatter.BASIC_ISO_DATE);
+        Map<String, Map<String, String>> valuesByTime = new HashMap<>();
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject item = items.getJSONObject(i);
+            if (!dateKey.equals(item.optString("fcstDate"))) continue;
+            String forecastTime = item.optString("fcstTime");
+            if (forecastTime.length() != 4) continue;
+            valuesByTime.computeIfAbsent(forecastTime, ignored -> new HashMap<>())
+                    .putIfAbsent(item.optString("category"), item.optString("fcstValue"));
+        }
+
+        return valuesByTime.entrySet().stream()
+                .filter(entry -> entry.getValue().containsKey("TMP"))
+                .map(entry -> {
+                    Map<String, String> values = entry.getValue();
+                    LocalTime time = LocalTime.parse(entry.getKey(), DateTimeFormatter.ofPattern("HHmm"));
+                    return new HourlyForecast(
+                            LocalDateTime.of(targetDate, time),
+                            safeParseInt(values.get("POP"), 0),
+                            values.getOrDefault("PTY", "0"),
+                            safeParseInt(values.get("TMP"), 20),
+                            safeParseInt(values.get("REH"), 50),
+                            safeParseDouble(values.get("WSD"), 0.0),
+                            (int) List.of("TMP", "POP", "PTY", "REH", "WSD", "SKY").stream()
+                                    .filter(values::containsKey)
+                                    .count()
+                    );
+                })
+                .sorted(Comparator.comparing(HourlyForecast::time))
+                .toList();
+    }
+
+    private List<DecisionCandidate> buildDecisionCandidates(
+            List<HourlyForecast> hourly,
+            LocalDateTime requested,
+            int flexMinutes,
+            int durationMinutes
+    ) {
+        Map<LocalDateTime, HourlyForecast> byTime = new HashMap<>();
+        hourly.forEach(point -> byTime.put(point.time(), point));
+        int requiredPoints = Math.max(1, (int) Math.ceil(durationMinutes / 60.0));
+        List<DecisionCandidate> candidates = new ArrayList<>();
+
+        for (HourlyForecast start : hourly) {
+            long shift = Duration.between(requested, start.time()).toMinutes();
+            if (Math.abs(shift) > flexMinutes) continue;
+            List<HourlyForecast> window = new ArrayList<>(requiredPoints);
+            for (int hour = 0; hour < requiredPoints; hour++) {
+                HourlyForecast point = byTime.get(start.time().plusHours(hour));
+                if (point != null) window.add(point);
+            }
+            if (window.size() != requiredPoints) continue;
+
+            int maxPop = window.stream().mapToInt(HourlyForecast::pop).max().orElse(0);
+            String pty = window.stream().map(HourlyForecast::pty)
+                    .filter(code -> !"0".equals(code))
+                    .findFirst().orElse("0");
+            int temperature = (int) Math.round(window.stream()
+                    .mapToInt(HourlyForecast::temperature).average().orElse(20));
+            int humidity = window.stream().mapToInt(HourlyForecast::humidity).max().orElse(50);
+            double maxWind = window.stream().mapToDouble(HourlyForecast::wind).max().orElse(0.0);
+            int score = decisionScore(maxPop, pty, temperature, humidity, maxWind);
+            candidates.add(new DecisionCandidate(
+                    start.time(), start.time().plusMinutes(durationMinutes), shift,
+                    score, maxPop, pty, temperature, humidity, maxWind
+            ));
+        }
+        return candidates;
+    }
+
+    private int decisionScore(int pop, String pty, int temperature, int humidity, double wind) {
+        int penalty = (int) Math.round(pop * 0.5);
+        if (!"0".equals(pty)) penalty += 28;
+        if (wind > 6.0) penalty += Math.min(20, (int) Math.round((wind - 6.0) * 4));
+        if (temperature >= 30) penalty += Math.min(18, (temperature - 29) * 4);
+        if (temperature <= 5) penalty += Math.min(18, (6 - temperature) * 3);
+        if (humidity >= 85) penalty += 6;
+        return Math.max(0, Math.min(100, 100 - penalty));
+    }
+
+    private String scoreLabel(int score) {
+        if (score >= 85) return "쾌적";
+        if (score >= 70) return "무난";
+        if (score >= 50) return "준비 필요";
+        return "시간 조정 권장";
+    }
+
+    private String precipitationLabel(String pty) {
+        return switch (pty) {
+            case "1" -> "비";
+            case "2" -> "비·눈";
+            case "3" -> "눈";
+            case "4" -> "소나기";
+            default -> "없음";
+        };
+    }
+
+    private String buildDecisionHeadline(DecisionCandidate recommended, int improvement) {
+        String time = recommended.start().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+        if (improvement >= 5) {
+            return time + "에 출발하면 날씨 부담을 " + improvement + "점 줄일 수 있어요.";
+        }
+        return time + " 출발이 가장 안정적이에요. 원래 일정도 큰 차이는 없습니다.";
+    }
+
+    private String buildDecisionRationale(DecisionCandidate baseline, DecisionCandidate recommended) {
+        List<String> reasons = new ArrayList<>();
+        if (recommended.maxPop() < baseline.maxPop()) {
+            reasons.add("강수확률 " + baseline.maxPop() + "% → " + recommended.maxPop() + "%");
+        }
+        if (recommended.maxWind() + 0.5 < baseline.maxWind()) {
+            reasons.add(String.format("바람 %.1fm/s → %.1fm/s", baseline.maxWind(), recommended.maxWind()));
+        }
+        if (!"0".equals(baseline.pty()) && "0".equals(recommended.pty())) {
+            reasons.add("비·눈 시간대 회피");
+        }
+        if (reasons.isEmpty()) {
+            reasons.add("강수·바람·기온을 함께 비교한 결과");
+        }
+        return String.join(" · ", reasons);
+    }
+
+    private List<String> buildDecisionChecklist(DecisionCandidate candidate) {
+        Set<String> checklist = new LinkedHashSet<>();
+        if (!"0".equals(candidate.pty()) || candidate.maxPop() >= 40) checklist.add("접이식 우산");
+        if (candidate.maxWind() >= 8.0) checklist.add("바람에 날리는 소지품 고정");
+        if (candidate.temperature() >= 28) checklist.add("마실 물");
+        if (candidate.temperature() <= 8) checklist.add("체온 조절 겉옷");
+        if (candidate.humidity() >= 85) checklist.add("통풍·속건 옷차림");
+        if (checklist.isEmpty()) checklist.add("기본 외출 준비");
+        return List.copyOf(checklist);
+    }
+
+    private ForecastProvenanceDto decisionProvenance(ForecastPayload payload, List<HourlyForecast> hourly) {
+        int available = hourly.stream().mapToInt(HourlyForecast::sourceFieldCount).sum();
+        int expected = hourly.size() * 6;
+        int completeness = expected == 0 ? 0 : (int) Math.round(available * 100.0 / expected);
+        long ageSeconds = Math.max(0, Duration.between(payload.fetchedAt(), Instant.now()).getSeconds());
+        String freshness = payload.fallback() ? "STALE_FALLBACK"
+                : ageSeconds <= 900 ? "FRESH" : ageSeconds <= 3600 ? "RECENT" : "STALE";
+        String quality = payload.fallback() ? "DEGRADED"
+                : completeness >= 90 ? "VERIFIED" : completeness >= 70 ? "PARTIAL" : "DEGRADED";
+        return new ForecastProvenanceDto(
+                KMA_SOURCE_NAME, KMA_SOURCE_URL, payload.forecastIssuedAt(), payload.fetchedAt().toString(),
+                ageSeconds, freshness, quality, completeness, payload.fallback(),
+                payload.fallback()
+                        ? "외부 원천 장애로 마지막 정상 예보를 사용해 계산했습니다."
+                        : "기상청 시간별 단기예보를 일정 주변에서 비교한 결과입니다."
+        );
+    }
+
+    private int safeParseInt(String value, int defaultValue) {
+        try {
+            return Integer.parseInt(value);
+        } catch (Exception ignored) {
+            return defaultValue;
+        }
+    }
+
+    private double safeParseDouble(String value, double defaultValue) {
+        try {
+            return Double.parseDouble(value);
+        } catch (Exception ignored) {
+            return defaultValue;
+        }
+    }
+
     private int countSourceFields(
             Map<String, String> exactMap,
             Map<String, ForecastValue> nearbyMap,
@@ -573,6 +862,30 @@ public class WeatherService {
     }
 
     private record ForecastValue(String value, int distance) {
+    }
+
+    private record HourlyForecast(
+            LocalDateTime time,
+            int pop,
+            String pty,
+            int temperature,
+            int humidity,
+            double wind,
+            int sourceFieldCount
+    ) {
+    }
+
+    private record DecisionCandidate(
+            LocalDateTime start,
+            LocalDateTime end,
+            long shiftMinutes,
+            int score,
+            int maxPop,
+            String pty,
+            int temperature,
+            int humidity,
+            double maxWind
+    ) {
     }
 
     private record AirQualityInfo(
