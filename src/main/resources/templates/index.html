@@ -2004,10 +2004,18 @@
     function localDateValue(dayOffset = 0) {
         const value = new Date();
         value.setDate(value.getDate() + dayOffset);
+        return dateInputValue(value);
+    }
+
+    function dateInputValue(value) {
         return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
     }
 
-    decisionDate.value = localDateValue();
+    const nextForecastWindow = new Date();
+    nextForecastWindow.setMinutes(0, 0, 0);
+    nextForecastWindow.setHours(nextForecastWindow.getHours() + 2);
+    decisionDate.value = dateInputValue(nextForecastWindow);
+    decisionTime.value = `${String(nextForecastWindow.getHours()).padStart(2, "0")}:00`;
     decisionDate.min = localDateValue();
     decisionDate.max = localDateValue(2);
 
