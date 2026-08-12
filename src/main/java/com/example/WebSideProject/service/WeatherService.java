@@ -493,7 +493,7 @@ public class WeatherService {
 
     private AirQualityInfo getAirQuality(String locationName) {
         String sidoName = extractSidoName(locationName);
-        String encodedApiKey = UriUtils.encode(airQualityApiKey, StandardCharsets.UTF_8);
+        String encodedApiKey = normalizePublicDataServiceKey(airQualityApiKey);
 
         URI uri = UriComponentsBuilder.fromUriString(airQualityBaseUrl + "/getCtprvnRltmMesureDnsty")
                 .queryParam("serviceKey", encodedApiKey)
@@ -509,6 +509,15 @@ public class WeatherService {
 
         String response = restTemplate.getForObject(uri, String.class);
         return parseAirQualityResponse(response, locationName);
+    }
+
+    /**
+     * data.go.kr shows both Encoding and Decoding keys. Normalize either form so the gateway
+     * receives exactly one layer of percent encoding (and never turns % into %25).
+     */
+    private String normalizePublicDataServiceKey(String serviceKey) {
+        String decoded = UriUtils.decode(serviceKey.trim(), StandardCharsets.UTF_8);
+        return UriUtils.encode(decoded, StandardCharsets.UTF_8);
     }
 
     private AirQualityInfo parseAirQualityResponse(String response, String locationName) {
