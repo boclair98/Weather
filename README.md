@@ -33,6 +33,7 @@
 | 사용자의 질문 | 제공 정보 |
 | --- | --- |
 | 지금부터 날씨가 어떻게 변할까? | 시간별 기온, 하늘, 강수확률, 습도, 풍속 |
+| 지금 실제로 비가 오거나 덥나? | 기상청 초단기실황 기온·체감온도·강수·습도·바람 |
 | 비는 언제 시작하고 끝날까? | 비·눈 가능성이 높은 첫 시간과 마지막 시간 |
 | 공기는 괜찮을까? | 에어코리아 PM10·PM2.5, 등급, 측정소 |
 | 위험한 날씨가 있나? | 기상특보, 자외선, 꽃가루와 행동 안내 |
@@ -45,6 +46,7 @@
 ### 시간별·3일 날씨
 
 - 동네·역·건물 검색과 현재 위치
+- 기상청 초단기실황 기반 현재 기온·체감온도·강수·습도·바람
 - 오늘부터 모레까지 시간별 기온·강수·습도·바람
 - 강수 시작·종료 예상 구간과 일 최저·최고기온
 - 아침·점심·저녁 비교와 날씨 테마 자동 전환
@@ -130,7 +132,7 @@ flowchart LR
 - CSP nonce, HSTS, 입력 검증, 관리자 API fail-closed
 - request ID·Prometheus·SBOM·dependency review
 
-상세 운영 자료: [운영 런북](docs/OPERATIONS.md) · [API 계약](docs/API_CONTRACT.md) · [개인정보 설계](docs/PRIVACY.md) · [공공기관 도입 준비도](docs/PUBLIC_SECTOR_READINESS.md) · [보안 정책](SECURITY.md)
+상세 운영 자료: [운영 런북](docs/OPERATIONS.md) · [API 계약](docs/API_CONTRACT.md) · [제품·API 로드맵](docs/PRODUCT_ROADMAP.md) · [개인정보 설계](docs/PRIVACY.md) · [공공기관 도입 준비도](docs/PUBLIC_SECTOR_READINESS.md) · [보안 정책](SECURITY.md)
 
 ## 로컬 실행
 
@@ -165,6 +167,7 @@ CI는 Gradle Wrapper, 전체 테스트, 실행 JAR, Docker 이미지, 의존성 
 | --- | --- | --- |
 | `GET` | `/api/locations/search?query=강남역` | 장소 검색과 기상청 격자 변환 |
 | `GET` | `/api/weather/daily` | 아침·점심·저녁 일일 날씨 |
+| `GET` | `/api/weather/current` | 최신 초단기실황과 체감온도 |
 | `GET` | `/api/weather/hourly` | 날짜별 시간 예보 |
 | `GET` | `/api/weather/planner` | 오늘·내일·모레 비교 |
 | `GET` | `/api/weather/decision-window` | 일정 주변 날씨 비교 보조 기능 |

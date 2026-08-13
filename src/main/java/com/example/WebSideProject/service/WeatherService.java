@@ -7,6 +7,7 @@ import com.example.WebSideProject.dto.WeatherDto;
 import com.example.WebSideProject.dto.ForecastProvenanceDto;
 import com.example.WebSideProject.dto.WeatherDecisionDto;
 import com.example.WebSideProject.dto.HourlyWeatherDto;
+import com.example.WebSideProject.dto.CurrentWeatherDto;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,7 @@ public class WeatherService {
     private static final String KMA_SOURCE_NAME = "기상청 단기예보";
     private static final String KMA_SOURCE_URL = "https://www.weather.go.kr/w/weather/forecast/short-term.do";
     private static final Duration FALLBACK_MAX_AGE = Duration.ofHours(2);
+    private static final ZoneId KOREA_ZONE = ZoneId.of("Asia/Seoul");
 
     @Value("${weather.api.key}")
     private String apiKey;
@@ -65,6 +67,115 @@ public class WeatherService {
             .maximumSize(10_000)
             .expireAfterWrite(FALLBACK_MAX_AGE)
             .build();
+    private final Cache<String, CurrentWeatherDto> latestObservationSnapshots = Caffeine.newBuilder()
+            .maximumSize(10_000)
+            .expireAfterWrite(FALLBACK_MAX_AGE)
+            .build();
+
+    @Cacheable(cacheNames = "weather", key = "'current:' + #nx + ':' + #ny", sync = true)
+    public CurrentWeatherDto getCurrentWeather(int nx, int ny, String locationName) {
+        validateGrid(nx, ny);
+        LocalDateTime now = LocalDateTime.now(KOREA_ZONE);
+        LocalDateTime availableObservation = now.getMinute() >= 40
+                ? now.withMinute(0).withSecond(0).withNano(0)
+                : now.minusHours(1).withMinute(0).withSecond(0).withNano(0);
+        String snapshotKey = "current:" + nx + ":" + ny;
+        try {
+            CurrentWeatherDto observation = requestCurrentWeather(
+                    nx, ny, locationName,
+                    availableObservation.format(DateTimeFormatter.BASIC_ISO_DATE),
+                    availableObservation.format(DateTimeFormatter.ofPattern("HHmm"))
+            );
+            latestObservationSnapshots.put(snapshotKey, observation);
+            return observation;
+        } catch (RuntimeException e) {
+            CurrentWeatherDto snapshot = latestObservationSnapshots.getIfPresent(snapshotKey);
+            if (snapshot != null) {
+                log.warn("기상청 실황 장애로 마지막 정상 실황 사용: nx={}, ny={}", nx, ny);
+                return snapshot.asFallback();
+            }
+            log.error("기상청 초단기실황 호출 실패: nx={}, ny={}", nx, ny, e);
+            throw new IllegalStateException("현재 관측을 가져오지 못했습니다. 시간별 예보는 계속 확인할 수 있습니다.", e);
+        }
+    }
+
+    private CurrentWeatherDto requestCurrentWeather(
+            int nx, int ny, String locationName, String baseDate, String baseTime
+    ) {
+        String encodedApiKey = UriUtils.encode(apiKey, StandardCharsets.UTF_8);
+        URI uri = UriComponentsBuilder.fromUriString(baseUrl + "/getUltraSrtNcst")
+                .queryParam("serviceKey", encodedApiKey)
+                .queryParam("pageNo", 1)
+                .queryParam("numOfRows", 100)
+                .queryParam("dataType", "JSON")
+                .queryParam("base_date", baseDate)
+                .queryParam("base_time", baseTime)
+                .queryParam("nx", nx)
+                .queryParam("ny", ny)
+                .build(true)
+                .toUri();
+
+        String response = externalApiGuard.execute("kma-nowcast", () -> restTemplate.getForObject(uri, String.class));
+        return parseCurrentWeather(response, locationName);
+    }
+
+    CurrentWeatherDto parseCurrentWeather(String response, String locationName) {
+        validateForecastResponse(response);
+        JSONArray items = new JSONObject(response).getJSONObject("response")
+                .getJSONObject("body").getJSONObject("items").getJSONArray("item");
+        Map<String, String> values = new HashMap<>();
+        String observedAt = "-";
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject item = items.getJSONObject(i);
+            values.put(item.optString("category"), item.optString("obsrValue"));
+            if ("-".equals(observedAt)) {
+                observedAt = formatObservationTime(item.optString("baseDate"), item.optString("baseTime"));
+            }
+        }
+        if (!values.containsKey("T1H") || !values.containsKey("REH") || !values.containsKey("WSD")) {
+            throw new IllegalStateException("기상청 실황 응답에 필수 관측값이 없습니다.");
+        }
+        return CurrentWeatherDto.of(
+                locationName,
+                observedAt,
+                requireDouble(values.get("T1H"), "기온"),
+                requireInt(values.get("REH"), "습도"),
+                requireDouble(values.get("WSD"), "풍속"),
+                values.getOrDefault("RN1", "0"),
+                currentPrecipitationLabel(values.getOrDefault("PTY", "0"))
+        );
+    }
+
+    private String formatObservationTime(String date, String time) {
+        if (date == null || date.length() != 8 || time == null || time.length() < 4) return "-";
+        return date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6, 8)
+                + "T" + time.substring(0, 2) + ":" + time.substring(2, 4) + "+09:00";
+    }
+
+    private String currentPrecipitationLabel(String value) {
+        return switch (value) {
+            case "1", "5" -> "비";
+            case "2", "6" -> "비 또는 눈";
+            case "3", "7" -> "눈";
+            default -> "없음";
+        };
+    }
+
+    private int requireInt(String value, String fieldName) {
+        try {
+            return Integer.parseInt(value);
+        } catch (Exception e) {
+            throw new IllegalStateException("기상청 실황 " + fieldName + " 값이 올바르지 않습니다.", e);
+        }
+    }
+
+    private double requireDouble(String value, String fieldName) {
+        try {
+            return Double.parseDouble(value);
+        } catch (Exception e) {
+            throw new IllegalStateException("기상청 실황 " + fieldName + " 값이 올바르지 않습니다.", e);
+        }
+    }
 
     public WeatherDto getWeather(int nx, int ny) {
         return getWeather(nx, ny, WeatherPeriod.MORNING);

@@ -1,5 +1,15 @@
 # 기관 연계 API 계약
 
+## `GET /api/weather/current`
+
+웹 화면에서 사용하는 최신 실황 API입니다. 기존 `WEATHER_API_KEY`로 기상청 `getUltraSrtNcst`를 호출하므로 별도 인증키가 필요하지 않습니다.
+
+```http
+GET /api/weather/current?nx=61&ny=125&locationName=강남역
+```
+
+응답은 관측시각, 현재 기온, 체감온도, 습도, 풍속, 1시간 강수량·강수형태와 행동 안내를 포함합니다. 실황 원천 연결이 지연되면 최대 2시간 이내의 마지막 정상자료를 `fallback: true`로 명확히 표시합니다. 실황 조회 실패는 시간별·3일 예보 응답에 영향을 주지 않습니다.
+
 ## `GET /api/v1/weather/briefing`
 
 안정적인 기관 연계를 위한 버전 고정 API입니다.
