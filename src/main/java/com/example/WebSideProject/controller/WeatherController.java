@@ -9,6 +9,7 @@ import com.example.WebSideProject.dto.DailyWeatherDto;
 import com.example.WebSideProject.dto.WeatherDto;
 import com.example.WebSideProject.dto.WeatherDecisionDto;
 import com.example.WebSideProject.dto.HourlyWeatherDto;
+import com.example.WebSideProject.dto.CurrentWeatherDto;
 import com.example.WebSideProject.dto.WeatherPlannerDto;
 import com.example.WebSideProject.service.WeatherPlannerService;
 import com.example.WebSideProject.service.WeatherService;
@@ -35,6 +36,17 @@ public class WeatherController {
 
     private final WeatherService weatherService;
     private final WeatherPlannerService weatherPlannerService;
+
+    @GetMapping("/current")
+    public ResponseEntity<CurrentWeatherDto> getCurrentWeather(
+            @RequestParam(defaultValue = "60") int nx,
+            @RequestParam(defaultValue = "127") int ny,
+            @RequestParam(required = false) String locationName
+    ) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(5, TimeUnit.MINUTES).cachePublic())
+                .body(weatherService.getCurrentWeather(nx, ny, locationName));
+    }
 
     @GetMapping
     public ResponseEntity<WeatherDto> getWeather(

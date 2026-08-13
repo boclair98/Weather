@@ -20,6 +20,8 @@ class FrontendContractTest {
                 .contains("data-day-offset=\"1\"")
                 .contains("data-day-offset=\"2\"")
                 .contains("id=\"weatherPlanner\"")
+                .contains("id=\"currentWeather\"")
+                .contains("/api/weather/current")
                 .contains("/api/weather/planner")
                 .contains("buildWeatherShareUrl")
                 .contains("restoreSharedWeather")
