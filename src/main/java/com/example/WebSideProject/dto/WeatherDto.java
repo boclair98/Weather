@@ -171,25 +171,106 @@ public class WeatherDto {
     }
 
     public int getOutingScore() {
-        int score = 100;
+        int penalty = getRiskFactors().stream()
+                .mapToInt(WeatherRiskFactorDto::scoreImpact)
+                .sum();
+        return Math.max(20, Math.min(100, 100 - penalty));
+    }
 
-        if (isRainy()) score -= 22;
-        if (isSnowy()) score -= 26;
-        if (getPopValue() >= 70) score -= 18;
-        else if (getPopValue() >= 40) score -= 10;
+    /**
+     * Returns the exact signals used by the score in descending order of impact.
+     * The list is deliberately presentation-ready so web, mail and future app clients
+     * can all explain the same server-side decision without duplicating thresholds.
+     */
+    public List<WeatherRiskFactorDto> getRiskFactors() {
+        List<WeatherRiskFactorDto> factors = new ArrayList<>();
 
-        if (getTmpValue() >= 32 || getTmpValue() <= -5) score -= 18;
-        else if (getTmpValue() >= 28 || getTmpValue() <= 5) score -= 10;
+        if (isSnowy()) {
+            factors.add(risk("SNOW", "눈·빙판", "HIGH", 26 + activityBoost("PRECIPITATION"),
+                    "강수형태 " + getPtyDescription(), "미끄럼 적은 신발을 신고 이동 시간을 넉넉히 잡으세요."));
+        } else if (isRainy()) {
+            factors.add(risk("RAIN", "비", "HIGH", 22 + activityBoost("PRECIPITATION"),
+                    "강수형태 " + getPtyDescription(), "우산과 방수 신발을 챙기세요."));
+        }
 
-        if (getWsdValue() >= 8.0) score -= 10;
-        if (getRehValue() >= 85) score -= 6;
-        if (isBadAirQuality()) score -= 22;
-        else if (isModerateAirQuality()) score -= 8;
-        if (isUvRisk()) score -= getUvIndex() >= 11 ? 14 : 8;
-        if (isPollenRisk()) score -= getPollenRiskLevel() >= 3 ? 12 : 7;
-        if (hasWeatherWarning()) score -= 16;
+        if (getPopValue() >= 70) {
+            factors.add(risk("RAIN_PROBABILITY", "높은 강수확률", "HIGH",
+                    18 + activityBoost("PRECIPITATION"), "강수확률 " + getPop() + "%",
+                    "지금 맑아도 접이식 우산을 챙기세요."));
+        } else if (getPopValue() >= 40) {
+            factors.add(risk("RAIN_PROBABILITY", "강수 가능성", "MEDIUM",
+                    10 + activityBoost("PRECIPITATION"), "강수확률 " + getPop() + "%",
+                    "외출 전 최신 강수 예보를 다시 확인하세요."));
+        }
 
-        return Math.max(20, Math.min(100, score));
+        int perceivedTemperature = getStyledTemperature();
+        if (perceivedTemperature >= 32 || perceivedTemperature <= -5) {
+            factors.add(risk("TEMPERATURE", perceivedTemperature >= 32 ? "폭염 체감" : "한파 체감", "HIGH",
+                    18 + activityBoost("TEMPERATURE"), getTemperatureEvidence(perceivedTemperature),
+                    perceivedTemperature >= 32
+                            ? "한낮 야외 활동을 줄이고 물을 자주 마시세요."
+                            : "보온 레이어와 장갑·목도리를 준비하세요."));
+        } else if (perceivedTemperature >= 28 || perceivedTemperature <= 5) {
+            factors.add(risk("TEMPERATURE", perceivedTemperature >= 28 ? "더운 체감" : "쌀쌀한 체감", "MEDIUM",
+                    10 + activityBoost("TEMPERATURE"), getTemperatureEvidence(perceivedTemperature),
+                    perceivedTemperature >= 28
+                            ? "통풍 좋은 옷과 수분을 준비하세요."
+                            : "벗기 쉬운 겉옷을 한 겹 더하세요."));
+        }
+
+        if (getWsdValue() >= 8.0) {
+            factors.add(risk("WIND", "강한 바람", "MEDIUM", 10 + activityBoost("WIND"),
+                    "풍속 " + getWsd() + "m/s", "날리는 물건을 고정하고 이동 안전에 유의하세요."));
+        }
+        if (getRehValue() >= 85) {
+            factors.add(risk("HUMIDITY", "높은 습도", "LOW", 6 + activityBoost("HUMIDITY"),
+                    "습도 " + getReh() + "%", "통풍·속건 소재를 선택하세요."));
+        }
+        if (isBadAirQuality()) {
+            factors.add(risk("AIR_QUALITY", "나쁜 대기질", "HIGH", 22 + activityBoost("AIR_QUALITY"),
+                    getAirQualitySummary(), "KF80 이상 마스크를 챙기고 장시간 야외 활동을 줄이세요."));
+        } else if (isModerateAirQuality()) {
+            factors.add(risk("AIR_QUALITY", "보통 대기질", "LOW", 8 + activityBoost("AIR_QUALITY"),
+                    getAirQualitySummary(), "민감군은 마스크를 준비하세요."));
+        }
+        if (isUvRisk()) {
+            factors.add(risk("UV", "강한 자외선", getUvIndex() >= 11 ? "HIGH" : "MEDIUM",
+                    (getUvIndex() >= 11 ? 14 : 8) + activityBoost("UV"), getUvDisplay(), getUvAdvice()));
+        }
+        if (isPollenRisk()) {
+            factors.add(risk("POLLEN", "꽃가루", getPollenRiskLevel() >= 3 ? "HIGH" : "MEDIUM",
+                    (getPollenRiskLevel() >= 3 ? 12 : 7) + activityBoost("POLLEN"),
+                    getPollenDisplay(), getPollenAdvice()));
+        }
+        if (hasWeatherWarning()) {
+            factors.add(risk("OFFICIAL_WARNING", "기상특보", "HIGH", 16,
+                    getWeatherWarningTitle(), "기상청 공식 안전수칙을 우선 확인하세요."));
+        }
+
+        factors.sort((left, right) -> Integer.compare(right.scoreImpact(), left.scoreImpact()));
+        return List.copyOf(factors);
+    }
+
+    public String getPersonalizationSummary() {
+        return getActivityType().getLabel() + " · " + getTemperatureSensitivity().getLabel()
+                + " 기준으로 체감온도와 위험 가중치를 반영했습니다.";
+    }
+
+    public String getDecisionExplanation() {
+        List<WeatherRiskFactorDto> factors = getRiskFactors();
+        if (factors.isEmpty()) {
+            return "현재 선택 기준에서 큰 위험 신호가 없습니다. 기온 변화만 확인하고 편하게 준비하세요.";
+        }
+        WeatherRiskFactorDto primary = factors.get(0);
+        if (factors.size() == 1) {
+            return "가장 큰 변수는 " + primary.label() + "이며 " + primary.evidence() + "를 반영했습니다.";
+        }
+        return "가장 큰 변수는 " + primary.label() + "이며, " + factors.get(1).label()
+                + "도 함께 점수에 반영했습니다.";
+    }
+
+    public int getPersonalizedFeelsLikeTemperature() {
+        return getStyledTemperature();
     }
 
     public String getOutingScoreLabel() {
@@ -790,6 +871,45 @@ public class WeatherDto {
             default -> "보통 체감 기준으로";
         };
         return activity.getLabel() + " 일정에는 " + sensitivityLabel;
+    }
+
+    private WeatherRiskFactorDto risk(
+            String code,
+            String label,
+            String severity,
+            int scoreImpact,
+            String evidence,
+            String action
+    ) {
+        return new WeatherRiskFactorDto(code, label, severity, scoreImpact, evidence, action);
+    }
+
+    private int activityBoost(String category) {
+        return switch (getActivityType()) {
+            case OUTDOOR -> switch (category) {
+                case "PRECIPITATION", "UV" -> 5;
+                case "TEMPERATURE", "WIND", "AIR_QUALITY", "POLLEN" -> 4;
+                default -> 0;
+            };
+            case COMMUTE -> switch (category) {
+                case "PRECIPITATION" -> 4;
+                case "WIND" -> 2;
+                default -> 0;
+            };
+            case FORMAL -> switch (category) {
+                case "PRECIPITATION" -> 3;
+                case "HUMIDITY" -> 2;
+                default -> 0;
+            };
+            default -> 0;
+        };
+    }
+
+    private String getTemperatureEvidence(int perceivedTemperature) {
+        if (getTemperatureSensitivity() == TemperatureSensitivity.NONE) {
+            return "기온 " + getTmp() + "°C";
+        }
+        return "기온 " + getTmp() + "°C · 개인 체감 " + perceivedTemperature + "°C";
     }
 
     private boolean hasAirQuality() {

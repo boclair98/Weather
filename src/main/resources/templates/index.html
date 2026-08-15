@@ -465,6 +465,121 @@
             line-height: 1.65;
         }
 
+        .decision-explanation {
+            margin-top: 16px;
+            padding: 18px;
+            border: 1px solid #bfdbfe;
+            border-radius: 16px;
+            background: linear-gradient(145deg, #eff6ff, #f8fafc);
+        }
+
+        .decision-explanation-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .decision-explanation-eyebrow,
+        .decision-explanation-title,
+        .decision-explanation-profile {
+            display: block;
+        }
+
+        .decision-explanation-eyebrow {
+            color: #2563eb;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .decision-explanation-title {
+            margin-top: 4px;
+            color: #0f172a;
+            font-size: 16px;
+            line-height: 1.45;
+        }
+
+        .decision-explanation-profile {
+            max-width: 260px;
+            color: #475569;
+            font-size: 12px;
+            line-height: 1.55;
+            text-align: right;
+        }
+
+        .decision-explanation-copy {
+            margin: 12px 0 0;
+            color: #334155;
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        .risk-factor-list {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .risk-factor,
+        .risk-factor-empty {
+            display: grid;
+            grid-template-columns: 10px minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: start;
+            padding: 11px 12px;
+            border-radius: 12px;
+            color: #334155;
+            background: rgba(255, 255, 255, .88);
+        }
+
+        .risk-factor-empty {
+            grid-template-columns: 10px minmax(0, 1fr);
+        }
+
+        .risk-factor-dot {
+            width: 8px;
+            height: 8px;
+            margin-top: 5px;
+            border-radius: 999px;
+            background: #16a34a;
+        }
+
+        .risk-factor[data-severity="MEDIUM"] .risk-factor-dot {
+            background: #d97706;
+        }
+
+        .risk-factor[data-severity="HIGH"] .risk-factor-dot {
+            background: #dc2626;
+        }
+
+        .risk-factor strong,
+        .risk-factor span,
+        .risk-factor small {
+            display: block;
+        }
+
+        .risk-factor strong {
+            color: #0f172a;
+            font-size: 13px;
+        }
+
+        .risk-factor span,
+        .risk-factor small {
+            margin-top: 3px;
+            color: #64748b;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .risk-factor-impact {
+            color: #b91c1c;
+            font-size: 12px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
         .weather-chip-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -1616,6 +1731,15 @@
                 grid-template-columns: 1fr;
             }
 
+            .decision-explanation-header {
+                flex-direction: column;
+            }
+
+            .decision-explanation-profile {
+                max-width: none;
+                text-align: left;
+            }
+
             .safety-grid,
             .route-form,
             .planner-days,
@@ -1773,6 +1897,17 @@
                         <span id="outingScoreLabel">-</span>
                     </div>
                     <p class="weather-detail" id="weatherDetail">위치를 선택하면 날씨에 맞는 외출 조언을 보여드립니다.</p>
+                    <section class="decision-explanation" aria-labelledby="decisionExplanationTitle" aria-live="polite">
+                        <div class="decision-explanation-header">
+                            <div>
+                                <span class="decision-explanation-eyebrow">Explainable Weather</span>
+                                <strong class="decision-explanation-title" id="decisionExplanationTitle">왜 이 점수인가요?</strong>
+                            </div>
+                            <span class="decision-explanation-profile" id="personalizationSummary">활동 목적과 체감 성향을 선택하면 판단 기준이 달라집니다.</span>
+                        </div>
+                        <p class="decision-explanation-copy" id="decisionExplanation">선택한 위치의 위험 요인을 분석합니다.</p>
+                        <div class="risk-factor-list" id="riskFactorList" aria-label="점수에 반영된 위험 요인"></div>
+                    </section>
                     <div class="weather-chip-row">
                         <div class="weather-chip">
                             <span>기온</span>
@@ -2128,6 +2263,9 @@
     const outingScore = document.getElementById("outingScore");
     const outingScoreLabel = document.getElementById("outingScoreLabel");
     const weatherDetail = document.getElementById("weatherDetail");
+    const personalizationSummary = document.getElementById("personalizationSummary");
+    const decisionExplanation = document.getElementById("decisionExplanation");
+    const riskFactorList = document.getElementById("riskFactorList");
     const weatherTemp = document.getElementById("weatherTemp");
     const weatherRain = document.getElementById("weatherRain");
     const weatherAir = document.getElementById("weatherAir");
@@ -2617,6 +2755,9 @@
         weatherDetail.textContent = "선택한 위치의 날씨를 분석하고 있어요.";
         outingScore.textContent = "-점";
         outingScoreLabel.textContent = "-";
+        personalizationSummary.textContent = "활동 목적과 체감 성향을 반영하고 있어요.";
+        decisionExplanation.textContent = "선택한 위치의 위험 요인을 분석합니다.";
+        riskFactorList.replaceChildren();
         weatherTemp.textContent = "-";
         weatherRain.textContent = "-";
         weatherAir.textContent = "-";
@@ -3111,6 +3252,9 @@
         outingScore.textContent = `${weather.outingScore || "-"}점`;
         outingScoreLabel.textContent = weather.outingScoreLabel || "-";
         weatherDetail.textContent = weather.detailedWeatherMessage || weather.summaryMessage || "오늘 날씨를 확인해보세요.";
+        personalizationSummary.textContent = weather.personalizationSummary || "기본 외출 기준으로 분석했습니다.";
+        decisionExplanation.textContent = weather.decisionExplanation || "현재 날씨 판단 근거를 확인하세요.";
+        renderRiskFactors(weather.riskFactors || []);
         weatherTemp.textContent = `${weather.tmp || "-"}°C`;
         weatherRain.textContent = `강수 ${weather.pop || "-"}%`;
         weatherAir.textContent = weather.airQualitySummary || "-";
@@ -3134,6 +3278,48 @@
         actionUmbrella.textContent = weather.umbrellaAdvice || "확인 필요";
         actionMask.textContent = weather.maskAdvice || "확인 필요";
         actionOutdoor.textContent = weather.outdoorAdvice || "확인 필요";
+    }
+
+    function renderRiskFactors(factors) {
+        riskFactorList.replaceChildren();
+        if (!factors.length) {
+            const empty = document.createElement("div");
+            empty.className = "risk-factor-empty";
+            const dot = document.createElement("span");
+            dot.className = "risk-factor-dot";
+            dot.setAttribute("aria-hidden", "true");
+            const copy = document.createElement("span");
+            copy.textContent = "현재 선택 기준에서 점수를 낮추는 뚜렷한 위험 요인이 없습니다.";
+            empty.append(dot, copy);
+            riskFactorList.appendChild(empty);
+            return;
+        }
+
+        factors.slice(0, 4).forEach((factor) => {
+            const item = document.createElement("article");
+            item.className = "risk-factor";
+            item.dataset.severity = factor.severity || "LOW";
+
+            const dot = document.createElement("span");
+            dot.className = "risk-factor-dot";
+            dot.setAttribute("aria-hidden", "true");
+
+            const copy = document.createElement("div");
+            const title = document.createElement("strong");
+            title.textContent = factor.label || "날씨 변수";
+            const evidence = document.createElement("span");
+            evidence.textContent = factor.evidence || "";
+            const action = document.createElement("small");
+            action.textContent = factor.action || "";
+            copy.append(title, evidence, action);
+
+            const impact = document.createElement("span");
+            impact.className = "risk-factor-impact";
+            impact.textContent = `-${factor.scoreImpact || 0}점`;
+            impact.setAttribute("aria-label", `외출 점수 ${factor.scoreImpact || 0}점 감소`);
+            item.append(dot, copy, impact);
+            riskFactorList.appendChild(item);
+        });
     }
 
     async function loadRouteBriefing() {
