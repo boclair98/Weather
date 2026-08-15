@@ -28,7 +28,11 @@ class FrontendContractTest {
                 .contains("navigator.serviceWorker.register")
                 .contains("href=\"#weatherSearch\"")
                 .contains("prefers-reduced-motion")
-                .contains("aria-busy");
+                .contains("aria-busy")
+                .contains("id=\"personalizationSummary\"")
+                .contains("id=\"decisionExplanation\"")
+                .contains("id=\"riskFactorList\"")
+                .contains("renderRiskFactors");
         assertThat(html)
                 .contains("th:attr=\"nonce=${cspNonce}\"")
                 .contains("id=\"plannerQuality\"")

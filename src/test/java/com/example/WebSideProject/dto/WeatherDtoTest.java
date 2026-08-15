@@ -120,4 +120,60 @@ class WeatherDtoTest {
         assertThat(risky.getSafetySummary()).contains("폭염경보", "자외선", "꽃가루");
         assertThat(risky.getSmartAlertSummary()).contains("폭염경보", "자외선", "꽃가루");
     }
+
+    @Test
+    void outdoorProfileWeightsWeatherRisksMoreThanDailyProfile() {
+        WeatherDto daily = WeatherDto.builder()
+                .tmp("29")
+                .pop("70")
+                .pty("0")
+                .wsd("8.2")
+                .uvIndex(9)
+                .activityType(ActivityType.DAILY)
+                .build();
+        WeatherDto outdoor = daily.toBuilder()
+                .activityType(ActivityType.OUTDOOR)
+                .build();
+
+        assertThat(outdoor.getOutingScore()).isLessThan(daily.getOutingScore());
+        assertThat(outdoor.getPersonalizationSummary()).contains("산책·야외 활동");
+        assertThat(outdoor.getRiskFactors())
+                .isSortedAccordingTo((left, right) -> Integer.compare(right.scoreImpact(), left.scoreImpact()));
+    }
+
+    @Test
+    void temperatureSensitivityChangesPerceivedRiskAndExplainsEvidence() {
+        WeatherDto normal = WeatherDto.builder()
+                .tmp("7")
+                .pop("10")
+                .temperatureSensitivity(TemperatureSensitivity.NONE)
+                .build();
+        WeatherDto coldSensitive = normal.toBuilder()
+                .temperatureSensitivity(TemperatureSensitivity.COLD)
+                .build();
+
+        assertThat(normal.getRiskFactors()).isEmpty();
+        assertThat(coldSensitive.getOutingScore()).isLessThan(normal.getOutingScore());
+        assertThat(coldSensitive.getPersonalizedFeelsLikeTemperature()).isEqualTo(4);
+        assertThat(coldSensitive.getRiskFactors().get(0).evidence()).contains("기온 7°C", "개인 체감 4°C");
+    }
+
+    @Test
+    void decisionExplanationNamesPrimaryEvidenceAndAction() {
+        WeatherDto risky = WeatherDto.builder()
+                .tmp("23")
+                .pty("1")
+                .pop("80")
+                .pm10Grade("3")
+                .pm25Grade("2")
+                .build();
+
+        assertThat(risky.getRiskFactors()).allSatisfy(factor -> {
+            assertThat(factor.code()).isNotBlank();
+            assertThat(factor.evidence()).isNotBlank();
+            assertThat(factor.action()).isNotBlank();
+            assertThat(factor.scoreImpact()).isPositive();
+        });
+        assertThat(risky.getDecisionExplanation()).contains("가장 큰 변수");
+    }
 }

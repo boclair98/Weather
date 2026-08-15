@@ -1,0 +1,41 @@
+name: Bug report
+description: 재현 가능한 오류를 보고합니다.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 문제
+      description: 기대한 결과와 실제 결과를 적어주세요. API 키나 이메일 같은 개인정보는 제외하세요.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 재현 방법
+      placeholder: "1. 위치 검색\n2. ..."
+    validations:
+      required: true
+  - type: input
+    id: request-id
+    attributes:
+      label: Request ID
+      description: 오류 화면의 요청 ID가 있다면 입력하세요.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: 발생 영역
+      options:
+        - 웹 화면
+        - 날씨 API
+        - 위치 검색
+        - 이메일
+        - 운영/배포
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 환경
+      description: 브라우저, 기기, 운영/로컬 여부를 적어주세요.

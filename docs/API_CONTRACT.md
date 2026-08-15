@@ -1,5 +1,21 @@
 # 기관 연계 API 계약
 
+## 설명 가능한 맞춤 날씨 필드
+
+`GET /api/weather/daily`의 각 시간대 날씨와 관련 브리핑 응답은 다음 파생 필드를 포함합니다. 기존 필드에 대한 하위 호환 확장입니다.
+
+| 필드 | 타입 | 의미 |
+| --- | --- | --- |
+| `outingScore` | number | 위험 감점을 반영한 20~100 외출 점수 |
+| `personalizedFeelsLikeTemperature` | number | 체감 성향을 반영한 판단용 기온 |
+| `personalizationSummary` | string | 적용한 활동 목적·체감 성향 설명 |
+| `decisionExplanation` | string | 가장 영향이 큰 위험 요약 |
+| `riskFactors` | array | 영향도 내림차순의 위험 근거 |
+
+`riskFactors[]`는 `code`, `label`, `severity`, `scoreImpact`, `evidence`, `action`을 포함합니다. `scoreImpact`의 합을 100에서 차감하고 결과를 20~100으로 제한합니다. 소비자는 알려지지 않은 `code`를 무시해야 하며, 문구가 아닌 `code`를 분석 키로 사용해야 합니다.
+
+활동 목적은 `DAILY`, `COMMUTE`, `OUTDOOR`, `FORMAL`, 체감 성향은 `NONE`, `COLD`, `HEAT`입니다. 기본값은 각각 `DAILY`, `NONE`입니다.
+
 ## `GET /api/weather/current`
 
 웹 화면에서 사용하는 최신 실황 API입니다. 기존 `WEATHER_API_KEY`로 기상청 `getUltraSrtNcst`를 호출하므로 별도 인증키가 필요하지 않습니다.
