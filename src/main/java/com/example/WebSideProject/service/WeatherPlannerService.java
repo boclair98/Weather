@@ -6,6 +6,7 @@ import com.example.WebSideProject.Enum.GenderType;
 import com.example.WebSideProject.Enum.TemperatureSensitivity;
 import com.example.WebSideProject.dto.DailyWeatherDto;
 import com.example.WebSideProject.dto.WeatherPlannerDto;
+import com.example.WebSideProject.dto.WeatherProfile;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -54,15 +55,16 @@ public class WeatherPlannerService {
         Timer.Sample timer = Timer.start(meterRegistry);
         boolean success = false;
         try {
+            WeatherProfile profile = new WeatherProfile(
+                    ageGroup, gender, temperatureSensitivity, activityType
+            );
             List<DailyWeatherDto> forecasts = CompletableFuture.supplyAsync(
                             () -> weatherService.getPlannerDailyWeatherList(nx, ny, locationName),
                             plannerExecutor
                     )
                     .join()
                     .stream()
-                    .map(forecast -> forecast.withStylePreference(
-                            ageGroup, gender, temperatureSensitivity, activityType
-                    ))
+                    .map(forecast -> forecast.withStylePreference(profile))
                     .toList();
             WeatherPlannerDto planner = WeatherPlannerDto.from(locationName, forecasts);
             success = true;

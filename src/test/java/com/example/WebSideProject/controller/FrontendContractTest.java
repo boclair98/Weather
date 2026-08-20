@@ -36,8 +36,12 @@ class FrontendContractTest {
         assertThat(html)
                 .contains("th:attr=\"nonce=${cspNonce}\"")
                 .contains("id=\"plannerQuality\"")
-                .contains("id=\"privacyConsent\"")
-                .contains("/api/users/me/data");
+                .contains("id=\"result\"");
+        assertThat(html)
+                .doesNotContain("subscribeForm")
+                .doesNotContain("/api/users/")
+                .doesNotContain("Google 로그인")
+                .doesNotContain("weather-mail");
     }
 
     @Test

@@ -89,6 +89,16 @@ public record DailyWeatherDto(
         return withStylePreference(ageGroup, gender, TemperatureSensitivity.NONE, ActivityType.DAILY);
     }
 
+    public DailyWeatherDto withStylePreference(WeatherProfile profile) {
+        WeatherProfile selected = profile == null ? WeatherProfile.defaults() : profile;
+        return withStylePreference(
+                selected.ageGroup(),
+                selected.gender(),
+                selected.temperatureSensitivity(),
+                selected.activityType()
+        );
+    }
+
     public DailyWeatherDto withStylePreference(
             AgeGroup ageGroup,
             GenderType gender,
