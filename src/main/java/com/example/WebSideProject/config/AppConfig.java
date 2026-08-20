@@ -45,20 +45,6 @@ public class AppConfig {
                 .build();
     }
 
-    @Bean(name = "taskExecutor")
-    public Executor taskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(8);
-        executor.setMaxPoolSize(32);
-        executor.setQueueCapacity(2000);
-        executor.setThreadNamePrefix("mail-");
-        executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setAwaitTerminationSeconds(30);
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        executor.initialize();
-        return executor;
-    }
-
     @Bean(name = "plannerExecutor")
     public Executor plannerExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

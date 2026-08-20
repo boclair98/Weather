@@ -32,12 +32,25 @@ class FrontendContractTest {
                 .contains("id=\"personalizationSummary\"")
                 .contains("id=\"decisionExplanation\"")
                 .contains("id=\"riskFactorList\"")
-                .contains("renderRiskFactors");
+                .contains("renderRiskFactors")
+                .contains("id=\"refreshWeather\"")
+                .contains("id=\"unitToggle\"")
+                .contains("id=\"themeToggle\"")
+                .contains("id=\"previewBriefing\"")
+                .contains("id=\"briefingPreviewDialog\"")
+                .contains("id=\"favoriteLocation\"")
+                .contains("id=\"snapshotNote\"")
+                .contains("requestJson")
+                .contains("weather-last-snapshot-v2");
         assertThat(html)
                 .contains("th:attr=\"nonce=${cspNonce}\"")
                 .contains("id=\"plannerQuality\"")
-                .contains("id=\"privacyConsent\"")
-                .contains("/api/users/me/data");
+                .contains("id=\"result\"");
+        assertThat(html)
+                .doesNotContain("subscribeForm")
+                .doesNotContain("/api/users/")
+                .doesNotContain("Google 로그인")
+                .doesNotContain("weather-mail");
     }
 
     @Test

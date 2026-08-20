@@ -24,7 +24,7 @@
 1. PR의 test, container, dependency-review 검사를 모두 통과시킵니다.
 2. 생성된 SBOM을 배포 산출물과 함께 보관합니다.
 3. Flyway migration과 애플리케이션을 배포합니다.
-4. readiness, 기관용 briefing, 위치 검색, 구독 validation을 smoke test 합니다.
+4. readiness, 기관용 briefing, 위치 검색, 3일 플래너를 smoke test 합니다.
 5. 오류율 또는 지연이 기준을 넘으면 직전 이미지로 롤백합니다. 적용된 DB migration은 기본적으로 전진 수정합니다.
 
 ## 백업·복구
@@ -35,8 +35,8 @@
 - 분기 1회 별도 환경에서 복원시간과 데이터 완전성을 기록합니다.
 - secret은 저장소에 넣지 않고 운영 secret store에서 회전합니다.
 
-## 개인정보 요청
+## 전환 데이터 정리
 
-- 구독 해지는 발송만 중지합니다.
-- `DELETE /api/users/me/data`는 로그인 소유권을 확인한 뒤 구독정보와 메일 발송이력을 함께 삭제합니다.
-- 삭제 작업은 원문 이메일을 로그에 남기지 않고 내부 사용자 ID만 기록합니다.
+- `V3__remove_email_subscription_data.sql`은 배포 시 기존 `users`, `weather_mail_histories`, `shedlock`의 모든 행을 삭제합니다.
+- 스키마와 Flyway 이력은 보존하므로 롤백 시에도 데이터가 복구되지는 않습니다. 배포 전 운영 백업 성공 여부를 확인합니다.
+- 현재 애플리케이션은 이메일·로그인 데이터를 새로 저장하지 않습니다.

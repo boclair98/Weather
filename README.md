@@ -8,13 +8,13 @@
 
 <p align="center">
   내 위치의 <strong>시간별 날씨·강수·대기질·기상특보</strong>를 한눈에 보고<br>
-  나에게 필요한 준비와 날씨 메일까지 받는 생활 날씨 서비스
+  지금 무엇을 준비할지 바로 결정하는 생활 날씨 서비스
 </p>
 
 <p align="center">
   <a href="https://weather.coders.kr"><img src="https://img.shields.io/badge/바로_사용-weather.coders.kr-2563EB?style=for-the-badge" alt="운영 사이트"></a>
   <img src="https://img.shields.io/badge/모바일-PWA-0F766E?style=for-the-badge" alt="모바일 PWA">
-  <img src="https://img.shields.io/badge/날씨_메일-최대_10개_수신처-F97316?style=for-the-badge" alt="최대 10개 수신처">
+  <img src="https://img.shields.io/badge/개인정보_최소화-브라우저_중심-0F766E?style=for-the-badge" alt="브라우저 중심 서비스">
 </p>
 
 ## 바로 사용하기
@@ -23,7 +23,7 @@
 
 1. 동네, 역 또는 건물명을 검색합니다.
 2. 오늘·내일·모레와 시간별 날씨, 준비물을 확인합니다.
-3. 원하면 여러 이메일에 아침·점심·저녁 브리핑을 구독합니다.
+3. 활동 목적과 체감 성향을 바꿔 나에게 맞는 외출 판단을 확인합니다.
 
 > 기상청·에어코리아 원천자료를 활용한 독립 서비스입니다. 기상청 공식 홈페이지나 인증·납품 제품을 의미하지 않습니다.
 
@@ -32,7 +32,6 @@
 - 출근 전에 우산·겉옷·마스크를 한 번에 결정하고 싶은 분
 - 추위나 더위를 많이 타서 일반적인 옷차림 추천이 맞지 않는 분
 - 산책·야외 활동·격식 일정에 따라 다른 준비가 필요한 분
-- 부모님, 가족, 팀원 등 여러 수신처에 날씨 메일을 보내고 싶은 분
 - 미세먼지·자외선·꽃가루와 기상특보를 함께 확인하고 싶은 분
 
 ## 이 서비스가 알려주는 것
@@ -46,7 +45,7 @@
 | 오늘과 내일 중 언제가 좋을까? | 3일 예보와 아침·점심·저녁 비교 |
 | 무엇을 준비해야 할까? | 우산·마스크·야외 활동·맞춤 코디 추천 |
 | 왜 이 점수일까? | 위험 요인별 감점, 실제 근거 수치, 지금 할 일 |
-| 메일로도 받을 수 있나? | 최대 10개 이메일, 선택 시간, 위험 스마트 알림 |
+| 어떤 근거로 판단했나? | 위험 요인별 실제 수치와 대응 행동 |
 
 ## 주요 기능
 
@@ -80,24 +79,18 @@
 - 비·눈·바람·습도에 맞는 소재와 피해야 할 옷 안내
 - 체감 성향과 활동 목적을 바꾸면 추천을 즉시 다시 계산
 
-### 날씨 이메일
-
-- 한 계정에 최대 10개 수신 이메일
-- 아침 06:30, 점심 11:30, 저녁 18:30 선택
-- 모바일 Gmail·네이버 메일에 맞춘 HTML 브리핑
-- 같은 위험의 반복 발송을 줄이는 스마트 알림
-- 이메일 입력 또는 메일의 링크로 구독 취소
-
-<p align="center">
-  <img src="docs/images/weather-mail-preview.svg" alt="날씨한편 모바일 이메일 화면" width="760">
-</p>
-
 ### 일정과 이동 도구
 
 - 출발지와 목적지의 날씨·이동시간 비교
 - 희망 일정 주변에서 비·바람이 덜한 출발 시간 제안
 - 추천 시간을 캘린더 파일로 저장
 - 홈 화면 설치와 오프라인 상태 안내
+
+### 메일처럼 읽는 브리핑 UI
+
+- 날씨 결과 카드의 `메일형 보기`에서 점수·기온·강수·대기질·옷차림을 한 장으로 확인
+- 모바일 메일처럼 읽기 쉬운 반응형 레이아웃과 인쇄용 스타일 제공
+- 현재는 외부 메일을 자동 발송하지 않으며, 브리핑 미리보기만 제공합니다.
 
 ## 데이터와 이용 안내
 
@@ -108,8 +101,11 @@
 | Kakao | 장소 검색과 이동 경로 |
 
 - 예보의 발표·수집시각과 자료 상태를 함께 표시합니다.
-- 이메일로 직접 구독을 취소하거나 저장한 구독 정보를 삭제할 수 있습니다.
+- 동일한 위치·예보의 짧은 시간 내 중복 요청은 브라우저 캐시로 줄이고, 네트워크 장애 시 마지막 정상 스냅샷을 활용합니다.
 - 위험한 상황에서는 서비스 추천보다 기상청 공식 특보와 안전지침을 우선하세요.
+
+운영 전환 과정에서 기존 이메일 구독 데이터와 발송 이력은 Flyway `V3` 마이그레이션으로 비우며,
+현재 서비스는 이메일·로그인 없이 날씨 조회에 집중합니다. 위치·설정은 브라우저에만 저장됩니다.
 
 ## 기술 구성
 
@@ -119,10 +115,10 @@
 | --- | --- |
 | Backend | Java 17, Spring Boot 3.5.16, Spring Web, Validation |
 | UI | Thymeleaf, HTML, CSS, Vanilla JavaScript, PWA |
-| Database | PostgreSQL, Flyway, JPA · H2 로컬 · MySQL 선택 지원 |
+| Database | PostgreSQL + Flyway(전환 데이터 정리), H2 로컬 · MySQL 선택 지원 |
 | Cache | Caffeine, Redis |
-| Scheduling | Spring Scheduler, ShedLock, bounded executor |
-| External API | 기상청, 에어코리아, Kakao, SMTP, Apache HttpClient |
+| Concurrency | 요청 기반 bounded executor · provider별 격리 |
+| External API | 기상청, 에어코리아, Kakao, Apache HttpClient |
 | Observability | Actuator, Prometheus, request ID |
 | Quality | JUnit 5, AssertJ, GitHub Actions, Dependabot, CycloneDX SBOM |
 
@@ -131,11 +127,9 @@ flowchart LR
     U["웹·PWA 사용자"] --> G["coders.kr Gateway"]
     G --> A["Spring Boot API"]
     A --> D["맞춤 날씨 판단"]
-    A --> DB["PostgreSQL + Flyway"]
+    A --> DB["PostgreSQL + Flyway reset"]
     A --> C["Caffeine + Redis"]
     A --> K["기상청·에어코리아·Kakao"]
-    SCH["Scheduler + ShedLock"] --> A
-    A --> M["SMTP 날씨 메일"]
 ```
 
 ## 운영 안정성과 보안
@@ -143,8 +137,8 @@ flowchart LR
 - 외부 API 연결·응답 timeout, 제한된 재시도, 공급자별 circuit breaker
 - 최근 정상자료 fallback과 출처·발표시각·수집시각·자료 상태 표시
 - HTTP connection pool, bounded cache/executor와 read·write 요청 제한
-- Redis 분산 제어와 ShedLock을 이용한 다중 인스턴스 예약 작업 중복 완화
-- CSP nonce, HSTS, 입력 검증과 운영 관리자 API fail-closed
+- Redis 분산 제어와 bounded executor로 다중 인스턴스 요청 폭주 완화
+- CSP nonce, HSTS, 외부 입력 검증과 운영 환경 fail-closed 설정
 - request ID, Actuator, Prometheus, readiness/liveness probe
 - 전체 테스트·실행 JAR·Docker build·dependency review·SBOM을 CI에서 검증
 
