@@ -11,7 +11,6 @@ import com.example.WebSideProject.dto.WeatherDecisionDto;
 import com.example.WebSideProject.dto.HourlyWeatherDto;
 import com.example.WebSideProject.dto.CurrentWeatherDto;
 import com.example.WebSideProject.dto.WeatherPlannerDto;
-import com.example.WebSideProject.dto.WeatherProfile;
 import com.example.WebSideProject.service.WeatherPlannerService;
 import com.example.WebSideProject.service.WeatherService;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +62,7 @@ public class WeatherController {
         return ResponseEntity.ok()
                 .cacheControl(WEATHER_CACHE)
                 .body(weatherService.getWeather(nx, ny, period, locationName)
-                        .withStylePreference(profile(ageGroup, gender, temperatureSensitivity, activityType)));
+                        .withStylePreference(ageGroup, gender, temperatureSensitivity, activityType));
     }
 
     @GetMapping("/daily")
@@ -80,7 +79,7 @@ public class WeatherController {
         return ResponseEntity.ok()
                 .cacheControl(WEATHER_CACHE)
                 .body(weatherService.getDailyWeather(nx, ny, locationName, dayOffset)
-                        .withStylePreference(profile(ageGroup, gender, temperatureSensitivity, activityType)));
+                        .withStylePreference(ageGroup, gender, temperatureSensitivity, activityType));
     }
 
     @GetMapping("/planner")
@@ -144,16 +143,7 @@ public class WeatherController {
     ) {
         WeatherDto weather = weatherService.getWeatherForBase(
                 nx, ny, period, locationName, baseDate, baseTime
-        ).withStylePreference(profile(ageGroup, gender, temperatureSensitivity, activityType));
+        ).withStylePreference(ageGroup, gender, temperatureSensitivity, activityType);
         return ResponseEntity.ok(weather);
-    }
-
-    private WeatherProfile profile(
-            AgeGroup ageGroup,
-            GenderType gender,
-            TemperatureSensitivity temperatureSensitivity,
-            ActivityType activityType
-    ) {
-        return new WeatherProfile(ageGroup, gender, temperatureSensitivity, activityType);
     }
 }

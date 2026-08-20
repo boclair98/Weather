@@ -16,6 +16,7 @@ services:
       REDIS_URL: ${cache.url}
       JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -Duser.timezone=Asia/Seoul
       ADMIN_REQUIRE_KEY: "true"
+      CODERS_IDENTITY_REQUIRED: "true"
 
   db:
     type: postgres

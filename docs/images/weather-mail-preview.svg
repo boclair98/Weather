@@ -1,0 +1,69 @@
+<svg width="920" height="760" viewBox="0 0 920 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="canvas" x1="60" y1="30" x2="860" y2="730" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E8EFFA"/>
+      <stop offset="1" stop-color="#F8FAFC"/>
+    </linearGradient>
+    <filter id="mailShadow" x="130" y="12" width="660" height="742" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#1E293B" flood-opacity=".16"/>
+    </filter>
+  </defs>
+
+  <rect width="920" height="760" rx="28" fill="url(#canvas)"/>
+  <text x="42" y="55" fill="#2563EB" font-family="Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="2">MOBILE EMAIL BRIEFING</text>
+  <text x="42" y="82" fill="#0F172A" font-family="Arial, sans-serif" font-size="23" font-weight="800">열자마자 오늘의 행동이 보이는 메일</text>
+
+  <g filter="url(#mailShadow)">
+    <rect x="190" y="36" width="540" height="694" rx="22" fill="#FFFFFF"/>
+    <rect x="190" y="36" width="540" height="198" rx="22" fill="#2563EB"/>
+    <text x="218" y="68" fill="#BFDBFE" font-family="Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="1.5">WEATHER NOTE</text>
+    <text x="218" y="92" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="13" font-weight="700">08월 09일 아침 예보</text>
+    <rect x="620" y="55" width="84" height="30" rx="15" fill="#FFFFFF"/>
+    <text x="635" y="75" fill="#1E3A8A" font-family="Arial, sans-serif" font-size="10" font-weight="800">외출 76점</text>
+    <text x="218" y="130" fill="#DBEAFE" font-family="Arial, sans-serif" font-size="12">강남역 2호선</text>
+    <text x="218" y="166" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="28" font-weight="800">화창한 하루</text>
+    <text x="625" y="181" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="45" font-weight="800">27°C</text>
+    <rect x="218" y="195" width="300" height="30" rx="10" fill="#FFF7ED"/>
+    <text x="231" y="214" fill="#9A3412" font-family="Arial, sans-serif" font-size="10" font-weight="800">⚠ 오늘 주의 · 폭염경보 · 자외선 매우 높음</text>
+
+    <text x="218" y="267" fill="#2563EB" font-family="Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="1">30초 브리핑</text>
+    <text x="218" y="296" fill="#0F172A" font-family="Arial, sans-serif" font-size="20" font-weight="800">사용자님, 오늘은 이렇게 준비하세요.</text>
+    <text x="218" y="320" fill="#64748B" font-family="Arial, sans-serif" font-size="11">맑지만 한낮 기온과 자외선이 높아 노출 시간을 줄이는 편이 좋아요.</text>
+
+    <rect x="218" y="342" width="148" height="66" rx="12" fill="#F8FAFC" stroke="#E2E8F0"/>
+    <text x="282" y="364" fill="#64748B" font-family="Arial, sans-serif" font-size="9" font-weight="700">강수</text>
+    <text x="277" y="390" fill="#0F172A" font-family="Arial, sans-serif" font-size="19" font-weight="800">0%</text>
+    <rect x="376" y="342" width="148" height="66" rx="12" fill="#F8FAFC" stroke="#E2E8F0"/>
+    <text x="436" y="364" fill="#64748B" font-family="Arial, sans-serif" font-size="9" font-weight="700">바람</text>
+    <text x="424" y="390" fill="#0F172A" font-family="Arial, sans-serif" font-size="19" font-weight="800">2.4m/s</text>
+    <rect x="534" y="342" width="170" height="66" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text x="590" y="364" fill="#2563EB" font-family="Arial, sans-serif" font-size="9" font-weight="700">안전 신호</text>
+    <text x="601" y="390" fill="#1E3A8A" font-family="Arial, sans-serif" font-size="17" font-weight="800">무난</text>
+
+    <rect x="218" y="424" width="486" height="62" rx="13" fill="#FFF1F2" stroke="#FECDD3"/>
+    <text x="235" y="449" fill="#9F1239" font-family="Arial, sans-serif" font-size="12" font-weight="800">🚨 기상청 폭염경보</text>
+    <text x="235" y="470" fill="#BE123C" font-family="Arial, sans-serif" font-size="10">서울 지역에 폭염경보가 발효 중입니다.</text>
+
+    <text x="218" y="521" fill="#0F172A" font-family="Arial, sans-serif" font-size="14" font-weight="800">지금 챙기면 좋은 것</text>
+    <rect x="218" y="536" width="486" height="67" rx="13" fill="#F8FAFC" stroke="#E2E8F0"/>
+    <text x="237" y="562" fill="#334155" font-family="Arial, sans-serif" font-size="11" font-weight="800">☂ 우산</text>
+    <text x="315" y="562" fill="#64748B" font-family="Arial, sans-serif" font-size="10">필수는 아니에요</text>
+    <line x1="232" y1="574" x2="690" y2="574" stroke="#E2E8F0"/>
+    <text x="237" y="593" fill="#334155" font-family="Arial, sans-serif" font-size="11" font-weight="800">☀ 야외</text>
+    <text x="315" y="593" fill="#64748B" font-family="Arial, sans-serif" font-size="10">선크림과 모자를 챙기고 한낮 노출을 줄이세요</text>
+
+    <rect x="218" y="619" width="236" height="82" rx="13" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text x="234" y="643" fill="#2563EB" font-family="Arial, sans-serif" font-size="9" font-weight="800">UV 자외선</text>
+    <text x="234" y="670" fill="#1E3A8A" font-family="Arial, sans-serif" font-size="17" font-weight="800">10 · 매우 높음</text>
+    <text x="234" y="690" fill="#475569" font-family="Arial, sans-serif" font-size="9">선크림·모자 필수</text>
+    <rect x="468" y="619" width="236" height="82" rx="13" fill="#F0FDF4" stroke="#BBF7D0"/>
+    <text x="484" y="643" fill="#16A34A" font-family="Arial, sans-serif" font-size="9" font-weight="800">꽃가루</text>
+    <text x="484" y="670" fill="#166534" font-family="Arial, sans-serif" font-size="17" font-weight="800">잡초류 · 낮음</text>
+    <text x="484" y="690" fill="#475569" font-family="Arial, sans-serif" font-size="9">부담이 낮은 편이에요</text>
+  </g>
+
+  <rect x="50" y="647" width="110" height="34" rx="17" fill="#FFFFFF" stroke="#D7E2F0"/>
+  <text x="75" y="669" fill="#475569" font-family="Arial, sans-serif" font-size="10" font-weight="700">Gmail 호환</text>
+  <rect x="760" y="647" width="110" height="34" rx="17" fill="#FFFFFF" stroke="#D7E2F0"/>
+  <text x="783" y="669" fill="#475569" font-family="Arial, sans-serif" font-size="10" font-weight="700">Naver 호환</text>
+</svg>
