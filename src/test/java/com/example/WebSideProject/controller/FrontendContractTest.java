@@ -36,6 +36,8 @@ class FrontendContractTest {
                 .contains("id=\"refreshWeather\"")
                 .contains("id=\"unitToggle\"")
                 .contains("id=\"themeToggle\"")
+                .contains("id=\"previewBriefing\"")
+                .contains("id=\"briefingPreviewDialog\"")
                 .contains("id=\"favoriteLocation\"")
                 .contains("id=\"snapshotNote\"")
                 .contains("requestJson")

@@ -1614,9 +1614,246 @@
             display: block;
         }
 
+        .briefing-dialog {
+            width: min(720px, calc(100% - 32px));
+            max-height: min(860px, calc(100vh - 32px));
+            padding: 0;
+            border: 0;
+            border-radius: 24px;
+            color: #172033;
+            background: transparent;
+            box-shadow: 0 30px 90px rgba(15, 23, 42, .28);
+        }
+
+        .briefing-dialog::backdrop {
+            background: rgba(15, 23, 42, .58);
+            backdrop-filter: blur(5px);
+        }
+
+        .mail-preview-shell {
+            overflow: hidden;
+            border: 1px solid #dbeafe;
+            border-radius: 24px;
+            background: #ffffff;
+        }
+
+        .mail-preview-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 18px 22px;
+            color: #dbeafe;
+            background: linear-gradient(135deg, #0f172a, #1d4ed8);
+        }
+
+        .mail-preview-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 14px;
+            font-weight: 900;
+            letter-spacing: -.02em;
+        }
+
+        .mail-preview-brand::before {
+            content: "✦";
+            display: inline-grid;
+            width: 28px;
+            height: 28px;
+            place-items: center;
+            border-radius: 10px;
+            color: #172554;
+            background: #bfdbfe;
+        }
+
+        .mail-preview-topbar span {
+            color: #bfdbfe;
+            font-size: 11px;
+        }
+
+        .mail-preview-close {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, .25);
+            border-radius: 9px;
+            color: #ffffff;
+            background: transparent;
+            font-size: 18px;
+            line-height: 28px;
+        }
+
+        .mail-preview-content {
+            padding: 28px;
+        }
+
+        .mail-preview-kicker {
+            margin: 0;
+            color: #2563eb;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        .mail-preview-title {
+            margin: 8px 0 0;
+            color: #0f172a;
+            font-size: clamp(24px, 4vw, 34px);
+            line-height: 1.2;
+            letter-spacing: -.05em;
+        }
+
+        .mail-preview-date {
+            margin: 8px 0 0;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .mail-preview-score {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 22px;
+            padding: 20px;
+            border-radius: 18px;
+            color: #eff6ff;
+            background: linear-gradient(135deg, #1e3a8a, #2563eb 60%, #0891b2);
+        }
+
+        .mail-preview-score span,
+        .mail-preview-score strong {
+            display: block;
+        }
+
+        .mail-preview-score span {
+            color: #bfdbfe;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .mail-preview-score strong {
+            margin-top: 4px;
+            color: #ffffff;
+            font-size: 36px;
+            line-height: 1;
+            letter-spacing: -.06em;
+        }
+
+        .mail-preview-score em {
+            padding: 8px 10px;
+            border: 1px solid rgba(255, 255, 255, .22);
+            border-radius: 999px;
+            color: #dbeafe;
+            background: rgba(255, 255, 255, .1);
+            font-size: 12px;
+            font-style: normal;
+            font-weight: 800;
+        }
+
+        .mail-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .mail-preview-metric {
+            padding: 13px;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            background: #f8fafc;
+        }
+
+        .mail-preview-metric span,
+        .mail-preview-metric strong {
+            display: block;
+        }
+
+        .mail-preview-metric span {
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .mail-preview-metric strong {
+            margin-top: 5px;
+            color: #0f172a;
+            font-size: 16px;
+        }
+
+        .mail-preview-section {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .mail-preview-section h3 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 14px;
+        }
+
+        .mail-preview-section p {
+            margin: 7px 0 0;
+            color: #475569;
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        .mail-preview-footer {
+            padding: 16px 28px 22px;
+            color: #94a3b8;
+            background: #f8fafc;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        body[data-theme="dark"] .mail-preview-shell {
+            border-color: #263858;
+            background: #111c2f;
+        }
+
+        body[data-theme="dark"] .mail-preview-content,
+        body[data-theme="dark"] .mail-preview-section h3,
+        body[data-theme="dark"] .mail-preview-title {
+            color: #e2e8f0;
+        }
+
+        body[data-theme="dark"] .mail-preview-date,
+        body[data-theme="dark"] .mail-preview-section p {
+            color: #94a3b8;
+        }
+
+        body[data-theme="dark"] .mail-preview-metric {
+            border-color: #334155;
+            background: #16243b;
+        }
+
+        body[data-theme="dark"] .mail-preview-metric strong {
+            color: #e2e8f0;
+        }
+
+        body[data-theme="dark"] .mail-preview-section {
+            border-color: #334155;
+        }
+
+        body[data-theme="dark"] .mail-preview-footer {
+            background: #0f1a2c;
+        }
+
         .weather-preview.is-loading .weather-preview-body {
             opacity: .62;
             transition: opacity 180ms ease;
+        }
+
+        .decision-window,
+        .weather-planner,
+        .route-planner {
+            content-visibility: auto;
+            contain-intrinsic-size: 420px;
         }
 
         .location-option::after {
@@ -1786,6 +2023,14 @@
                 justify-content: flex-start;
             }
 
+            .mail-preview-content {
+                padding: 22px;
+            }
+
+            .mail-preview-grid {
+                grid-template-columns: 1fr;
+            }
+
             .dashboard-search-copy {
                 align-items: flex-start;
                 flex-direction: column;
@@ -1915,6 +2160,7 @@
                             <button class="weather-tool-button" type="button" id="refreshWeather" title="최신 날씨 다시 불러오기">↻ 새로고침</button>
                             <button class="weather-tool-button" type="button" id="unitToggle" title="섭씨와 화씨 전환">°C</button>
                             <button class="weather-tool-button" type="button" id="themeToggle" title="화면 테마 전환">☾</button>
+                            <button class="weather-tool-button" type="button" id="previewBriefing" title="메일처럼 보기">메일형 보기</button>
                             <button class="weather-tool-button" type="button" id="printWeather" title="날씨 브리핑 인쇄">인쇄</button>
                         </div>
                     </div>
@@ -2082,6 +2328,45 @@
                     </div>
                 </div>
             </div>
+            <dialog class="briefing-dialog" id="briefingPreviewDialog" aria-labelledby="briefingPreviewTitle">
+                <div class="mail-preview-shell">
+                    <div class="mail-preview-topbar">
+                        <strong class="mail-preview-brand">날씨한편</strong>
+                        <span>DAILY WEATHER BRIEFING</span>
+                        <button class="mail-preview-close" type="button" id="closeBriefingPreview" aria-label="메일형 미리보기 닫기">×</button>
+                    </div>
+                    <div class="mail-preview-content">
+                        <p class="mail-preview-kicker">오늘의 생활 날씨</p>
+                        <h2 class="mail-preview-title" id="briefingPreviewTitle">선택 위치의 브리핑</h2>
+                        <p class="mail-preview-date" id="briefingPreviewDate">기상청 원천자료를 정리한 화면입니다.</p>
+                        <div class="mail-preview-score">
+                            <div>
+                                <span>외출 점수</span>
+                                <strong id="briefingPreviewScore">-점</strong>
+                            </div>
+                            <em id="briefingPreviewScoreLabel">분석 중</em>
+                        </div>
+                        <div class="mail-preview-grid">
+                            <div class="mail-preview-metric"><span>기온</span><strong id="briefingPreviewTemp">-</strong></div>
+                            <div class="mail-preview-metric"><span>강수</span><strong id="briefingPreviewRain">-</strong></div>
+                            <div class="mail-preview-metric"><span>대기질</span><strong id="briefingPreviewAir">-</strong></div>
+                        </div>
+                        <div class="mail-preview-section">
+                            <h3>오늘 한 줄 판단</h3>
+                            <p id="briefingPreviewHeadline">날씨를 선택하면 맞춤 브리핑이 표시됩니다.</p>
+                        </div>
+                        <div class="mail-preview-section">
+                            <h3>오늘의 옷차림</h3>
+                            <p id="briefingPreviewStyle">체감 성향과 활동 목적에 맞춘 코디를 준비합니다.</p>
+                        </div>
+                        <div class="mail-preview-section">
+                            <h3>챙길 것</h3>
+                            <p id="briefingPreviewAction">우산·마스크·야외 활동 정보를 분석합니다.</p>
+                        </div>
+                    </div>
+                    <div class="mail-preview-footer">이 화면은 메일형 브리핑 미리보기입니다. 현재 서비스는 사용자에게 메일을 자동 발송하지 않습니다.</div>
+                </div>
+            </dialog>
             <section class="decision-window" id="decisionWindow" hidden aria-label="비를 피하는 외출 시간 추천" aria-live="polite">
                 <div class="decision-window-header">
                     <div>
@@ -2217,8 +2502,21 @@
     const refreshWeatherButton = document.getElementById("refreshWeather");
     const unitToggle = document.getElementById("unitToggle");
     const themeToggle = document.getElementById("themeToggle");
+    const previewBriefingButton = document.getElementById("previewBriefing");
     const printWeatherButton = document.getElementById("printWeather");
     const snapshotNote = document.getElementById("snapshotNote");
+    const briefingPreviewDialog = document.getElementById("briefingPreviewDialog");
+    const closeBriefingPreviewButton = document.getElementById("closeBriefingPreview");
+    const briefingPreviewTitle = document.getElementById("briefingPreviewTitle");
+    const briefingPreviewDate = document.getElementById("briefingPreviewDate");
+    const briefingPreviewScore = document.getElementById("briefingPreviewScore");
+    const briefingPreviewScoreLabel = document.getElementById("briefingPreviewScoreLabel");
+    const briefingPreviewTemp = document.getElementById("briefingPreviewTemp");
+    const briefingPreviewRain = document.getElementById("briefingPreviewRain");
+    const briefingPreviewAir = document.getElementById("briefingPreviewAir");
+    const briefingPreviewHeadline = document.getElementById("briefingPreviewHeadline");
+    const briefingPreviewStyle = document.getElementById("briefingPreviewStyle");
+    const briefingPreviewAction = document.getElementById("briefingPreviewAction");
     const outingScore = document.getElementById("outingScore");
     const outingScoreLabel = document.getElementById("outingScoreLabel");
     const weatherDetail = document.getElementById("weatherDetail");
@@ -2310,6 +2608,7 @@
     let themeMode = "light";
     let weatherLoadVersion = 0;
     const requestControllers = new Map();
+    const apiCache = new Map();
     let installPrompt = null;
 
     // Decision tools are useful, but the primary flow remains weather information.
@@ -2387,6 +2686,48 @@
         if (currentObservation) renderCurrentObservation(currentObservation);
         if (weatherPlannerData) renderWeatherPlanner(weatherPlannerData);
         if (weatherDecisionData) renderWeatherDecision(weatherDecisionData);
+        if (briefingPreviewDialog.open) renderBriefingPreview();
+    }
+
+    function openBriefingPreview() {
+        if (!selectedLocation) {
+            showResult("먼저 날씨를 확인할 위치를 선택해주세요.", false);
+            return;
+        }
+        if (!dailyForecast) {
+            showResult("최신 날씨 데이터가 준비되지 않아 미리보기를 열 수 없습니다.", false);
+            return;
+        }
+        renderBriefingPreview();
+        if (typeof briefingPreviewDialog.showModal === "function") {
+            briefingPreviewDialog.showModal();
+        } else {
+            briefingPreviewDialog.setAttribute("open", "");
+        }
+    }
+
+    function renderBriefingPreview() {
+        const period = previewPeriod === "MORNING"
+            ? "morning" : previewPeriod === "AFTERNOON" ? "afternoon" : "evening";
+        const weather = dailyForecast?.[period];
+        if (!weather || !selectedLocation) return;
+        briefingPreviewTitle.textContent = `${selectedLocation.locationName} ${dailyForecast.dayLabel || "오늘"} 브리핑`;
+        briefingPreviewDate.textContent = `${weather.forecastLabel || "생활 날씨"} · ${
+            weather.dataFetchedAt ? `자료 ${formatIssuedAt(weather.dataFetchedAt)}` : "원천자료 시각 확인 필요"}`;
+        briefingPreviewScore.textContent = `${weather.outingScore || "-"}점`;
+        briefingPreviewScoreLabel.textContent = weather.outingScoreLabel || "분석 중";
+        briefingPreviewTemp.textContent = formatTemperature(weather.tmp);
+        briefingPreviewRain.textContent = `강수 ${weather.pop || "-"}%`;
+        briefingPreviewAir.textContent = weather.airQualitySummary || "확인 필요";
+        briefingPreviewHeadline.textContent = weather.detailedWeatherMessage
+            || weather.summaryMessage || dailyForecast.headline || "오늘 날씨를 확인해보세요.";
+        briefingPreviewStyle.textContent = weather.styleRecommendation
+            || weather.materialAdvice || "체감 성향에 맞춘 코디를 준비하세요.";
+        briefingPreviewAction.textContent = [
+            weather.umbrellaAdvice,
+            weather.maskAdvice,
+            weather.outdoorAdvice
+        ].filter(Boolean).join(" · ") || "기본 외출 준비";
     }
 
     function formatTemperature(value, withUnit = true) {
@@ -2450,7 +2791,23 @@
         }
     }
 
+    function cloneJson(value) {
+        if (typeof structuredClone === "function") return structuredClone(value);
+        return JSON.parse(JSON.stringify(value));
+    }
+
+    function apiCacheTtl(url) {
+        if (url.includes("/api/locations/")) return 180_000;
+        if (url.includes("/api/weather/")) return 30_000;
+        if (url.includes("/api/routes/")) return 120_000;
+        return 15_000;
+    }
+
     async function requestJson(url, {fallbackMessage = "요청을 처리하지 못했습니다.", key, forceRefresh = false} = {}) {
+        const cached = apiCache.get(url);
+        if (!forceRefresh && cached && cached.expiresAt > Date.now()) {
+            return cloneJson(cached.payload);
+        }
         if (key && requestControllers.has(key)) requestControllers.get(key).abort();
         const controller = key ? new AbortController() : null;
         if (key) requestControllers.set(key, controller);
@@ -2467,7 +2824,9 @@
                 error.requestId = response.headers.get("X-Request-Id");
                 throw error;
             }
-            return payload;
+            apiCache.set(url, {payload, expiresAt: Date.now() + apiCacheTtl(url)});
+            if (apiCache.size > 40) apiCache.delete(apiCache.keys().next().value);
+            return cloneJson(payload);
         } finally {
             if (key && requestControllers.get(key) === controller) requestControllers.delete(key);
         }
@@ -2545,6 +2904,11 @@
     });
     unitToggle.addEventListener("click", toggleTemperatureUnit);
     themeToggle.addEventListener("click", toggleTheme);
+    previewBriefingButton.addEventListener("click", openBriefingPreview);
+    closeBriefingPreviewButton.addEventListener("click", () => briefingPreviewDialog.close());
+    briefingPreviewDialog.addEventListener("click", (event) => {
+        if (event.target === briefingPreviewDialog) briefingPreviewDialog.close();
+    });
     printWeatherButton.addEventListener("click", () => window.print());
     locationQuery.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
