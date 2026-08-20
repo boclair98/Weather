@@ -14,10 +14,10 @@
 | 안정성 | 외부 API timeout, 1회 재시도, circuit breaker, 2시간 이내 마지막 정상자료 fallback |
 | API 계약 | `/api/v1/weather/briefing`, 스키마 버전, 품질·출처·신선도 헤더, 요청 추적 ID |
 | 보안 | 요청별 CSP nonce, HSTS, COOP/CORP, 관리자 API 보호, 입력 검증 |
-| 확장성 | Redis 분산 rate limit(300ms 로컬 fallback), bounded Caffeine 캐시, provider별 bounded executor |
+| 확장성 | Redis 분산 rate limit(300ms 로컬 fallback), bounded Caffeine 캐시, PostgreSQL, ShedLock, bounded executor |
 | 변경 통제 | Flyway 스키마 버전 관리, PR 테스트, 컨테이너 빌드, dependency review |
 | 공급망 | 컨테이너 CycloneDX SBOM 생성, Gradle wrapper 검증 |
-| 개인정보 | 이메일·로그인 미수집, 브라우저 저장 범위 고지, Flyway 전환 데이터 정리 |
+| 개인정보 | 명시적 동의, 동의 버전·시각 기록, 구독 해지, 메일 이력 포함 완전삭제 |
 | 관측성 | Prometheus, health/readiness/liveness, 외부 API·플래너 지표, request ID |
 | 접근성 기반 | 키보드 탐색, 상태 알림, reduced motion, 모바일 반응형, CSP 적용 |
 

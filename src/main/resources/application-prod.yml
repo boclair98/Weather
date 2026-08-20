@@ -1,4 +1,7 @@
 spring:
+  sql:
+    init:
+      mode: never
   flyway:
     enabled: true
     baseline-on-migrate: true
@@ -13,6 +16,11 @@ spring:
       validation-timeout: 2000
       idle-timeout: 300000
       max-lifetime: 1500000
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
   thymeleaf:
     cache: true
   data:
@@ -20,6 +28,10 @@ spring:
       url: ${REDIS_URL:redis://localhost:6379}
       timeout: 2s
       connect-timeout: 2s
+coders:
+  identity:
+    required: true
+
 app:
   rate-limit:
     distributed: true
@@ -29,6 +41,8 @@ admin:
 
 management:
   health:
+    mail:
+      enabled: true
     redis:
       enabled: true
   endpoint:

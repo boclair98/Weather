@@ -2,6 +2,11 @@ spring:
   config:
     import: optional:classpath:application-local.yml
 
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema-shedlock.sql
+
   flyway:
     enabled: false
 
@@ -10,6 +15,27 @@ spring:
     driver-class-name: ${DB_DRIVER:org.h2.Driver}
     username: ${DB_USERNAME:sa}
     password: ${DB_PASSWORD:}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
   thymeleaf:
     prefix: classpath:/templates/
@@ -49,6 +75,7 @@ route:
     rest-api-key: ${KAKAO_MOBILITY_REST_API_KEY:}
     base-url: ${KAKAO_MOBILITY_BASE_URL:https://apis-navi.kakaomobility.com/v1}
 app:
+  base-url: ${APP_BASE_URL:http://localhost:8080}
   rate-limit:
     read-per-minute: ${RATE_LIMIT_READ_PER_MINUTE:180}
     write-per-minute: ${RATE_LIMIT_WRITE_PER_MINUTE:20}
@@ -78,6 +105,8 @@ management:
     tags:
       application: weather
   health:
+    mail:
+      enabled: false
     redis:
       enabled: false
   endpoints:
