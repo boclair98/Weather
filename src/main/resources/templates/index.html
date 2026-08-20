@@ -1500,6 +1500,216 @@
             font-weight: 900;
         }
 
+        .weather-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .weather-toolbar-meta {
+            min-width: 0;
+            color: rgba(255, 255, 255, .72);
+            font-size: 11px;
+            line-height: 1.45;
+        }
+
+        .weather-tool-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+
+        .weather-tool-button {
+            min-width: 38px;
+            height: 32px;
+            padding: 0 9px;
+            border: 1px solid rgba(255, 255, 255, .24);
+            border-radius: 9px;
+            color: rgba(255, 255, 255, .9);
+            background: rgba(15, 23, 42, .2);
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .weather-tool-button:hover,
+        .weather-tool-button.active {
+            color: #0f172a;
+            background: #ffffff;
+        }
+
+        .weather-tool-button:disabled {
+            color: rgba(255, 255, 255, .6);
+            background: rgba(15, 23, 42, .2);
+        }
+
+        .location-section-label {
+            display: block;
+            margin: 14px 0 8px;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        .location-group-title {
+            display: block;
+            margin: 12px 0 6px;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .saved-location {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            height: 34px;
+            padding: 0 9px 0 11px;
+            border: 1px solid #bfdbfe;
+            border-radius: 999px;
+            color: #1d4ed8;
+            background: #eff6ff;
+            font-size: 12px;
+        }
+
+        .saved-location-remove {
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            border-radius: 50%;
+            color: #64748b;
+            background: transparent;
+            font-size: 14px;
+            line-height: 20px;
+        }
+
+        .saved-location-remove:hover {
+            color: #b91c1c;
+            background: #dbeafe;
+        }
+
+        .location-empty {
+            margin: 8px 0 0;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .snapshot-note {
+            display: none;
+            margin-top: 12px;
+            padding: 10px 12px;
+            border: 1px solid #fde68a;
+            border-radius: 11px;
+            color: #854d0e;
+            background: #fffbeb;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .snapshot-note.visible {
+            display: block;
+        }
+
+        .weather-preview.is-loading .weather-preview-body {
+            opacity: .62;
+            transition: opacity 180ms ease;
+        }
+
+        .location-option::after {
+            content: "↵";
+            float: right;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .weather-preview-header .weather-preview-main {
+            letter-spacing: -.02em;
+        }
+
+        body[data-theme="dark"] {
+            color-scheme: dark;
+            color: #e2e8f0;
+            background: #0b1220;
+        }
+
+        body[data-theme="dark"] .dashboard-search-card,
+        body[data-theme="dark"] .weather-preview,
+        body[data-theme="dark"] .route-planner,
+        body[data-theme="dark"] .benefit-card,
+        body[data-theme="dark"] .panel {
+            border-color: #263858;
+            background: #111c2f;
+            box-shadow: 0 22px 55px rgba(2, 6, 23, .32);
+        }
+
+        body[data-theme="dark"] .intro,
+        body[data-theme="dark"] .dashboard-search-copy span,
+        body[data-theme="dark"] .meta,
+        body[data-theme="dark"] .location-section-label,
+        body[data-theme="dark"] .location-group-title,
+        body[data-theme="dark"] .benefit-card span,
+        body[data-theme="dark"] .site-footer,
+        body[data-theme="dark"] .style-personalizer > div > span {
+            color: #94a3b8;
+        }
+
+        body[data-theme="dark"] input,
+        body[data-theme="dark"] select,
+        body[data-theme="dark"] textarea,
+        body[data-theme="dark"] .location-option,
+        body[data-theme="dark"] .daily-period-card,
+        body[data-theme="dark"] .current-weather-metric,
+        body[data-theme="dark"] .safety-item,
+        body[data-theme="dark"] .hourly-item,
+        body[data-theme="dark"] .style-item {
+            border-color: #334155;
+            color: #e2e8f0;
+            background: #16243b;
+        }
+
+        body[data-theme="dark"] .location-option.selected,
+        body[data-theme="dark"] .daily-period-card.selected {
+            border-color: #60a5fa;
+            background: #172f56;
+        }
+
+        body[data-theme="dark"] .daily-insight,
+        body[data-theme="dark"] .decision-explanation,
+        body[data-theme="dark"] .safety-board,
+        body[data-theme="dark"] .style-personalizer {
+            border-color: #294568;
+            background: #13243b;
+        }
+
+        body[data-theme="dark"] .daily-insight strong,
+        body[data-theme="dark"] .daily-insight p,
+        body[data-theme="dark"] .decision-explanation-title,
+        body[data-theme="dark"] .decision-explanation-copy,
+        body[data-theme="dark"] .weather-detail,
+        body[data-theme="dark"] .safety-item strong,
+        body[data-theme="dark"] .style-item strong,
+        body[data-theme="dark"] .route-planner h2,
+        body[data-theme="dark"] .route-planner > p {
+            color: #e2e8f0;
+        }
+
+        body[data-theme="dark"] .favorite-location,
+        body[data-theme="dark"] .saved-location {
+            border-color: #315b8c;
+            color: #bfdbfe;
+            background: #172f56;
+        }
+
+        body[data-theme="dark"] .snapshot-note {
+            border-color: #854d0e;
+            color: #fde68a;
+            background: #422006;
+        }
+
         @media (max-width: 820px) {
             main {
                 padding: 32px 16px;
@@ -1567,6 +1777,15 @@
                 flex-direction: column;
             }
 
+            .weather-toolbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .weather-tool-actions {
+                justify-content: flex-start;
+            }
+
             .dashboard-search-copy {
                 align-items: flex-start;
                 flex-direction: column;
@@ -1588,6 +1807,60 @@
                 transition-duration: .01ms !important;
                 animation-duration: .01ms !important;
                 animation-iteration-count: 1 !important;
+            }
+        }
+
+        @media print {
+            body,
+            body.weather-sunny,
+            body.weather-rain,
+            body.weather-snow,
+            body.weather-cloudy,
+            body.weather-mild {
+                color: #0f172a;
+                background: #ffffff !important;
+            }
+
+            main {
+                width: 100%;
+                padding: 0;
+            }
+
+            .skip-link,
+            .hero-badges,
+            .dashboard-search-card,
+            .weather-toolbar,
+            .decision-window,
+            .route-planner,
+            .benefit-grid,
+            .site-footer,
+            .network-status,
+            .planner-actions button,
+            .share-weather,
+            .weather-tool-button,
+            .location-results,
+            .favorite-locations {
+                display: none !important;
+            }
+
+            .weather-preview,
+            .weather-planner {
+                display: block !important;
+                width: 100%;
+                border: 1px solid #cbd5e1;
+                box-shadow: none;
+            }
+
+            .weather-preview-header {
+                color: #0f172a;
+                background: #eff6ff !important;
+            }
+
+            .weather-preview-header .weather-preview-main,
+            .weather-preview-title,
+            .day-tab,
+            .day-tab.selected {
+                color: #0f172a;
             }
         }
     </style>
@@ -1621,7 +1894,8 @@
                 <div class="location-results" id="locationResults" aria-label="위치 검색 결과"></div>
                 <p class="meta" id="locationMeta" aria-live="polite">지역을 검색하거나 현재 위치를 선택해주세요.</p>
                 <div class="result" id="result" role="status"></div>
-                <div class="favorite-locations" id="favoriteLocations" aria-label="최근 본 장소"></div>
+                <span class="location-section-label">빠른 이동</span>
+                <div class="favorite-locations" id="favoriteLocations" aria-label="저장한 장소와 최근 본 장소"></div>
             </div>
             <div class="weather-preview" id="weatherPreview" hidden>
                 <div class="weather-preview-header">
@@ -1634,6 +1908,16 @@
                         </div>
                     </div>
                     <div class="weather-preview-main" id="weatherPreviewMain">날씨를 불러오는 중</div>
+                    <div class="weather-toolbar" aria-label="날씨 도구">
+                        <span class="weather-toolbar-meta" id="dataFreshness">원천자료 확인 중</span>
+                        <div class="weather-tool-actions">
+                            <button class="weather-tool-button" type="button" id="favoriteLocation" aria-pressed="false" title="이 장소 저장">☆ 저장</button>
+                            <button class="weather-tool-button" type="button" id="refreshWeather" title="최신 날씨 다시 불러오기">↻ 새로고침</button>
+                            <button class="weather-tool-button" type="button" id="unitToggle" title="섭씨와 화씨 전환">°C</button>
+                            <button class="weather-tool-button" type="button" id="themeToggle" title="화면 테마 전환">☾</button>
+                            <button class="weather-tool-button" type="button" id="printWeather" title="날씨 브리핑 인쇄">인쇄</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="weather-preview-body">
                     <div class="period-tabs" aria-label="예보 시간대">
@@ -1659,6 +1943,7 @@
                             <strong id="currentPrecipitation">-</strong>
                         </div>
                     </section>
+                    <div class="snapshot-note" id="snapshotNote" role="status"></div>
                     <div class="daily-insight" id="dailyInsight" hidden>
                         <div class="daily-insight-top">
                             <div>
@@ -1912,7 +2197,11 @@
 </main>
 
 <script th:inline="javascript" th:attr="nonce=${cspNonce}">
-    const favoriteLocationsKey = "weather-favorite-locations";
+    const recentLocationsKey = "weather-recent-locations";
+    const savedLocationsKey = "weather-saved-locations";
+    const legacyLocationsKey = "weather-favorite-locations";
+    const preferencesKey = "weather-preferences";
+    const snapshotKey = "weather-last-snapshot-v2";
     const locationQuery = document.getElementById("locationQuery");
     const locationResults = document.getElementById("locationResults");
     const locationMeta = document.getElementById("locationMeta");
@@ -1923,6 +2212,13 @@
     const weatherPreview = document.getElementById("weatherPreview");
     const weatherPreviewTitle = document.getElementById("weatherPreviewTitle");
     const weatherPreviewMain = document.getElementById("weatherPreviewMain");
+    const dataFreshness = document.getElementById("dataFreshness");
+    const favoriteLocationButton = document.getElementById("favoriteLocation");
+    const refreshWeatherButton = document.getElementById("refreshWeather");
+    const unitToggle = document.getElementById("unitToggle");
+    const themeToggle = document.getElementById("themeToggle");
+    const printWeatherButton = document.getElementById("printWeather");
+    const snapshotNote = document.getElementById("snapshotNote");
     const outingScore = document.getElementById("outingScore");
     const outingScoreLabel = document.getElementById("outingScoreLabel");
     const weatherDetail = document.getElementById("weatherDetail");
@@ -2009,10 +2305,173 @@
     let dailyForecast = null;
     let weatherPlannerData = null;
     let weatherDecisionData = null;
+    let currentObservation = null;
+    let temperatureUnit = "C";
+    let themeMode = "light";
+    let weatherLoadVersion = 0;
+    const requestControllers = new Map();
     let installPrompt = null;
 
     // Decision tools are useful, but the primary flow remains weather information.
     routePlanner.insertAdjacentElement("afterend", decisionWindow);
+
+    const savedPreferences = readPreferences();
+    temperatureUnit = savedPreferences.temperatureUnit;
+    themeMode = savedPreferences.themeMode;
+    document.getElementById("temperatureSensitivity").value = savedPreferences.temperatureSensitivity;
+    document.getElementById("activityType").value = savedPreferences.activityType;
+    applyTheme();
+    updateUnitToggle();
+    migrateLegacyLocations();
+
+    function readPreferences() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(preferencesKey) || "{}");
+            return {
+                temperatureSensitivity: ["NONE", "COLD", "HEAT"].includes(saved.temperatureSensitivity)
+                    ? saved.temperatureSensitivity : "NONE",
+                activityType: ["DAILY", "COMMUTE", "OUTDOOR", "FORMAL"].includes(saved.activityType)
+                    ? saved.activityType : "DAILY",
+                temperatureUnit: saved.temperatureUnit === "F" ? "F" : "C",
+                themeMode: saved.themeMode === "dark" ? "dark" : "light"
+            };
+        } catch (error) {
+            return {
+                temperatureSensitivity: "NONE",
+                activityType: "DAILY",
+                temperatureUnit: "C",
+                themeMode: "light"
+            };
+        }
+    }
+
+    function savePreferences() {
+        localStorage.setItem(preferencesKey, JSON.stringify({
+            temperatureSensitivity: document.getElementById("temperatureSensitivity").value,
+            activityType: document.getElementById("activityType").value,
+            temperatureUnit,
+            themeMode
+        }));
+    }
+
+    function applyTheme() {
+        document.body.dataset.theme = themeMode;
+        themeToggle.textContent = themeMode === "dark" ? "☀ 밝게" : "☾ 어둡게";
+        themeToggle.setAttribute("aria-pressed", String(themeMode === "dark"));
+    }
+
+    function toggleTheme() {
+        themeMode = themeMode === "dark" ? "light" : "dark";
+        applyTheme();
+        savePreferences();
+    }
+
+    function updateUnitToggle() {
+        unitToggle.textContent = temperatureUnit === "C" ? "°C" : "°F";
+        unitToggle.setAttribute("aria-label", temperatureUnit === "C"
+            ? "화씨로 전환" : "섭씨로 전환");
+    }
+
+    function toggleTemperatureUnit() {
+        temperatureUnit = temperatureUnit === "C" ? "F" : "C";
+        updateUnitToggle();
+        savePreferences();
+        rerenderWeatherData();
+    }
+
+    function rerenderWeatherData() {
+        if (selectedLocation && dailyForecast) {
+            renderDailyInsight();
+            renderSelectedPeriod(selectedLocation);
+        }
+        if (currentObservation) renderCurrentObservation(currentObservation);
+        if (weatherPlannerData) renderWeatherPlanner(weatherPlannerData);
+        if (weatherDecisionData) renderWeatherDecision(weatherDecisionData);
+    }
+
+    function formatTemperature(value, withUnit = true) {
+        const number = Number.parseFloat(String(value).replace(/[^0-9.+-]/g, ""));
+        if (!Number.isFinite(number)) return "-";
+        const converted = temperatureUnit === "F" ? (number * 9 / 5) + 32 : number;
+        const rounded = Math.abs(converted - Math.round(converted)) < 0.05
+            ? String(Math.round(converted)) : converted.toFixed(1);
+        return withUnit ? `${rounded}°${temperatureUnit}` : rounded;
+    }
+
+    function formatTemperatureText(value) {
+        if (value === null || value === undefined) return "-";
+        return String(value).replace(/(-?\d+(?:\.\d+)?)\s*°C/g,
+            (_, number) => formatTemperature(number));
+    }
+
+    function updateDataFreshness(value, fallback = false) {
+        if (!value || value === "-") {
+            dataFreshness.textContent = "원천자료 시각 확인 필요";
+            return;
+        }
+        dataFreshness.textContent = `${fallback ? "마지막 정상자료" : "기상청 발표"} · ${formatIssuedAt(value)}`;
+    }
+
+    function showSnapshotNote(message = "네트워크가 지연되어 저장된 마지막 예보를 보여드려요.") {
+        snapshotNote.textContent = message;
+        snapshotNote.classList.add("visible");
+    }
+
+    function hideSnapshotNote() {
+        snapshotNote.textContent = "";
+        snapshotNote.classList.remove("visible");
+    }
+
+    function snapshotLocationKey(location, dayOffset) {
+        return `${location.nx}:${location.ny}:${dayOffset}`;
+    }
+
+    function saveWeatherSnapshot(location, dayOffset, forecast) {
+        try {
+            const snapshots = JSON.parse(localStorage.getItem(snapshotKey) || "{}");
+            snapshots[snapshotLocationKey(location, dayOffset)] = {
+                savedAt: new Date().toISOString(),
+                location,
+                forecast
+            };
+            const entries = Object.entries(snapshots).slice(-6);
+            localStorage.setItem(snapshotKey, JSON.stringify(Object.fromEntries(entries)));
+        } catch (error) {
+            // A full localStorage should never prevent current weather rendering.
+        }
+    }
+
+    function readWeatherSnapshot(location, dayOffset) {
+        try {
+            const snapshots = JSON.parse(localStorage.getItem(snapshotKey) || "{}");
+            return snapshots[snapshotLocationKey(location, dayOffset)] || null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    async function requestJson(url, {fallbackMessage = "요청을 처리하지 못했습니다.", key, forceRefresh = false} = {}) {
+        if (key && requestControllers.has(key)) requestControllers.get(key).abort();
+        const controller = key ? new AbortController() : null;
+        if (key) requestControllers.set(key, controller);
+        try {
+            const response = await fetch(url, {
+                signal: controller?.signal,
+                cache: forceRefresh ? "no-store" : "default",
+                headers: {Accept: "application/json"}
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                const error = new Error(getApiError(payload, fallbackMessage));
+                error.status = response.status;
+                error.requestId = response.headers.get("X-Request-Id");
+                throw error;
+            }
+            return payload;
+        } finally {
+            if (key && requestControllers.get(key) === controller) requestControllers.delete(key);
+        }
+    }
 
     function localDateValue(dayOffset = 0) {
         const value = new Date();
@@ -2079,6 +2538,14 @@
     loadDecisionWindowButton.addEventListener("click", loadWeatherDecision);
     addDecisionCalendar.addEventListener("click", downloadDecisionCalendar);
     loadRouteBriefingButton.addEventListener("click", loadRouteBriefing);
+    favoriteLocationButton.addEventListener("click", toggleSavedLocation);
+    refreshWeatherButton.addEventListener("click", () => {
+        if (selectedLocation) loadWeatherPreview(selectedLocation, {forceRefresh: true});
+        else showResult("먼저 날씨를 확인할 위치를 선택해주세요.", false);
+    });
+    unitToggle.addEventListener("click", toggleTemperatureUnit);
+    themeToggle.addEventListener("click", toggleTheme);
+    printWeatherButton.addEventListener("click", () => window.print());
     locationQuery.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -2086,8 +2553,15 @@
         }
 
     });
-    document.getElementById("temperatureSensitivity").addEventListener("change", reloadPreviewIfReady);
-    document.getElementById("activityType").addEventListener("change", reloadPreviewIfReady);
+    document.getElementById("temperatureSensitivity").addEventListener("change", () => {
+        savePreferences();
+        reloadPreviewIfReady();
+    });
+    document.getElementById("activityType").addEventListener("change", () => {
+        savePreferences();
+        reloadPreviewIfReady();
+    });
+    renderFavoriteLocations();
 
     async function searchLocations() {
         const query = locationQuery.value.trim();
@@ -2103,9 +2577,10 @@
         searchButton.textContent = "검색 중";
 
         try {
-            const response = await fetch(`/api/locations/search?query=${encodeURIComponent(query)}`);
-            const locations = await response.json().catch(() => []);
-            if (!response.ok) throw new Error(getApiError(locations, "위치 검색에 실패했습니다."));
+            const locations = await requestJson(
+                `/api/locations/search?query=${encodeURIComponent(query)}`,
+                {key: "locations", fallbackMessage: "위치 검색에 실패했습니다."}
+            );
             if (locations.length === 0) {
                 locationMeta.textContent = "검색 결과가 없습니다. 더 구체적인 지역명을 입력해주세요.";
                 return;
@@ -2136,9 +2611,10 @@
                     latitude: coords.latitude,
                     longitude: coords.longitude
                 });
-                const response = await fetch(`/api/locations/coordinates?${params.toString()}`);
-                const location = await response.json();
-                if (!response.ok) throw new Error(getApiError(location, "현재 위치를 사용할 수 없습니다."));
+                const location = await requestJson(
+                    `/api/locations/coordinates?${params.toString()}`,
+                    {key: "coordinates", fallbackMessage: "현재 위치를 사용할 수 없습니다."}
+                );
                 locationQuery.value = "현재 위치";
                 renderLocationResults([location]);
                 selectLocation(location, 0);
@@ -2174,40 +2650,140 @@
         });
         locationMeta.textContent = `선택 위치: ${location.locationName} (격자 ${location.nx}, ${location.ny})`;
         rememberLocation(location);
+        updateFavoriteButton();
         loadWeatherPreview(location);
     }
 
-    function readFavoriteLocations() {
+    function readLocations(key, limit = 5) {
         try {
-            const stored = JSON.parse(localStorage.getItem(favoriteLocationsKey) || "[]");
-            return Array.isArray(stored) ? stored.slice(0, 5) : [];
+            const stored = JSON.parse(localStorage.getItem(key) || "[]");
+            return Array.isArray(stored) ? stored.slice(0, limit) : [];
         } catch (error) {
             return [];
         }
+    }
+
+    function writeLocations(key, locations, limit = 5) {
+        localStorage.setItem(key, JSON.stringify(locations.slice(0, limit)));
+    }
+
+    function migrateLegacyLocations() {
+        if (localStorage.getItem(recentLocationsKey)) return;
+        const legacy = localStorage.getItem(legacyLocationsKey);
+        if (legacy) localStorage.setItem(recentLocationsKey, legacy);
+    }
+
+    function readFavoriteLocations() {
+        return readLocations(recentLocationsKey);
+    }
+
+    function readSavedLocations() {
+        return readLocations(savedLocationsKey, 8);
     }
 
     function rememberLocation(location) {
         const locations = readFavoriteLocations()
             .filter((item) => item.locationName !== location.locationName);
         locations.unshift(location);
-        localStorage.setItem(favoriteLocationsKey, JSON.stringify(locations.slice(0, 5)));
+        writeLocations(recentLocationsKey, locations);
         renderFavoriteLocations();
+    }
+
+    function isSavedLocation(location) {
+        return Boolean(location) && readSavedLocations()
+            .some((item) => item.locationName === location.locationName);
+    }
+
+    function updateFavoriteButton() {
+        const saved = isSavedLocation(selectedLocation);
+        favoriteLocationButton.textContent = saved ? "★ 저장됨" : "☆ 저장";
+        favoriteLocationButton.setAttribute("aria-pressed", String(saved));
+        favoriteLocationButton.classList.toggle("active", saved);
+    }
+
+    function toggleSavedLocation() {
+        if (!selectedLocation) {
+            showResult("먼저 날씨를 확인할 위치를 선택해주세요.", false);
+            return;
+        }
+        const locations = readSavedLocations();
+        const index = locations.findIndex((item) => item.locationName === selectedLocation.locationName);
+        if (index >= 0) {
+            locations.splice(index, 1);
+            showResult(`${selectedLocation.locationName} 저장을 취소했습니다.`, true);
+        } else {
+            locations.unshift(selectedLocation);
+            showResult(`${selectedLocation.locationName}을(를) 저장했습니다.`, true);
+        }
+        writeLocations(savedLocationsKey, locations, 8);
+        updateFavoriteButton();
+        renderFavoriteLocations();
+    }
+
+    function removeSavedLocation(location) {
+        writeLocations(savedLocationsKey,
+            readSavedLocations().filter((item) => item.locationName !== location.locationName), 8);
+        updateFavoriteButton();
+        renderFavoriteLocations();
+    }
+
+    function selectStoredLocation(location) {
+        locationQuery.value = location.locationName;
+        locationResults.innerHTML = "";
+        selectLocation(location, -1);
     }
 
     function renderFavoriteLocations() {
         favoriteLocations.innerHTML = "";
-        readFavoriteLocations().forEach((location) => {
+        const saved = readSavedLocations();
+        const recent = readFavoriteLocations();
+        if (saved.length > 0) {
+            const title = document.createElement("span");
+            title.className = "location-group-title";
+            title.textContent = "저장한 장소";
+            favoriteLocations.appendChild(title);
+            const savedRow = document.createElement("div");
+            savedRow.className = "favorite-locations";
+            saved.forEach((location) => {
+                const wrapper = document.createElement("div");
+                wrapper.className = "saved-location";
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "favorite-location";
+                button.textContent = `★ ${location.locationName}`;
+                button.addEventListener("click", () => selectStoredLocation(location));
+                const remove = document.createElement("button");
+                remove.type = "button";
+                remove.className = "saved-location-remove";
+                remove.title = `${location.locationName} 저장 해제`;
+                remove.setAttribute("aria-label", `${location.locationName} 저장 해제`);
+                remove.textContent = "×";
+                remove.addEventListener("click", () => removeSavedLocation(location));
+                wrapper.append(button, remove);
+                savedRow.appendChild(wrapper);
+            });
+            favoriteLocations.appendChild(savedRow);
+        }
+        if (recent.length > 0) {
+            const title = document.createElement("span");
+            title.className = "location-group-title";
+            title.textContent = "최근 검색";
+            favoriteLocations.appendChild(title);
+        }
+        recent.forEach((location) => {
             const button = document.createElement("button");
             button.type = "button";
             button.className = "favorite-location";
             button.textContent = `최근 · ${location.locationName}`;
-            button.addEventListener("click", () => {
-                locationQuery.value = location.locationName;
-                locationResults.innerHTML = "";
-                selectLocation(location, -1);
-            });
+            button.addEventListener("click", () => selectStoredLocation(location));
             favoriteLocations.appendChild(button);
         });
+        if (saved.length === 0 && recent.length === 0) {
+            const empty = document.createElement("span");
+            empty.className = "location-empty";
+            empty.textContent = "검색한 장소가 여기에 표시됩니다.";
+            favoriteLocations.appendChild(empty);
+        }
     }
 
     function showResult(message, ok) {
@@ -2221,13 +2797,17 @@
             .join(" · ");
     }
 
-    async function loadWeatherPreview(location) {
+    async function loadWeatherPreview(location, options = {}) {
+        const loadVersion = ++weatherLoadVersion;
         weatherDecisionData = null;
         decisionResult.hidden = true;
         decisionError.hidden = true;
         weatherPreview.hidden = false;
         weatherPreview.setAttribute("aria-busy", "true");
-        weatherPreview.className = "weather-preview";
+        weatherPreview.className = "weather-preview is-loading";
+        hideSnapshotNote();
+        refreshWeatherButton.disabled = true;
+        refreshWeatherButton.textContent = "↻ 확인 중";
         weatherPreviewTitle.textContent = `${location.locationName} 날씨 미리보기`;
         weatherPreviewMain.textContent = "날씨를 불러오는 중";
         weatherDetail.textContent = "선택한 위치의 날씨를 분석하고 있어요.";
@@ -2272,9 +2852,10 @@
         currentHumidityWind.textContent = "-";
         currentPrecipitation.textContent = "-";
         dailyForecast = null;
+        currentObservation = null;
 
         if (forecastDayOffset === 0) {
-            loadCurrentWeather(location);
+            loadCurrentWeather(location, options);
         }
 
         try {
@@ -2288,24 +2869,51 @@
                 activityType: document.getElementById("activityType").value,
                 dayOffset: forecastDayOffset
             });
-            const response = await fetch(`/api/weather/daily?${params.toString()}`);
-            dailyForecast = await response.json();
-            if (!response.ok) throw new Error(getApiError(dailyForecast, "날씨를 불러오지 못했습니다."));
+            if (options.forceRefresh) params.set("refresh", Date.now().toString());
+            dailyForecast = await requestJson(`/api/weather/daily?${params.toString()}`, {
+                key: "daily",
+                forceRefresh: Boolean(options.forceRefresh),
+                fallbackMessage: "날씨를 불러오지 못했습니다."
+            });
+            saveWeatherSnapshot(location, forecastDayOffset, dailyForecast);
+            updateDataFreshness(
+                dailyForecast.morning?.dataFetchedAt,
+                Boolean(dailyForecast.morning?.fallbackData)
+            );
             renderDailyInsight();
             renderSelectedPeriod(location);
-            loadHourlyForecast(location);
-            if (!weatherPlannerData || forecastDayOffset === 0) {
-                loadWeatherPlanner(location);
+            loadHourlyForecast(location, options);
+            if (options.forceRefresh || !weatherPlannerData || forecastDayOffset === 0) {
+                loadWeatherPlanner(location, options);
             }
         } catch (error) {
-            weatherPreviewMain.textContent = "날씨 확인 실패";
-            weatherDetail.textContent = error.message;
+            if (error.name === "AbortError") return;
+            const cached = readWeatherSnapshot(location, forecastDayOffset);
+            if (cached?.forecast) {
+                dailyForecast = cached.forecast;
+                updateDataFreshness(dailyForecast.morning?.dataFetchedAt, true);
+                renderDailyInsight();
+                renderSelectedPeriod(location);
+                showSnapshotNote(`최신 원천자료를 불러오지 못해 ${formatIssuedAt(cached.savedAt)}에 저장한 예보를 보여드려요.`);
+                weatherPreviewMain.textContent = "저장된 예보로 확인 중";
+                weatherDetail.textContent = "네트워크가 회복되면 새로고침 버튼으로 최신 예보를 다시 확인할 수 있어요.";
+            } else {
+                weatherPreviewMain.textContent = "날씨 확인 실패";
+                weatherDetail.textContent = error.message;
+                showResult(error.message, false);
+            }
         } finally {
-            weatherPreview.setAttribute("aria-busy", "false");
+            if (weatherLoadVersion === loadVersion) {
+                weatherPreview.setAttribute("aria-busy", "false");
+                weatherPreview.classList.remove("is-loading");
+                refreshWeatherButton.disabled = false;
+                refreshWeatherButton.textContent = "↻ 새로고침";
+                updateFavoriteButton();
+            }
         }
     }
 
-    async function loadCurrentWeather(location) {
+    async function loadCurrentWeather(location, options = {}) {
         currentWeather.hidden = false;
         currentWeather.setAttribute("aria-busy", "true");
         try {
@@ -2314,16 +2922,16 @@
                 ny: location.ny,
                 locationName: locationContext(location)
             });
-            const response = await fetch(`/api/weather/current?${params.toString()}`);
-            const observation = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(getApiError(observation, "현재 관측을 불러오지 못했습니다."));
-            currentHeadline.textContent = observation.headline || "현재 관측";
-            currentAdvice.textContent = `${observation.advice || ""} · ${observation.fallback ? "마지막 정상자료" : "관측 " + formatIssuedAt(observation.observedAt)}`;
-            currentTemperature.textContent = `${observation.temperature ?? "-"}°C · 체감 ${observation.apparentTemperature ?? "-"}°`;
-            currentHumidityWind.textContent = `${observation.humidity ?? "-"}% · ${observation.windSpeed ?? "-"}m/s`;
-            currentPrecipitation.textContent = observation.precipitationType === "없음"
-                ? "없음" : `${observation.precipitationType} · ${observation.oneHourPrecipitation}mm`;
+            if (options.forceRefresh) params.set("refresh", Date.now().toString());
+            currentObservation = await requestJson(`/api/weather/current?${params.toString()}`, {
+                key: "current",
+                forceRefresh: Boolean(options.forceRefresh),
+                fallbackMessage: "현재 관측을 불러오지 못했습니다."
+            });
+            renderCurrentObservation(currentObservation);
+            updateDataFreshness(currentObservation.fetchedAt, Boolean(currentObservation.fallback));
         } catch (error) {
+            if (error.name === "AbortError") return;
             currentHeadline.textContent = "현재 관측은 잠시 확인할 수 없어요.";
             currentAdvice.textContent = "아래 시간별 예보는 정상적으로 계속 이용할 수 있습니다.";
         } finally {
@@ -2331,7 +2939,16 @@
         }
     }
 
-    async function loadHourlyForecast(location) {
+    function renderCurrentObservation(observation) {
+        currentHeadline.textContent = observation.headline || "현재 관측";
+        currentAdvice.textContent = `${observation.advice || ""} · ${observation.fallback ? "마지막 정상자료" : "관측 " + formatIssuedAt(observation.observedAt)}`;
+        currentTemperature.textContent = `${formatTemperature(observation.temperature)} · 체감 ${formatTemperature(observation.apparentTemperature)}`;
+        currentHumidityWind.textContent = `${observation.humidity ?? "-"}% · ${observation.windSpeed ?? "-"}m/s`;
+        currentPrecipitation.textContent = observation.precipitationType === "없음"
+            ? "없음" : `${observation.precipitationType} · ${observation.oneHourPrecipitation}mm`;
+    }
+
+    async function loadHourlyForecast(location, options = {}) {
         hourlyWeather.setAttribute("aria-busy", "true");
         try {
             const params = new URLSearchParams({
@@ -2340,11 +2957,15 @@
                 locationName: locationContext(location),
                 dayOffset: forecastDayOffset
             });
-            const response = await fetch(`/api/weather/hourly?${params.toString()}`);
-            const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(getApiError(data, "시간별 예보를 불러오지 못했습니다."));
+            if (options.forceRefresh) params.set("refresh", Date.now().toString());
+            const data = await requestJson(`/api/weather/hourly?${params.toString()}`, {
+                key: "hourly",
+                forceRefresh: Boolean(options.forceRefresh),
+                fallbackMessage: "시간별 예보를 불러오지 못했습니다."
+            });
             renderHourlyForecast(data);
         } catch (error) {
+            if (error.name === "AbortError") return;
             hourlyHeadline.textContent = "시간별 상세 예보를 잠시 사용할 수 없어요.";
             hourlyRainSummary.textContent = "재시도 필요";
             hourlyError.textContent = error.message;
@@ -2365,7 +2986,7 @@
             const time = document.createElement("time");
             time.textContent = hour.time;
             const temperature = document.createElement("strong");
-            temperature.textContent = `${hour.temperature}°`;
+            temperature.textContent = formatTemperature(hour.temperature);
             const sky = document.createElement("span");
             sky.textContent = rainRisk ? `${hour.precipitation} · ${hour.precipitationProbability}%` : hour.sky;
             const details = document.createElement("span");
@@ -2380,7 +3001,7 @@
         hourlyError.hidden = true;
     }
 
-    async function loadWeatherPlanner(location) {
+    async function loadWeatherPlanner(location, options = {}) {
         decisionWindow.hidden = false;
         weatherPlanner.hidden = false;
         weatherPlanner.setAttribute("aria-busy", "true");
@@ -2402,12 +3023,16 @@
                 temperatureSensitivity: document.getElementById("temperatureSensitivity").value,
                 activityType: document.getElementById("activityType").value
             });
-            const response = await fetch(`/api/weather/planner?${params.toString()}`);
-            const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(getApiError(data, "3일 플래너를 만들지 못했습니다."));
+            if (options.forceRefresh) params.set("refresh", Date.now().toString());
+            const data = await requestJson(`/api/weather/planner?${params.toString()}`, {
+                key: "planner",
+                forceRefresh: Boolean(options.forceRefresh),
+                fallbackMessage: "3일 플래너를 만들지 못했습니다."
+            });
             weatherPlannerData = data;
             renderWeatherPlanner(data);
         } catch (error) {
+            if (error.name === "AbortError") return;
             weatherPlannerData = null;
             plannerError.textContent = error.message;
             plannerError.hidden = false;
@@ -2446,7 +3071,7 @@
             const title = document.createElement("h3");
             title.textContent = `${day.bestPeriodLabel}이 가장 좋아요`;
             const metrics = document.createElement("small");
-            metrics.textContent = `${day.temperatureRange} · 최고 ${day.bestPeriodScore}점`;
+            metrics.textContent = `${formatTemperatureText(day.temperatureRange)} · 최고 ${day.bestPeriodScore}점`;
             const action = document.createElement("p");
             action.textContent = day.keyAction;
             card.append(top, title, metrics, action);
@@ -2477,12 +3102,14 @@
                 flexMinutes: decisionFlex.value,
                 durationMinutes: decisionDuration.value
             });
-            const response = await fetch(`/api/weather/decision-window?${params.toString()}`);
-            const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(getApiError(data, "최적 출발 시간을 계산하지 못했습니다."));
+            const data = await requestJson(`/api/weather/decision-window?${params.toString()}`, {
+                key: "decision",
+                fallbackMessage: "최적 출발 시간을 계산하지 못했습니다."
+            });
             weatherDecisionData = data;
             renderWeatherDecision(data);
         } catch (error) {
+            if (error.name === "AbortError") return;
             weatherDecisionData = null;
             decisionError.textContent = error.message;
             decisionError.hidden = false;
@@ -2509,7 +3136,7 @@
             const score = document.createElement("span");
             score.textContent = `${candidate.score}점 · ${candidate.scoreLabel}`;
             const weather = document.createElement("span");
-            weather.textContent = `${candidate.temperature}°C · 강수 ${candidate.precipitationProbability}% · 바람 ${candidate.windSpeed}m/s`;
+            weather.textContent = `${formatTemperature(candidate.temperature)} · 강수 ${candidate.precipitationProbability}% · 바람 ${candidate.windSpeed}m/s`;
             card.append(time, score, weather);
             decisionCandidates.appendChild(card);
         });
@@ -2589,7 +3216,7 @@
         dailyPeriods.hidden = false;
         dailyInsightLabel.textContent = `${dailyForecast.dayLabel || "오늘"} 한눈에`;
         dailyHeadline.textContent = dailyForecast.headline || "오늘의 추천 시간대를 확인해보세요.";
-        dailyTrend.textContent = dailyForecast.temperatureTrend || "";
+        dailyTrend.textContent = formatTemperatureText(dailyForecast.temperatureTrend || "");
         dailyRain.textContent = dailyForecast.rainSummary || "";
 
         const periods = [
@@ -2606,7 +3233,7 @@
             const labelElement = document.createElement("span");
             labelElement.textContent = label;
             const summaryElement = document.createElement("strong");
-            summaryElement.textContent = `${weather.tmp || "-"}°C · ${weather.outingScore || "-"}점`;
+            summaryElement.textContent = `${formatTemperature(weather.tmp)} · ${weather.outingScore || "-"}점`;
             const rainElement = document.createElement("small");
             rainElement.textContent = `강수 ${weather.pop || "-"}%`;
             button.append(labelElement, summaryElement, rainElement);
@@ -2727,13 +3354,14 @@
         weatherPreview.className = `weather-preview weather-${theme}`;
         weatherPreviewTitle.textContent = `${location.locationName} · ${weather.forecastLabel || "날씨 예보"}`;
         weatherPreviewMain.textContent = `${weather.weatherMood || "오늘"} · ${weather.skyDescription || "날씨 정보"}`;
+        updateDataFreshness(weather.dataFetchedAt, Boolean(weather.fallbackData));
         outingScore.textContent = `${weather.outingScore || "-"}점`;
         outingScoreLabel.textContent = weather.outingScoreLabel || "-";
         weatherDetail.textContent = weather.detailedWeatherMessage || weather.summaryMessage || "오늘 날씨를 확인해보세요.";
         personalizationSummary.textContent = weather.personalizationSummary || "기본 외출 기준으로 분석했습니다.";
         decisionExplanation.textContent = weather.decisionExplanation || "현재 날씨 판단 근거를 확인하세요.";
         renderRiskFactors(weather.riskFactors || []);
-        weatherTemp.textContent = `${weather.tmp || "-"}°C`;
+        weatherTemp.textContent = formatTemperature(weather.tmp);
         weatherRain.textContent = `강수 ${weather.pop || "-"}%`;
         weatherAir.textContent = weather.airQualitySummary || "-";
         uvDisplay.textContent = weather.uvDisplay || "-";
@@ -2816,9 +3444,10 @@
         loadRouteBriefingButton.textContent = "분석 중";
         try {
             const params = new URLSearchParams({originQuery, destinationQuery, period: previewPeriod});
-            const response = await fetch(`/api/routes/briefing?${params.toString()}`);
-            const briefing = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(getApiError(briefing, "경로 브리핑을 만들지 못했습니다."));
+            const briefing = await requestJson(`/api/routes/briefing?${params.toString()}`, {
+                key: "route",
+                fallbackMessage: "경로 브리핑을 만들지 못했습니다."
+            });
             routeHeadline.textContent = briefing.headline;
             routePlaces.textContent = `${briefing.origin.locationName} → ${briefing.destination.locationName}`;
             const metrics = [
@@ -2839,6 +3468,7 @@
                 routeChecklist.appendChild(item);
             });
         } catch (error) {
+            if (error.name === "AbortError") return;
             routeHeadline.textContent = error.message;
         } finally {
             loadRouteBriefingButton.disabled = false;

@@ -32,7 +32,14 @@ class FrontendContractTest {
                 .contains("id=\"personalizationSummary\"")
                 .contains("id=\"decisionExplanation\"")
                 .contains("id=\"riskFactorList\"")
-                .contains("renderRiskFactors");
+                .contains("renderRiskFactors")
+                .contains("id=\"refreshWeather\"")
+                .contains("id=\"unitToggle\"")
+                .contains("id=\"themeToggle\"")
+                .contains("id=\"favoriteLocation\"")
+                .contains("id=\"snapshotNote\"")
+                .contains("requestJson")
+                .contains("weather-last-snapshot-v2");
         assertThat(html)
                 .contains("th:attr=\"nonce=${cspNonce}\"")
                 .contains("id=\"plannerQuality\"")
