@@ -4,6 +4,29 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+  sql:
+    init:
+      mode: never
+  task:
+    scheduling:
+      enabled: false
+  mail:
+    host: localhost
+    port: 2525
+    username: test@example.com
+    password: test-password
+
+coders:
+  identity:
+    required: false
+
+admin:
+  require-key: false
+
 weather:
   api:
     key: test-weather-key
@@ -16,5 +39,4 @@ location:
   kakao:
     rest-api-key: test-kakao-key
 app:
-  rate-limit:
-    distributed: false
+  base-url: http://localhost:8080

@@ -179,7 +179,7 @@ public class WeatherDto {
 
     /**
      * Returns the exact signals used by the score in descending order of impact.
-     * The list is deliberately presentation-ready so web and future app clients
+     * The list is deliberately presentation-ready so web, mail and future app clients
      * can all explain the same server-side decision without duplicating thresholds.
      */
     public List<WeatherRiskFactorDto> getRiskFactors() {
@@ -554,16 +554,6 @@ public class WeatherDto {
 
     public WeatherDto withStylePreference(AgeGroup ageGroup, GenderType gender) {
         return withStylePreference(ageGroup, gender, TemperatureSensitivity.NONE, ActivityType.DAILY);
-    }
-
-    public WeatherDto withStylePreference(WeatherProfile profile) {
-        WeatherProfile selected = profile == null ? WeatherProfile.defaults() : profile;
-        return withStylePreference(
-                selected.ageGroup(),
-                selected.gender(),
-                selected.temperatureSensitivity(),
-                selected.activityType()
-        );
     }
 
     public WeatherDto withStylePreference(

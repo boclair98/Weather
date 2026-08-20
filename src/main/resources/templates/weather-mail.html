@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light only">
+    <title>날씨한편 브리핑</title>
+</head>
+<body style="margin:0; padding:0; background-color:#eef2f7; font-family:'Malgun Gothic','Apple SD Gothic Neo',Arial,sans-serif; color:#172033;">
+<div th:text="|${locationName} ${weather.forecastLabel} · ${weather.weatherMood} · 외출 ${weather.outingScore}점|"
+     style="display:none; max-height:0; overflow:hidden; mso-hide:all; color:#eef2f7; font-size:1px; line-height:1px;">
+    서울 아침 예보 · 화창 · 외출 86점
+</div>
+
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#eef2f7"
+       style="width:100%; margin:0; padding:0; background-color:#eef2f7; border-collapse:collapse;">
+    <tr>
+        <td align="center" style="padding:18px 8px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff"
+                   style="width:100%; max-width:580px; background-color:#ffffff; border-collapse:separate; border-spacing:0; border:1px solid #d9e2ef; border-radius:22px; overflow:hidden;">
+
+                <tr>
+                    <td th:attr="bgcolor=${weather.mailHeroColor}"
+                        th:style="|padding:26px 24px 24px 24px; background-color:${weather.mailHeroColor};|">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; border-collapse:collapse;">
+                            <tr>
+                                <td valign="top">
+                                    <div style="font-size:12px; line-height:18px; color:#ffffff; font-weight:800; letter-spacing:1px;">WEATHER NOTE</div>
+                                    <div th:text="${weather.forecastLabel}" style="padding-top:4px; font-size:14px; line-height:21px; color:#ffffff; font-weight:700;">08월 09일 아침 예보</div>
+                                </td>
+                                <td align="right" valign="top" style="padding-left:12px;">
+                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="border-collapse:separate; border-radius:999px; background-color:#ffffff;">
+                                        <tr>
+                                            <td th:text="|외출 ${weather.outingScore}점|" style="padding:7px 11px; font-size:12px; line-height:16px; color:#1e3a8a; font-weight:900; white-space:nowrap;">외출 86점</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div th:text="${locationName}" style="padding-top:24px; font-size:13px; line-height:20px; color:#ffffff; font-weight:700;">서울특별시 중구</div>
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; border-collapse:collapse;">
+                            <tr>
+                                <td valign="bottom" style="padding-top:4px;">
+                                    <div th:text="${weather.weatherMood}" style="font-size:30px; line-height:38px; color:#ffffff; font-weight:900; word-break:keep-all;">화창한 하루</div>
+                                    <div th:text="${weather.skyDescription}" style="padding-top:3px; font-size:13px; line-height:19px; color:#ffffff;">맑음</div>
+                                </td>
+                                <td align="right" valign="bottom" style="padding-top:4px; padding-left:12px; white-space:nowrap;">
+                                    <span th:text="${weather.tmp}" style="font-size:52px; line-height:56px; color:#ffffff; font-weight:900; letter-spacing:-3px;">27</span><span style="font-size:22px; line-height:28px; color:#ffffff; font-weight:800;">°C</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table th:if="${smartAlertSummary != '특별한 위험 신호 없음'}" role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#fff7ed"
+                               style="width:100%; margin-top:18px; background-color:#fff7ed; border-collapse:separate; border-radius:12px;">
+                            <tr>
+                                <td style="padding:10px 12px; font-size:12px; line-height:18px; color:#9a3412; font-weight:800; word-break:keep-all;">
+                                    <span style="font-size:14px;">⚠</span>
+                                    <span th:text="| 오늘 주의 · ${smartAlertSummary}|"> 오늘 주의 · 폭염경보</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:22px 20px 0 20px;">
+                        <div style="font-size:11px; line-height:17px; color:#2563eb; font-weight:900; letter-spacing:.8px;">30초 브리핑</div>
+                        <div th:text="|${name}님, 오늘은 이렇게 준비하세요.|" style="padding-top:4px; font-size:21px; line-height:29px; color:#0f172a; font-weight:900; word-break:keep-all;">오늘은 이렇게 준비하세요.</div>
+                        <div th:text="${weather.detailedWeatherMessage}" style="padding-top:8px; font-size:14px; line-height:22px; color:#475569; word-break:keep-all;">화창한 날씨예요. 가벼운 외출에 잘 어울립니다.</div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:16px 20px 0 20px;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; table-layout:fixed; border-collapse:separate; border-spacing:6px 0; margin-left:-6px;">
+                            <tr>
+                                <td width="33.33%" align="center" valign="top" bgcolor="#f8fafc" style="padding:13px 5px; background-color:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
+                                    <div style="font-size:10px; line-height:15px; color:#64748b; font-weight:800;">강수</div>
+                                    <div th:text="${weather.pop} + '%'" style="padding-top:3px; font-size:19px; line-height:25px; color:#0f172a; font-weight:900;">10%</div>
+                                    <div th:text="${weather.ptyDescription}" style="padding-top:2px; font-size:10px; line-height:15px; color:#64748b;">없음</div>
+                                </td>
+                                <td width="33.33%" align="center" valign="top" bgcolor="#f8fafc" style="padding:13px 5px; background-color:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
+                                    <div style="font-size:10px; line-height:15px; color:#64748b; font-weight:800;">바람</div>
+                                    <div th:text="${weather.wsd} + 'm/s'" style="padding-top:3px; font-size:19px; line-height:25px; color:#0f172a; font-weight:900;">2.5m/s</div>
+                                    <div style="padding-top:2px; font-size:10px; line-height:15px; color:#64748b;">외출 기준</div>
+                                </td>
+                                <td width="33.33%" align="center" valign="top" bgcolor="#eff6ff" style="padding:13px 5px; background-color:#eff6ff; border:1px solid #bfdbfe; border-radius:12px;">
+                                    <div style="font-size:10px; line-height:15px; color:#1d4ed8; font-weight:800;">안전 신호</div>
+                                    <div th:text="${weather.outingScoreLabel}" style="padding-top:3px; font-size:17px; line-height:25px; color:#1e3a8a; font-weight:900;">무난</div>
+                                    <div th:text="|${weather.outingScore}점|" style="padding-top:2px; font-size:10px; line-height:15px; color:#3b82f6;">86점</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr th:if="${weather.officialWarningRisk}">
+                    <td style="padding:16px 20px 0 20px;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#fff1f2" style="width:100%; background-color:#fff1f2; border:1px solid #fecdd3; border-collapse:separate; border-radius:14px;">
+                            <tr>
+                                <td width="44" align="center" valign="top" style="padding:15px 0 15px 14px; font-size:22px; line-height:24px;">🚨</td>
+                                <td style="padding:14px 14px 14px 8px;">
+                                    <div th:text="|기상청 ${weather.weatherWarningTitle}|" style="font-size:14px; line-height:21px; color:#9f1239; font-weight:900;">기상청 폭염경보</div>
+                                    <div th:text="${weather.weatherWarningDetails}" style="padding-top:3px; font-size:12px; line-height:19px; color:#be123c; word-break:keep-all;">서울 지역에 폭염경보가 발효 중입니다.</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:20px 20px 0 20px;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; border-collapse:collapse;">
+                            <tr>
+                                <td style="font-size:16px; line-height:23px; color:#0f172a; font-weight:900;">지금 챙기면 좋은 것</td>
+                                <td align="right" th:text="${weather.outingScoreAdvice}" style="padding-left:12px; font-size:11px; line-height:17px; color:#64748b; word-break:keep-all;">외출하기 좋은 편이에요.</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 20px 0 20px;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#f8fafc" style="width:100%; background-color:#f8fafc; border:1px solid #e2e8f0; border-collapse:separate; border-radius:14px;">
+                            <tr>
+                                <td width="46" align="center" style="padding:13px 0 13px 12px; font-size:20px; line-height:24px;">☂</td>
+                                <td width="58" style="padding:12px 4px; font-size:12px; line-height:18px; color:#334155; font-weight:900;">우산</td>
+                                <td th:text="${weather.umbrellaAdvice}" style="padding:12px 14px 12px 4px; font-size:13px; line-height:20px; color:#475569; word-break:keep-all;">필수는 아니에요.</td>
+                            </tr>
+                            <tr>
+                                <td width="46" align="center" style="padding:13px 0 13px 12px; border-top:1px solid #e2e8f0; font-size:19px; line-height:24px;">◉</td>
+                                <td width="58" style="padding:12px 4px; border-top:1px solid #e2e8f0; font-size:12px; line-height:18px; color:#334155; font-weight:900;">마스크</td>
+                                <td th:text="${weather.maskAdvice}" style="padding:12px 14px 12px 4px; border-top:1px solid #e2e8f0; font-size:13px; line-height:20px; color:#475569; word-break:keep-all;">대기질을 확인하세요.</td>
+                            </tr>
+                            <tr>
+                                <td width="46" align="center" style="padding:13px 0 13px 12px; border-top:1px solid #e2e8f0; font-size:20px; line-height:24px;">☀</td>
+                                <td width="58" style="padding:12px 4px; border-top:1px solid #e2e8f0; font-size:12px; line-height:18px; color:#334155; font-weight:900;">야외</td>
+                                <td th:text="${weather.outdoorAdvice}" style="padding:12px 14px 12px 4px; border-top:1px solid #e2e8f0; font-size:13px; line-height:20px; color:#475569; word-break:keep-all;">야외활동에 무리가 없어요.</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:20px 20px 0 20px; font-size:16px; line-height:23px; color:#0f172a; font-weight:900;">생활안전 한눈에</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 20px 0 20px;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; table-layout:fixed; border-collapse:separate; border-spacing:6px 0; margin-left:-6px;">
+                            <tr>
+                                <td width="50%" valign="top" bgcolor="#eff6ff" style="padding:15px 13px; background-color:#eff6ff; border:1px solid #bfdbfe; border-radius:14px;">
+                                    <div style="font-size:11px; line-height:17px; color:#1d4ed8; font-weight:900;">UV 자외선</div>
+                                    <div th:text="${weather.uvDisplay}" style="padding-top:4px; font-size:18px; line-height:25px; color:#1e3a8a; font-weight:900;">4 · 보통</div>
+                                    <div th:text="${weather.uvAdvice}" style="padding-top:5px; font-size:11px; line-height:18px; color:#1e40af; word-break:keep-all;">일상 차단이면 충분해요.</div>
+                                </td>
+                                <td width="50%" valign="top" bgcolor="#f0fdf4" style="padding:15px 13px; background-color:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px;">
+                                    <div style="font-size:11px; line-height:17px; color:#15803d; font-weight:900;">꽃가루</div>
+                                    <div th:text="${weather.pollenDisplay}" style="padding-top:4px; font-size:18px; line-height:25px; color:#166534; font-weight:900;">잡초류 · 낮음</div>
+                                    <div th:text="${weather.pollenAdvice}" style="padding-top:5px; font-size:11px; line-height:18px; color:#166534; word-break:keep-all;">부담이 낮은 편이에요.</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:10px 20px 0 20px;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#ecfeff" style="width:100%; background-color:#ecfeff; border:1px solid #a5f3fc; border-collapse:separate; border-radius:14px;">
+                            <tr>
+                                <td style="padding:13px 14px;">
+                                    <span style="font-size:12px; line-height:19px; color:#155e75; font-weight:900;">대기질 · </span>
+                                    <span th:text="${weather.airQualitySummary}" style="font-size:12px; line-height:19px; color:#164e63;">미세먼지 보통</span>
+                                    <div th:text="${weather.airQualityAdvice}" style="padding-top:3px; font-size:11px; line-height:18px; color:#0e7490; word-break:keep-all;">가벼운 외출에 무리 없어요.</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:20px 20px 0 20px;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#fff7ed" style="width:100%; background-color:#fff7ed; border:1px solid #fed7aa; border-collapse:separate; border-radius:16px;">
+                            <tr>
+                                <td style="padding:18px 16px 12px 16px;">
+                                    <div style="font-size:11px; line-height:17px; color:#ea580c; font-weight:900; letter-spacing:.6px;">TODAY'S LOOK</div>
+                                    <div th:text="${weather.styleHeadline}" style="padding-top:4px; font-size:18px; line-height:26px; color:#7c2d12; font-weight:900; word-break:keep-all;">오늘은 밝은 포인트가 잘 어울려요.</div>
+                                    <div th:text="|${temperatureSensitivityLabel} · ${activityTypeLabel}|" style="padding-top:4px; font-size:11px; line-height:17px; color:#c2410c;">보통 · 편안한 일상</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0 16px 16px 16px;">
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; border-collapse:collapse;">
+                                        <tr>
+                                            <td width="54" style="padding:9px 0; border-top:1px solid #fed7aa; font-size:11px; line-height:18px; color:#9a3412; font-weight:900;">상의</td>
+                                            <td th:text="${weather.topAdvice}" style="padding:9px 0; border-top:1px solid #fed7aa; font-size:12px; line-height:19px; color:#7c2d12; word-break:keep-all;">얇은 셔츠</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="54" style="padding:9px 0; border-top:1px solid #fed7aa; font-size:11px; line-height:18px; color:#9a3412; font-weight:900;">하의</td>
+                                            <td th:text="${weather.bottomAdvice}" style="padding:9px 0; border-top:1px solid #fed7aa; font-size:12px; line-height:19px; color:#7c2d12; word-break:keep-all;">데님</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="54" style="padding:9px 0; border-top:1px solid #fed7aa; font-size:11px; line-height:18px; color:#9a3412; font-weight:900;">겉옷</td>
+                                            <td th:text="${weather.outerAdvice}" style="padding:9px 0; border-top:1px solid #fed7aa; font-size:12px; line-height:19px; color:#7c2d12; word-break:keep-all;">가벼운 셔츠</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="54" style="padding:9px 0; border-top:1px solid #fed7aa; font-size:11px; line-height:18px; color:#9a3412; font-weight:900;">신발</td>
+                                            <td th:text="${weather.footwearAdvice}" style="padding:9px 0; border-top:1px solid #fed7aa; font-size:12px; line-height:19px; color:#7c2d12; word-break:keep-all;">스니커즈</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="54" style="padding:9px 0; border-top:1px solid #fed7aa; font-size:11px; line-height:18px; color:#9a3412; font-weight:900;">컬러</td>
+                                            <td th:text="${weather.colorPalette}" style="padding:9px 0; border-top:1px solid #fed7aa; font-size:12px; line-height:19px; color:#7c2d12; word-break:keep-all;">크림, 민트, 데님블루</td>
+                                        </tr>
+                                    </table>
+                                    <div th:text="${weather.styleCaution}" style="padding-top:9px; border-top:1px solid #fed7aa; font-size:11px; line-height:18px; color:#9a3412; word-break:keep-all;">오래 걷는 일정이면 신발 착화감을 우선하세요.</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td align="center" style="padding:22px 20px 0 20px;">
+                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" bgcolor="#2563eb" style="background-color:#2563eb; border-collapse:separate; border-radius:12px;">
+                            <tr>
+                                <td align="center" style="padding:0;">
+                                    <a th:href="${dashboardUrl}" href="https://weather.coders.kr"
+                                       style="display:inline-block; padding:13px 24px; color:#ffffff; font-size:14px; line-height:20px; font-weight:900; text-decoration:none;">날씨한편에서 다시 보기 →</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td align="center" style="padding:22px 18px 20px 18px; font-size:10px; line-height:17px; color:#94a3b8; word-break:keep-all;">
+                        기상청 단기예보·기상특보·생활기상지수 · 한국환경공단 에어코리아<br>
+                        예보는 실제 관측과 다를 수 있으니 중요한 일정 전 다시 확인해주세요.<br>
+                        <span th:text="${email}">user@example.com</span>으로 보내드린 날씨 알림입니다.<br>
+                        <a th:href="${unsubscribeUrl}" style="color:#64748b; text-decoration:underline;">이 이메일의 날씨 알림 그만 받기</a>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
