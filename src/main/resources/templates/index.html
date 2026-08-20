@@ -2308,6 +2308,437 @@
                 color: #0f172a;
             }
         }
+
+        /* Toss-inspired spacing and surface system */
+        :root {
+            --toss-bg: #f4f6f8;
+            --toss-surface: #ffffff;
+            --toss-text: #191f28;
+            --toss-muted: #6b7684;
+            --toss-line: #e5e8eb;
+            --toss-blue: #3182f6;
+            --toss-blue-soft: #e8f3ff;
+            --toss-radius: 24px;
+            --toss-shadow: 0 12px 34px rgba(25, 31, 40, .07);
+        }
+
+        body,
+        body.weather-sunny,
+        body.weather-rain,
+        body.weather-snow,
+        body.weather-cloudy,
+        body.weather-mild {
+            color: var(--toss-text);
+            background: var(--toss-bg);
+            letter-spacing: -.012em;
+        }
+
+        main {
+            width: min(1120px, 100%);
+            padding: 28px 24px 72px;
+        }
+
+        .account-bar {
+            max-width: 1120px;
+            margin: 0 auto 14px;
+            padding: 0;
+            color: var(--toss-muted);
+        }
+
+        .layout {
+            grid-template-columns: minmax(0, 1.22fr) minmax(340px, .78fr);
+            gap: 24px;
+        }
+
+        h1 {
+            max-width: 680px;
+            margin-bottom: 16px;
+            color: var(--toss-text);
+            font-size: clamp(38px, 4.5vw, 58px);
+            line-height: 1.12;
+            letter-spacing: -.065em;
+        }
+
+        .eyebrow {
+            margin-bottom: 16px;
+            color: var(--toss-blue);
+            font-size: 14px;
+            letter-spacing: -.01em;
+        }
+
+        .intro {
+            max-width: 560px;
+            color: #4e5968;
+            font-size: 16px;
+            line-height: 1.65;
+        }
+
+        .hero-badges {
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .hero-badge {
+            padding: 8px 12px;
+            border: 1px solid var(--toss-line);
+            border-radius: 12px;
+            color: #4e5968;
+            background: var(--toss-surface);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .dashboard-search-card,
+        .weather-preview,
+        .panel,
+        .route-planner,
+        .decision-window,
+        .weather-planner {
+            border: 1px solid var(--toss-line);
+            border-radius: var(--toss-radius);
+            background: var(--toss-surface);
+            box-shadow: var(--toss-shadow);
+        }
+
+        .dashboard-search-card {
+            margin-top: 30px;
+            padding: 24px;
+            backdrop-filter: none;
+        }
+
+        .dashboard-search-copy {
+            margin-bottom: 16px;
+        }
+
+        .dashboard-search-copy strong {
+            color: var(--toss-text);
+            font-size: 18px;
+            letter-spacing: -.025em;
+        }
+
+        .dashboard-search-copy span,
+        .meta,
+        .location-section-label {
+            color: var(--toss-muted);
+        }
+
+        .location-search {
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            gap: 8px;
+        }
+
+        input,
+        select,
+        textarea {
+            height: 52px;
+            border: 1px solid var(--toss-line);
+            border-radius: 14px;
+            color: var(--toss-text);
+            background: #f9fafb;
+            transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+        }
+
+        textarea {
+            height: 88px;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #9aa4b2;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--toss-blue);
+            outline: none;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(49, 130, 246, .14);
+        }
+
+        button {
+            min-height: 48px;
+            height: auto;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: -.01em;
+            transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .primary {
+            min-height: 52px;
+            color: #ffffff;
+            background: var(--toss-blue);
+            box-shadow: 0 7px 16px rgba(49, 130, 246, .2);
+        }
+
+        .primary:hover:not(:disabled) {
+            background: #2476e8;
+        }
+
+        .secondary,
+        .account-link.google {
+            color: #4e5968;
+            border: 1px solid var(--toss-line);
+            background: #f2f4f6;
+        }
+
+        .secondary:hover:not(:disabled),
+        .account-link.google:hover {
+            color: var(--toss-blue);
+            background: var(--toss-blue-soft);
+        }
+
+        .account-link {
+            min-height: 40px;
+            border-radius: 12px;
+            background: var(--toss-text);
+        }
+
+        .weather-preview,
+        .panel {
+            overflow: hidden;
+        }
+
+        .weather-preview-header {
+            padding: 28px;
+        }
+
+        .weather-preview-body {
+            padding: 24px 28px 30px;
+        }
+
+        .weather-preview-main {
+            margin-top: 8px;
+            font-size: 30px;
+            letter-spacing: -.04em;
+        }
+
+        .day-tabs {
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .day-tab {
+            min-height: 34px;
+            border-radius: 9px;
+        }
+
+        .weather-toolbar {
+            margin-top: 22px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, .2);
+        }
+
+        .weather-tool-button {
+            min-height: 36px;
+            border-radius: 10px;
+        }
+
+        .period-tabs,
+        .daily-periods,
+        .weather-chip-row,
+        .safety-grid,
+        .action-grid,
+        .benefit-grid {
+            gap: 10px;
+        }
+
+        .period-tab,
+        .daily-period-card,
+        .weather-chip,
+        .safety-item,
+        .action-card,
+        .benefit-card,
+        .hourly-item,
+        .style-item {
+            border-radius: 16px;
+        }
+
+        .current-weather,
+        .daily-insight,
+        .hourly-weather,
+        .decision-explanation,
+        .safety-board,
+        .style-preview,
+        .route-result,
+        .auth-notice,
+        .smart-alert-card {
+            border-radius: 18px;
+        }
+
+        .panel {
+            align-self: start;
+            padding: 28px;
+        }
+
+        .panel-heading {
+            color: var(--toss-text);
+            font-size: 22px;
+            letter-spacing: -.04em;
+        }
+
+        .panel-description {
+            margin-bottom: 24px;
+            color: var(--toss-muted);
+        }
+
+        .field {
+            margin-bottom: 22px;
+        }
+
+        .time-options {
+            gap: 10px;
+        }
+
+        .time-option {
+            padding: 15px;
+            border: 1px solid var(--toss-line);
+            border-radius: 16px;
+            background: #ffffff;
+        }
+
+        .time-option:has(input:checked) {
+            border-color: #b8d6ff;
+            background: var(--toss-blue-soft);
+        }
+
+        .time-option strong {
+            color: var(--toss-text);
+            font-size: 14px;
+        }
+
+        .time-option span {
+            color: var(--toss-muted);
+        }
+
+        .auth-notice {
+            margin-bottom: 24px;
+            padding: 16px;
+            border-color: #d7e8ff;
+            background: #f5f9ff;
+        }
+
+        .auth-notice.signed-in {
+            border-color: #c8efdb;
+            background: #f1fbf5;
+        }
+
+        .subscription-actions {
+            gap: 10px;
+        }
+
+        .danger {
+            border: 1px solid #ffd4d4;
+            color: #d14343;
+            background: #fff5f5;
+        }
+
+        .result {
+            border-radius: 14px;
+        }
+
+        .route-planner {
+            padding: 24px;
+        }
+
+        .route-planner h2,
+        .decision-window h2,
+        .weather-planner h2 {
+            color: var(--toss-text);
+            letter-spacing: -.04em;
+        }
+
+        .site-footer {
+            margin-top: 36px;
+            color: #8b95a1;
+        }
+
+        body[data-theme="dark"] {
+            --toss-bg: #101418;
+            --toss-surface: #1b2027;
+            --toss-text: #f2f4f6;
+            --toss-muted: #9aa4b2;
+            --toss-line: #2c333d;
+            --toss-blue-soft: #172f56;
+            background: var(--toss-bg);
+        }
+
+        body[data-theme="dark"] input,
+        body[data-theme="dark"] select,
+        body[data-theme="dark"] textarea,
+        body[data-theme="dark"] .time-option {
+            border-color: var(--toss-line);
+            color: var(--toss-text);
+            background: #161b21;
+        }
+
+        body[data-theme="dark"] input:focus,
+        body[data-theme="dark"] select:focus,
+        body[data-theme="dark"] textarea:focus {
+            background: #1b2027;
+        }
+
+        body[data-theme="dark"] .hero-badge,
+        body[data-theme="dark"] .secondary,
+        body[data-theme="dark"] .account-link.google,
+        body[data-theme="dark"] .benefit-card {
+            border-color: var(--toss-line);
+            color: var(--toss-text);
+            background: #1b2027;
+        }
+
+        @media (max-width: 820px) {
+            main {
+                padding: 22px 16px 52px;
+            }
+
+            .layout {
+                gap: 18px;
+            }
+
+            h1 {
+                font-size: 36px;
+            }
+
+            .dashboard-search-card,
+            .weather-preview,
+            .panel,
+            .route-planner {
+                border-radius: 20px;
+            }
+
+            .dashboard-search-card,
+            .panel,
+            .route-planner {
+                padding: 20px;
+            }
+
+            .weather-preview-header {
+                padding: 22px 20px;
+            }
+
+            .weather-preview-body {
+                padding: 20px;
+            }
+
+            .location-search {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .location-search input {
+                grid-column: 1 / -1;
+            }
+
+            .subscription-actions {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
