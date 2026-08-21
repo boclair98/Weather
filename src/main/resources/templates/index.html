@@ -39,9 +39,22 @@
         }
 
         [aria-label="Open support chat"],
-        [data-testid*="donate"],
-        [class*="donate"],
-        [class*="sponsor"] {
+        [data-testid*="donate" i],
+        [data-testid*="sponsor" i],
+        [id*="donate" i],
+        [id*="sponsor" i],
+        [class*="donate" i],
+        [class*="sponsor" i],
+        [aria-label*="donate" i],
+        [aria-label*="sponsor" i],
+        [aria-label*="도네"],
+        [aria-label*="후원"],
+        [title*="donate" i],
+        [title*="sponsor" i],
+        a[href*="donate" i],
+        a[href*="sponsor" i],
+        iframe[src*="donate" i],
+        iframe[src*="sponsor" i] {
             display: none !important;
         }
 
@@ -2699,7 +2712,23 @@
             }
 
             .layout {
+                grid-template-columns: 1fr;
                 gap: 18px;
+            }
+
+            .layout > section,
+            .layout > .panel {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .account-bar {
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .account-bar .account-link {
+                width: 100%;
             }
 
             h1 {
