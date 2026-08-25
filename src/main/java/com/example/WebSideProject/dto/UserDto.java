@@ -10,11 +10,13 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.AssertTrue;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.time.LocalTime;
 
 public class UserDto {
 
@@ -70,6 +72,15 @@ public class UserDto {
 
         private boolean eveningEnabled = false;
 
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime morningTime = LocalTime.of(6, 30);
+
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime afternoonTime = LocalTime.of(11, 30);
+
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime eveningTime = LocalTime.of(18, 30);
+
         @AssertTrue(message = "개인정보 수집·이용에 동의해주세요")
         private boolean privacyConsent;
     }
@@ -122,6 +133,15 @@ public class UserDto {
         private boolean morningEnabled;
         private boolean afternoonEnabled;
         private boolean eveningEnabled;
+
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime morningTime = LocalTime.of(6, 30);
+
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime afternoonTime = LocalTime.of(11, 30);
+
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime eveningTime = LocalTime.of(18, 30);
     }
 
     @Getter
@@ -168,6 +188,12 @@ public class UserDto {
         private boolean morningEnabled;
         private boolean afternoonEnabled;
         private boolean eveningEnabled;
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime morningTime;
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime afternoonTime;
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime eveningTime;
         private String message;
         private String privacyConsentVersion;
         private java.time.LocalDateTime privacyConsentAt;

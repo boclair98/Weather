@@ -1,6 +1,7 @@
 package com.example.WebSideProject.service;
 
 import com.example.WebSideProject.dto.UserDto;
+import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.entity.User;
 import com.example.WebSideProject.event.SubscriptionWelcomeMailRequested;
 import com.example.WebSideProject.repository.UserRepository;
@@ -11,6 +12,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -135,6 +138,24 @@ class UserServiceTest {
 
         verify(repository).deleteMailHistoriesByEmail("delete@example.com");
         verify(repository).delete(owned);
+    }
+
+    @Test
+    void customNotificationSlotCanOnlyBeClaimedOncePerDay() {
+        User user = User.builder()
+                .name("알림 사용자")
+                .email("schedule@example.com")
+                .morningEnabled(true)
+                .morningTime(LocalTime.of(7, 5))
+                .nx(60)
+                .ny(127)
+                .build();
+        LocalDate today = LocalDate.of(2026, 8, 26);
+
+        assertThat(user.getMorningTime()).isEqualTo(LocalTime.of(7, 5));
+        assertThat(user.claimScheduledMail(WeatherPeriod.MORNING, today)).isTrue();
+        assertThat(user.claimScheduledMail(WeatherPeriod.MORNING, today)).isFalse();
+        assertThat(user.claimScheduledMail(WeatherPeriod.MORNING, today.plusDays(1))).isTrue();
     }
 
     private UserDto.RegisterRequest request(String emails) {

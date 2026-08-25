@@ -4,12 +4,15 @@ import com.example.WebSideProject.Enum.AgeGroup;
 import com.example.WebSideProject.Enum.ActivityType;
 import com.example.WebSideProject.Enum.GenderType;
 import com.example.WebSideProject.Enum.TemperatureSensitivity;
+import com.example.WebSideProject.Enum.WeatherPeriod;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.UUID;
 
 @Entity
@@ -24,6 +27,10 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
+
+    public static final LocalTime DEFAULT_MORNING_TIME = LocalTime.of(6, 30);
+    public static final LocalTime DEFAULT_AFTERNOON_TIME = LocalTime.of(11, 30);
+    public static final LocalTime DEFAULT_EVENING_TIME = LocalTime.of(18, 30);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -102,6 +109,21 @@ public class User {
     @Column(nullable = false)
     private boolean eveningEnabled = false;
 
+    @Column(nullable = false)
+    private LocalTime morningTime = DEFAULT_MORNING_TIME;
+
+    @Column(nullable = false)
+    private LocalTime afternoonTime = DEFAULT_AFTERNOON_TIME;
+
+    @Column(nullable = false)
+    private LocalTime eveningTime = DEFAULT_EVENING_TIME;
+
+    private LocalDate lastMorningMailDate;
+
+    private LocalDate lastAfternoonMailDate;
+
+    private LocalDate lastEveningMailDate;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
@@ -140,6 +162,9 @@ public class User {
         if (this.temperatureAlertEnabled == null) this.temperatureAlertEnabled = true;
         if (this.airQualityAlertEnabled == null) this.airQualityAlertEnabled = true;
         if (this.windAlertEnabled == null) this.windAlertEnabled = true;
+        this.morningTime = normalizeTime(this.morningTime, DEFAULT_MORNING_TIME);
+        this.afternoonTime = normalizeTime(this.afternoonTime, DEFAULT_AFTERNOON_TIME);
+        this.eveningTime = normalizeTime(this.eveningTime, DEFAULT_EVENING_TIME);
     }
 
     @Builder
@@ -164,7 +189,10 @@ public class User {
             Boolean windAlertEnabled,
             boolean morningEnabled,
             boolean afternoonEnabled,
-            boolean eveningEnabled
+            boolean eveningEnabled,
+            LocalTime morningTime,
+            LocalTime afternoonTime,
+            LocalTime eveningTime
     ) {
         this.name = name;
         this.email = email;
@@ -188,6 +216,9 @@ public class User {
         this.morningEnabled = morningEnabled;
         this.afternoonEnabled = afternoonEnabled;
         this.eveningEnabled = eveningEnabled;
+        this.morningTime = normalizeTime(morningTime, DEFAULT_MORNING_TIME);
+        this.afternoonTime = normalizeTime(afternoonTime, DEFAULT_AFTERNOON_TIME);
+        this.eveningTime = normalizeTime(eveningTime, DEFAULT_EVENING_TIME);
         ensureUnsubscribeToken();
     }
 
@@ -284,10 +315,72 @@ public class User {
             boolean afternoonEnabled,
             boolean eveningEnabled
     ) {
+        updateNotificationTimes(
+                morningEnabled,
+                afternoonEnabled,
+                eveningEnabled,
+                this.morningTime,
+                this.afternoonTime,
+                this.eveningTime
+        );
+    }
+
+    public void updateNotificationTimes(
+            boolean morningEnabled,
+            boolean afternoonEnabled,
+            boolean eveningEnabled,
+            LocalTime morningTime,
+            LocalTime afternoonTime,
+            LocalTime eveningTime
+    ) {
         boolean noTimeSelected = !morningEnabled && !afternoonEnabled && !eveningEnabled;
         this.morningEnabled = morningEnabled || noTimeSelected;
         this.afternoonEnabled = afternoonEnabled;
         this.eveningEnabled = eveningEnabled;
+        this.morningTime = normalizeTime(morningTime, DEFAULT_MORNING_TIME);
+        this.afternoonTime = normalizeTime(afternoonTime, DEFAULT_AFTERNOON_TIME);
+        this.eveningTime = normalizeTime(eveningTime, DEFAULT_EVENING_TIME);
+    }
+
+    public LocalTime getNotificationTime(WeatherPeriod period) {
+        return switch (period) {
+            case MORNING -> morningTime;
+            case AFTERNOON -> afternoonTime;
+            case EVENING -> eveningTime;
+        };
+    }
+
+    public boolean isEnabledFor(WeatherPeriod period) {
+        return switch (period) {
+            case MORNING -> morningEnabled;
+            case AFTERNOON -> afternoonEnabled;
+            case EVENING -> eveningEnabled;
+        };
+    }
+
+    /**
+     * Claims one scheduled slot for a day. The scheduler can run repeatedly
+     * without sending the same period twice when multiple app instances are up.
+     */
+    public boolean claimScheduledMail(WeatherPeriod period, LocalDate date) {
+        if (!subscribed || !isEnabledFor(period) || date == null) {
+            return false;
+        }
+        switch (period) {
+            case MORNING -> {
+                if (date.equals(lastMorningMailDate)) return false;
+                lastMorningMailDate = date;
+            }
+            case AFTERNOON -> {
+                if (date.equals(lastAfternoonMailDate)) return false;
+                lastAfternoonMailDate = date;
+            }
+            case EVENING -> {
+                if (date.equals(lastEveningMailDate)) return false;
+                lastEveningMailDate = date;
+            }
+        }
+        return true;
     }
 
     public void claimCodersIdentity(String codersUserId) {
@@ -337,5 +430,10 @@ public class User {
         if (this.unsubscribeToken == null || this.unsubscribeToken.isBlank()) {
             this.unsubscribeToken = UUID.randomUUID().toString().replace("-", "");
         }
+    }
+
+    private LocalTime normalizeTime(LocalTime value, LocalTime fallback) {
+        if (value == null) return fallback;
+        return value.withSecond(0).withNano(0);
     }
 }

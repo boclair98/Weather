@@ -12,6 +12,8 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Slf4j
@@ -19,24 +21,34 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WeatherMailScheduler {
 
+    private static final ZoneId KOREA_ZONE = ZoneId.of("Asia/Seoul");
+
     private final WeatherService weatherService;
     private final UserService userService;
     private final MailService mailService;
 
-    @Scheduled(cron = "0 30 6 * * *", zone = "Asia/Seoul")
-    @SchedulerLock(name = "weather-mail-morning", lockAtLeastFor = "PT1M", lockAtMostFor = "PT30M")
+    /**
+     * Checks every minute so each subscriber can choose an exact delivery time.
+     * The repository query only loads users due in this minute, so this does not
+     * fan out weather API calls for the entire subscriber base.
+     */
+    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
+    @SchedulerLock(name = "weather-mail-custom-schedule", lockAtLeastFor = "PT1M", lockAtMostFor = "PT5M")
+    public void sendScheduledWeatherMail() {
+        LocalDateTime now = LocalDateTime.now(KOREA_ZONE).withSecond(0).withNano(0);
+        for (WeatherPeriod period : WeatherPeriod.values()) {
+            sendDueWeatherMailByPeriod(period, now);
+        }
+    }
+
     public void sendMorningWeatherMail() {
         sendWeatherMailByPeriod(WeatherPeriod.MORNING);
     }
 
-    @Scheduled(cron = "0 30 11 * * *", zone = "Asia/Seoul")
-    @SchedulerLock(name = "weather-mail-afternoon", lockAtLeastFor = "PT1M", lockAtMostFor = "PT30M")
     public void sendAfternoonWeatherMail() {
         sendWeatherMailByPeriod(WeatherPeriod.AFTERNOON);
     }
 
-    @Scheduled(cron = "0 30 18 * * *", zone = "Asia/Seoul")
-    @SchedulerLock(name = "weather-mail-evening", lockAtLeastFor = "PT1M", lockAtMostFor = "PT30M")
     public void sendEveningWeatherMail() {
         sendWeatherMailByPeriod(WeatherPeriod.EVENING);
     }
@@ -71,6 +83,27 @@ public class WeatherMailScheduler {
         }
 
         log.info("=== {} 날씨 메일 발송 완료 ===", period.getLabel());
+    }
+
+    private void sendDueWeatherMailByPeriod(WeatherPeriod period, LocalDateTime now) {
+        List<User> subscribers = userService.getDueSubscribedUsers(period, now.toLocalTime());
+        if (subscribers.isEmpty()) {
+            return;
+        }
+
+        log.info("사용자 지정 {} 날씨 메일 발송 시작: dueUsers={}", period.getLabel(), subscribers.size());
+        for (User user : subscribers) {
+            try {
+                WeatherDto weather = weatherService.getWeather(
+                        user.getNx(), user.getNy(), period, user.getLocationName());
+                if (!userService.claimScheduledMail(user.getId(), period, now.toLocalDate())) {
+                    continue;
+                }
+                mailService.sendWeatherMail(user, weather);
+            } catch (Exception e) {
+                log.error("사용자 지정 메일 처리 중 오류 발생: userId={}, period={}", user.getId(), period, e);
+            }
+        }
     }
 
     private boolean isEnabledForPeriod(User user, WeatherPeriod period) {

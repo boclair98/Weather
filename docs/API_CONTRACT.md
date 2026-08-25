@@ -57,3 +57,20 @@ X-Request-Id: 요청 추적 ID
 - `DEGRADED`: 완전성 70% 미만 또는 원천 장애로 마지막 정상자료 제공
 
 방재·대피 판단은 이 서비스 단독 결과가 아니라 기상청 공식 특보와 기관 지침을 우선해야 합니다.
+
+## 구독 알림 시각
+
+구독 생성과 로그인 계정의 알림 설정 변경은 `morningTime`, `afternoonTime`, `eveningTime`을 선택적으로 받습니다. 값은 `HH:mm` 형식이며 한국 시간(`Asia/Seoul`)으로 해석됩니다.
+
+```json
+{
+  "morningEnabled": true,
+  "morningTime": "07:05",
+  "afternoonEnabled": false,
+  "afternoonTime": "12:10",
+  "eveningEnabled": true,
+  "eveningTime": "18:20"
+}
+```
+
+`PATCH /api/users/me/notifications`가 성공하면 저장된 시각과 사용 여부가 함께 반환됩니다. 발송 작업은 매분 해당 시각의 구독자만 조회하며, 같은 사용자·시간대는 한국 날짜마다 한 번만 claim하여 다중 인스턴스 환경의 중복 발송을 줄입니다.
