@@ -252,7 +252,6 @@ flowchart TB
 | `DELETE` | `/api/users/me/data` | 구독과 개인정보 완전 삭제 |
 
 `/api/users/subscribe`와 `/api/users/me/notifications`의 알림 시각 필드는 `HH:mm` 형식의 `morningTime`, `afternoonTime`, `eveningTime`입니다. 운영 스케줄러는 매분 해당 시각의 사용자만 조회하고, 한국 표준시(`Asia/Seoul`)로 발송합니다.
-
 오류 응답은 `application/problem+json`과 요청 추적 ID를 사용합니다. 상세 계약은 [API 계약](docs/API_CONTRACT.md)에서 확인할 수 있습니다.
 
 ## 프로젝트 구조
