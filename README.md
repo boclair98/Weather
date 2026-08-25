@@ -7,165 +7,316 @@
 <h1 align="center">날씨한편</h1>
 
 <p align="center">
-  내 위치의 <strong>시간별 날씨·강수·대기질·기상특보</strong>를 한눈에 보고<br>
-  나에게 필요한 준비와 날씨 메일까지 받는 생활 날씨 서비스
+  흩어진 기상 데이터를 <strong>오늘의 행동 기준</strong>으로 바꾸고,<br>
+  필요한 시간에 개인화된 날씨 브리핑을 보내는 생활 날씨 서비스
 </p>
 
 <p align="center">
-  <a href="https://weather.coders.kr"><img src="https://img.shields.io/badge/바로_사용-weather.coders.kr-2563EB?style=for-the-badge" alt="운영 사이트"></a>
-  <img src="https://img.shields.io/badge/모바일-PWA-0F766E?style=for-the-badge" alt="모바일 PWA">
-  <img src="https://img.shields.io/badge/날씨_메일-최대_10개_수신처-F97316?style=for-the-badge" alt="최대 10개 수신처">
+  <a href="https://weather.coders.kr"><img src="https://img.shields.io/badge/운영_서비스-weather.coders.kr-3182F6?style=for-the-badge" alt="운영 서비스"></a>
+  <a href="https://github.com/boclair98/Weather/actions/workflows/ci.yml"><img src="https://github.com/boclair98/Weather/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <img src="https://img.shields.io/badge/Java-17-007396?logo=openjdk&logoColor=white" alt="Java 17">
+  <img src="https://img.shields.io/badge/Spring_Boot-3.5.16-6DB33F?logo=springboot&logoColor=white" alt="Spring Boot 3.5.16">
 </p>
 
-## 바로 사용하기
+> 기상청·한국환경공단 에어코리아 원천자료를 활용하는 독립 서비스입니다. 기상청 공식 홈페이지나 인증·납품 제품을 의미하지 않습니다.
 
-**운영 서비스:** [https://weather.coders.kr](https://weather.coders.kr)
+## 프로젝트 소개
 
-1. 동네, 역 또는 건물명을 검색합니다.
-2. 오늘·내일·모레와 시간별 날씨, 준비물을 확인합니다.
-3. 원하면 여러 이메일에 아침·점심·저녁 브리핑을 구독합니다.
+날씨 정보는 많지만 사용자가 실제로 궁금한 것은 대개 단순합니다.
 
-> 기상청·에어코리아 원천자료를 활용한 독립 서비스입니다. 기상청 공식 홈페이지나 인증·납품 제품을 의미하지 않습니다.
+- 지금 우산이나 겉옷이 필요한가?
+- 외출하기 좋은 시간은 언제인가?
+- 미세먼지·자외선·특보까지 함께 보면 안전한가?
+- 매번 앱을 열지 않고 필요한 시간에 받을 수 있는가?
 
-## 이런 분께 유용합니다
+날씨한편은 기상청 예보·실황, 에어코리아 대기질, 생활기상지수와 장소 정보를 한 흐름으로 정규화합니다. 이후 사용자의 위치·활동 목적·체감 성향을 반영해 **근거가 보이는 외출 판단과 HTML 이메일 브리핑**을 제공합니다.
 
-- 출근 전에 우산·겉옷·마스크를 한 번에 결정하고 싶은 분
-- 추위나 더위를 많이 타서 일반적인 옷차림 추천이 맞지 않는 분
-- 산책·야외 활동·격식 일정에 따라 다른 준비가 필요한 분
-- 부모님, 가족, 팀원 등 여러 수신처에 날씨 메일을 보내고 싶은 분
-- 미세먼지·자외선·꽃가루와 기상특보를 함께 확인하고 싶은 분
+### 프로젝트 목표
 
-## 이 서비스가 알려주는 것
-
-| 사용자의 질문 | 날씨한편의 답 |
-| --- | --- |
-| 지금 실제로 비가 오거나 덥나? | 최신 관측 기온·체감온도·강수·습도·바람 |
-| 앞으로 날씨가 어떻게 변할까? | 오늘부터 모레까지 시간별 기온과 강수 흐름 |
-| 비는 언제 시작하고 끝날까? | 비·눈 가능성이 높은 첫 시간과 마지막 시간 |
-| 공기와 생활안전은 괜찮을까? | 미세먼지·초미세먼지·자외선·꽃가루·특보 |
-| 오늘과 내일 중 언제가 좋을까? | 3일 예보와 아침·점심·저녁 비교 |
-| 무엇을 준비해야 할까? | 우산·마스크·야외 활동·맞춤 코디 추천 |
-| 왜 이 점수일까? | 위험 요인별 감점, 실제 근거 수치, 지금 할 일 |
-| 메일로도 받을 수 있나? | 최대 10개 이메일, 선택 시간, 위험 스마트 알림 |
+1. 여러 기관의 원천자료를 사용자가 이해하기 쉬운 하나의 브리핑으로 통합합니다.
+2. 추천 결과뿐 아니라 점수에 영향을 준 수치와 행동 근거를 함께 제공합니다.
+3. 외부 API 일부가 느리거나 실패해도 전체 서비스를 가능한 범위에서 계속 제공합니다.
+4. 로그인 계정 단위로 구독 소유권을 보호하고 개인정보 삭제 경로를 제공합니다.
+5. 다중 인스턴스 배포, 예약 발송, 요청 급증을 고려한 운영 구조를 만듭니다.
 
 ## 주요 기능
 
-### 현재·시간별·3일 날씨
-
-- 동네·역·건물 검색과 현재 위치
-- 예보와 구분된 최신 기온·체감온도·강수 관측
-- 오늘부터 모레까지 시간별 기온·강수·습도·바람
-- 강수 시작·종료 예상과 일 최저·최고기온
-- 아침·점심·저녁 비교와 날씨 테마 자동 전환
-- 기상청 발표·수집시각과 자료 상태 표시
-
-### 설명 가능한 사용자 맞춤 판단
-
-- 일상·출근·야외 활동·격식 일정에 맞춘 위험 판단
-- 보통·추위 민감·더위 민감 성향에 따른 개인 체감온도
-- 강수·기온·풍속·습도·대기질·자외선·꽃가루·특보 감점 공개
-- 각 위험의 실제 수치와 지금 할 일 제공
-- 영향도가 큰 순서로 보여줘 추천 이유를 직접 확인
-
-### 공기질과 생활안전
-
-- 에어코리아 PM10·PM2.5, 등급, 측정소
-- 지역별 공식 기상특보
-- 자외선지수와 계절성 꽃가루 위험
-- 부가 정보가 지연돼도 가능한 기본 날씨는 계속 제공
-
-### 나에게 맞는 옷차림
-
-- 상의·하의·아우터·신발·추천 색상까지 조합
-- 비·눈·바람·습도에 맞는 소재와 피해야 할 옷 안내
-- 체감 성향과 활동 목적을 바꾸면 추천을 즉시 다시 계산
-
-### 날씨 이메일
-
-- 한 계정에 최대 10개 수신 이메일
-- 아침 06:30, 점심 11:30, 저녁 18:30 선택
-- 모바일 Gmail·네이버 메일에 맞춘 HTML 브리핑
-- 같은 위험의 반복 발송을 줄이는 스마트 알림
-- 이메일 입력 또는 메일의 링크로 구독 취소
-
-<p align="center">
-  <img src="docs/images/weather-mail-preview.svg" alt="날씨한편 모바일 이메일 화면" width="760">
-</p>
-
-### 일정과 이동 도구
-
-- 출발지와 목적지의 날씨·이동시간 비교
-- 희망 일정 주변에서 비·바람이 덜한 출발 시간 제안
-- 추천 시간을 캘린더 파일로 저장
-- 홈 화면 설치와 오프라인 상태 안내
-
-### 메일처럼 읽는 브리핑 UI
-
-- 날씨 결과 카드의 `메일형 보기`에서 점수·기온·강수·대기질·옷차림을 한 장으로 확인
-- 모바일 메일처럼 읽기 쉬운 반응형 레이아웃과 인쇄용 스타일 제공
-- 구독한 수신처에는 동일한 브리핑을 HTML 메일로 발송하고, 화면에서는 발송 전 미리보기를 제공합니다.
-
-## 데이터와 이용 안내
-
-| 제공기관 | 사용 정보 |
+| 영역 | 제공 기능 |
 | --- | --- |
-| 기상청 | 단기예보, 현재 관측, 기상특보, 자외선, 꽃가루 |
-| 한국환경공단 에어코리아 | PM10·PM2.5와 측정소 |
-| Kakao | 장소 검색과 이동 경로 |
+| 위치 검색 | 동네·역·건물 검색, 현재 위치, 최근·즐겨찾기 장소 |
+| 현재 날씨 | 관측 기온·체감온도·습도·바람·강수량과 관측시각 |
+| 시간별 예보 | 오늘부터 모레까지 기온·강수·습도·풍속, 비 시작·종료 예상 |
+| 생활 안전 | PM10·PM2.5, 자외선, 꽃가루, 공식 기상특보 |
+| 설명 가능한 판단 | 외출 점수, 위험 요인별 감점, 실제 근거 수치와 행동 제안 |
+| 개인화 | 추위·더위 민감도, 일상·출근·야외·격식 활동별 판단과 옷차림 |
+| 이동·일정 | 출발지·목적지 날씨 비교, 비·바람이 덜한 시간, 캘린더 저장 |
+| 날씨 이메일 | 아침·점심·저녁 예약 발송, 최대 10개 수신처, 스마트 위험 알림 |
+| 구독 관리 | Google 로그인 기반 소유권 확인, 시간 변경, 해지, 개인정보 완전 삭제 |
+| 웹 경험 | 반응형 UI, 다크 모드, PWA 설치, 오프라인 상태 안내 |
 
-- 예보의 발표·수집시각과 자료 상태를 함께 표시합니다.
-- 동일한 위치·예보의 짧은 시간 내 중복 요청은 브라우저 캐시로 줄이고, 네트워크 장애 시 마지막 정상 스냅샷을 활용합니다.
-- 이메일로 직접 구독을 취소하거나 저장한 구독 정보를 삭제할 수 있습니다.
-- 위험한 상황에서는 서비스 추천보다 기상청 공식 특보와 안전지침을 우선하세요.
+## 서비스 화면
 
-## 기술 구성
+### 날씨에 따라 달라지는 화면
 
-사용자 기능 아래에는 실제 운영을 위한 기술 구성이 함께 구현되어 있습니다.
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/weather-theme-sunny-preview.svg" alt="맑은 날씨 테마"></td>
+    <td width="50%"><img src="docs/images/weather-theme-rain-preview.svg" alt="비 날씨 테마"></td>
+  </tr>
+  <tr>
+    <td align="center">맑음</td>
+    <td align="center">비</td>
+  </tr>
+</table>
 
-| 영역 | 기술 |
-| --- | --- |
-| Backend | Java 17, Spring Boot 3.5.16, Spring Web, Validation |
-| UI | Thymeleaf, HTML, CSS, Vanilla JavaScript, PWA |
-| Database | PostgreSQL, Flyway, JPA · H2 로컬 · MySQL 선택 지원 |
-| Cache | Caffeine, Redis |
-| Scheduling | Spring Scheduler, ShedLock, bounded executor |
-| External API | 기상청, 에어코리아, Kakao, SMTP, Apache HttpClient |
-| Observability | Actuator, Prometheus, request ID |
-| Quality | JUnit 5, AssertJ, GitHub Actions, Dependabot, CycloneDX SBOM |
+### 구독 화면과 이메일 브리핑
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/subscription-form-preview.svg" alt="날씨 이메일 구독 화면"></td>
+    <td width="50%"><img src="docs/images/weather-mail-preview.svg" alt="날씨한편 HTML 이메일"></td>
+  </tr>
+  <tr>
+    <td align="center">계정 기반 구독 설정</td>
+    <td align="center">모바일 이메일 브리핑</td>
+  </tr>
+</table>
+
+## 사용자 흐름
 
 ```mermaid
 flowchart LR
-    U["웹·PWA 사용자"] --> G["coders.kr Gateway"]
-    G --> A["Spring Boot API"]
-    A --> D["맞춤 날씨 판단"]
-    A --> DB["PostgreSQL + Flyway"]
-    A --> C["Caffeine + Redis"]
-    A --> K["기상청·에어코리아·Kakao"]
-    SCH["Scheduler + ShedLock"] --> A
-    A --> M["SMTP 날씨 메일"]
+    A["장소 검색"] --> B["예보·실황·대기질 수집"]
+    B --> C["데이터 정규화"]
+    C --> D["위험도·외출 점수 계산"]
+    D --> E["웹 브리핑 확인"]
+    E --> F{"로그인 후 구독?"}
+    F -- "아니요" --> E
+    F -- "예" --> G["위치·시간·체감 설정 저장"]
+    G --> H["예약·스마트 알림 판단"]
+    H --> I["개인화 HTML 메일 발송"]
 ```
 
-## 운영 안정성과 보안
+## 시스템 아키텍처
 
-- 외부 API 연결·응답 timeout, 제한된 재시도, 공급자별 circuit breaker
-- 최근 정상자료 fallback과 출처·발표시각·수집시각·자료 상태 표시
-- HTTP connection pool, bounded cache/executor와 read·write 요청 제한
-- Redis 분산 제어와 ShedLock을 이용한 다중 인스턴스 예약 작업 중복 완화
-- CSP nonce, HSTS, 입력 검증과 운영 관리자 API fail-closed
-- request ID, Actuator, Prometheus, readiness/liveness probe
-- 전체 테스트·실행 JAR·Docker build·dependency review·SBOM을 CI에서 검증
+```mermaid
+flowchart TB
+    Client["Web · PWA · Email User"] --> Gateway["coders.kr Gateway / Google Identity"]
+    Gateway --> Web["Spring MVC · Thymeleaf"]
+    Gateway --> API["Spring REST API"]
 
-## 개발과 문서
+    subgraph Application["Weather Application"]
+        Web --> Planner["Weather Planner"]
+        API --> Planner
+        Planner --> Weather["Forecast · Current Weather"]
+        Planner --> Safety["Air Quality · Warning · UV · Pollen"]
+        Planner --> Route["Location · Route"]
+        Scheduler["Spring Scheduler + ShedLock"] --> Mail["Mail Service"]
+        Mail --> Template["Thymeleaf Email Template"]
+    end
+
+    Weather --> Guard["Timeout · Retry · Circuit Breaker"]
+    Guard --> HTTP["Pooled HTTP Client"]
+    Safety --> HTTP
+    Route --> HTTP
+    HTTP --> KMA["기상청"]
+    HTTP --> AirKorea["에어코리아"]
+    HTTP --> Kakao["Kakao API"]
+
+    Planner <--> Cache["Caffeine Cache"]
+    API --> Redis["Redis Rate Limit"]
+    Scheduler --> DB["PostgreSQL · Flyway"]
+    Mail --> SMTP["SMTP"]
+    API --> DB
+```
+
+## 핵심 기술 설계와 해결한 문제
+
+### 1. 외부 API 장애가 전체 날씨 조회로 번지는 문제
+
+**문제**
+
+기상청·에어코리아·Kakao처럼 응답 특성이 다른 외부 API를 한 요청에서 사용하면, 한 공급자의 지연이 전체 응답 지연과 스레드 고갈로 이어질 수 있습니다.
+
+**선택과 구현**
+
+- 공급자 호출을 bounded executor에 격리하고 시도별 제한시간을 적용했습니다.
+- 실패한 호출은 120ms backoff 후 한 번만 재시도합니다.
+- 연속 3회 실패하면 해당 공급자의 회로를 30초간 열어 불필요한 대기를 줄입니다.
+- 예보·실황은 최대 2시간 이내의 마지막 정상자료만 `STALE_FALLBACK`으로 명시해 제공합니다.
+- 부가 안전정보가 실패해도 핵심 날씨 응답은 가능한 범위에서 계속 구성합니다.
+
+**결과**
+
+외부 장애를 정상 데이터처럼 숨기지 않으면서도, 일부 공급자의 실패가 서비스 전체 실패로 번지는 범위를 줄였습니다.
+
+### 2. 서로 다른 데이터의 시각과 품질을 설명하기 어려운 문제
+
+**문제**
+
+예보 발표시각, 실제 관측시각, 서버 수집시각이 서로 다른데 이를 구분하지 않으면 사용자는 오래된 값을 최신 정보로 오해할 수 있습니다.
+
+**선택과 구현**
+
+- 응답에 출처·발표시각·수집시각·완전성·fallback 여부를 포함했습니다.
+- 기관 연계 API는 `X-Data-Freshness`, `X-Data-Quality`, `X-Schema-Version`, `X-Request-Id` 헤더를 제공합니다.
+- 위험 요인은 코드·심각도·점수 영향·근거·행동으로 분리해 영향도 순으로 전달합니다.
+
+**결과**
+
+화면과 API 소비자가 추천 문구뿐 아니라 데이터 상태와 판단 근거를 함께 확인할 수 있습니다.
+
+### 3. 서버가 여러 대일 때 예약 메일이 중복 발송되는 문제
+
+**문제**
+
+모든 인스턴스에서 같은 스케줄러가 실행되면 동일 시간대 메일이 중복 발송될 수 있고, 위험 알림은 같은 상황을 반복해서 보낼 수 있습니다.
+
+**선택과 구현**
+
+- ShedLock과 데이터베이스 시간을 사용해 아침·점심·저녁 작업을 인스턴스 중 하나만 수행하도록 했습니다.
+- 스마트 알림은 날짜·시간대·위험 조합 fingerprint를 저장해 같은 위험의 반복 발송을 줄였습니다.
+- 메일 성공·실패 결과는 별도 트랜잭션으로 이력에 기록해 발송 작업 실패와 이력 저장을 분리했습니다.
+- 실제 SMTP 전송은 bounded 비동기 executor로 처리합니다.
+
+**결과**
+
+다중 인스턴스 환경의 예약 작업 충돌을 줄이고, 수신자가 같은 위험 메일을 반복해서 받는 상황을 완화했습니다.
+
+### 4. 트래픽 증가가 외부 연동과 서버 자원을 고갈시키는 문제
+
+**문제**
+
+날씨가 급변하거나 특보가 발표되면 같은 지역 조회가 몰리고, 외부 API 연결과 애플리케이션 스레드가 동시에 소진될 수 있습니다.
+
+**선택과 구현**
+
+- Caffeine 캐시에 최대 크기와 만료시간을 설정해 동일 위치의 중복 계산을 줄였습니다.
+- Apache HttpClient connection pool을 전체 200개, 공급자 경로별 50개로 제한했습니다.
+- 읽기·쓰기 요청 제한을 분리하고 운영에서는 Redis로 인스턴스 간 카운터를 공유합니다.
+- Redis가 300ms 안에 응답하지 않으면 bounded 로컬 제한기로 전환해 요청 경로에서 격리합니다.
+- 메일·외부 API·플래너 작업은 각각 용량이 제한된 executor로 분리했습니다.
+
+**결과**
+
+외부 시스템이나 보조 인프라가 느려질 때 애플리케이션 자원이 무제한으로 대기하지 않도록 경계를 만들었습니다.
+
+### 5. 타인의 구독을 변경하거나 개인정보가 남는 문제
+
+**문제**
+
+이메일 주소만으로 구독을 수정하면 타인이 주소를 도용하거나 다른 사용자의 구독을 변경할 수 있습니다.
+
+**선택과 구현**
+
+- 운영 환경에서는 검증된 `X-Coders-User`가 없으면 구독·관리 API를 거부합니다.
+- 각 수신처를 로그인 계정의 `ownerId`와 연결하고 소유권이 다른 계정의 변경을 차단합니다.
+- 개인정보 동의 버전과 동의시각, 구독 해지시각을 저장합니다.
+- 로그인 사용자는 구독과 메일 발송 이력을 함께 완전 삭제할 수 있습니다.
+- 원문 이메일 대신 내부 사용자 ID를 운영 로그에 남깁니다.
+
+**결과**
+
+공개 날씨 조회와 개인 구독 관리를 분리하고, 계정 기반 소유권과 삭제 경로를 명시했습니다.
+
+## 기술 스택
+
+| 영역 | 기술과 선택 이유 |
+| --- | --- |
+| Language | Java 17 |
+| Backend | Spring Boot 3.5.16, Spring MVC, Validation |
+| View | Thymeleaf, HTML, CSS, Vanilla JavaScript |
+| Persistence | Spring Data JPA, PostgreSQL, Flyway · 로컬 H2 · MySQL 드라이버 |
+| Cache | Caffeine, Redis |
+| Scheduling | Spring Scheduler, ShedLock |
+| Integration | Apache HttpClient 5, 기상청·에어코리아·Kakao·SMTP |
+| Observability | Actuator, Micrometer, Prometheus, request ID |
+| Test | JUnit 5, AssertJ, Mockito, Spring Boot Test |
+| Delivery | Docker, GitHub Actions, dependency review, CycloneDX SBOM |
+
+## 주요 API
+
+| Method | Endpoint | 설명 |
+| --- | --- | --- |
+| `GET` | `/api/weather/current` | 현재 관측 날씨 |
+| `GET` | `/api/weather/daily` | 시간대별 개인화 날씨 |
+| `GET` | `/api/weather/planner` | 일정 주변의 추천 시간대 |
+| `GET` | `/api/v1/weather/briefing` | 버전 고정 기관 연계 브리핑 |
+| `GET` | `/api/locations/search` | 장소 검색 |
+| `GET` | `/api/routes/briefing` | 출발지·목적지 날씨 비교 |
+| `POST` | `/api/users/subscribe` | 로그인 계정에 날씨 구독 연결 |
+| `GET` | `/api/users/me` | 현재 계정의 구독 조회 |
+| `DELETE` | `/api/users/me/data` | 구독과 개인정보 완전 삭제 |
+
+오류 응답은 `application/problem+json`과 요청 추적 ID를 사용합니다. 상세 계약은 [API 계약](docs/API_CONTRACT.md)에서 확인할 수 있습니다.
+
+## 프로젝트 구조
+
+```text
+src/main
+├── java/com/example/WebSideProject
+│   ├── config       # 보안 헤더, 요청 제한, HTTP client, cache, scheduler lock
+│   ├── controller   # 웹·날씨·위치·경로·구독·기관 API
+│   ├── dto          # 외부 응답과 공개 API 계약
+│   ├── entity       # 구독 사용자와 메일 발송 이력
+│   ├── event        # 구독 직후 비동기 메일 이벤트
+│   ├── repository   # JPA repository
+│   ├── scheduler    # 정기 브리핑과 스마트 위험 알림
+│   └── service      # 날씨 수집·정규화·판단·메일 발송
+└── resources
+    ├── db/migration # PostgreSQL Flyway migration
+    ├── static       # PWA manifest, service worker, favicon
+    └── templates    # 반응형 웹 UI와 HTML 메일
+```
+
+## 테스트와 배포 품질
+
+Pull Request와 `main` push에서 다음 검사를 자동 수행합니다.
+
+- Gradle wrapper 검증
+- 단위·통합 테스트와 실행 JAR 생성
+- 운영 Docker 이미지 빌드
+- 새 의존성의 고위험 취약점 검사
+- 컨테이너 CycloneDX SBOM 생성
+
+운영 상태는 liveness·readiness probe, Actuator, Prometheus 지표로 확인합니다. 상세 장애 대응과 롤백 절차는 [운영 런북](docs/OPERATIONS.md)에 기록했습니다.
+
+## 로컬 실행
+
+### 요구사항
+
+- Java 17
+- 전체 기능 사용 시 기상청·에어코리아·Kakao API 키와 SMTP 계정
+- 운영 구성 사용 시 PostgreSQL과 Redis
 
 ```powershell
+git clone https://github.com/boclair98/Weather.git
+cd Weather
 .\gradlew.bat clean test bootJar --no-daemon
 .\gradlew.bat bootRun
 ```
 
-실제 API 키는 저장소에 커밋하지 않고 환경변수로 주입합니다. 설정 항목은 [.env.example](.env.example)을 참고하세요.
+기본 개발 환경은 인메모리 H2를 사용합니다. 외부 API 키는 저장소에 커밋하지 않고 환경변수로 주입하며, 전체 목록은 [.env.example](.env.example)을 참고하세요.
 
-[API 계약](docs/API_CONTRACT.md) · [운영 런북](docs/OPERATIONS.md) · [개인정보 설계](docs/PRIVACY.md) · [제품 로드맵](docs/PRODUCT_ROADMAP.md) · [보안 정책](SECURITY.md) · [기여 방법](CONTRIBUTING.md)
+## 운영 문서
+
+- [API 계약](docs/API_CONTRACT.md)
+- [운영 런북](docs/OPERATIONS.md)
+- [개인정보 처리 설계](docs/PRIVACY.md)
+- [기관 도입 준비 범위](docs/PUBLIC_SECTOR_READINESS.md)
+- [제품 로드맵](docs/PRODUCT_ROADMAP.md)
+- [보안 정책](SECURITY.md)
+- [기여 방법](CONTRIBUTING.md)
+
+## 현재 범위와 한계
+
+- 예보와 관측은 원천기관의 갱신 주기·정확도·호출 제한에 영향을 받습니다.
+- 위험 상황에서는 서비스 추천보다 기상청 공식 특보와 관계기관 지침을 우선해야 합니다.
+- 현재 계정 인증은 운영 플랫폼의 Google 로그인을 사용합니다. Naver·Kakao 로그인은 OAuth 설정과 수신 이메일 검증 흐름을 갖춘 뒤 추가할 예정입니다.
+- 성능 관련 항목은 자원 고갈을 막기 위한 구조적 경계이며, 공개된 대규모 부하 시험 수치를 의미하지 않습니다.
 
 ---
 
-**날씨한편은 날씨 정보가 중심이고, 추천 기능은 그 정보를 이해하고 활용하도록 돕습니다.**
+<p align="center">
+  <strong>날씨한편은 날씨를 보여주는 데서 끝나지 않고, 사용자가 오늘 무엇을 할지 결정하도록 돕습니다.</strong>
+</p>
