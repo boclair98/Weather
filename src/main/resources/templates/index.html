@@ -755,7 +755,7 @@
 
         .time-option {
             display: grid;
-            grid-template-columns: 18px 1fr;
+            grid-template-columns: 18px minmax(0, 1fr) auto;
             gap: 10px;
             align-items: start;
             padding: 12px;
@@ -776,6 +776,34 @@
             color: #66758d;
             font-size: 13px;
             line-height: 1.45;
+        }
+
+        .schedule-option {
+            grid-template-columns: minmax(0, 1fr) auto;
+        }
+
+        .schedule-toggle {
+            display: grid;
+            grid-template-columns: 18px minmax(0, 1fr);
+            gap: 10px;
+            align-items: start;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        .schedule-option .time-input {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .time-input {
+            width: 108px;
+            height: 38px;
+            padding: 0 9px;
+            border-radius: 10px;
+            color: #172033;
+            font-size: 14px;
+            font-weight: 700;
         }
 
         .location-search {
@@ -2630,6 +2658,11 @@
             color: var(--toss-muted);
         }
 
+        .time-input {
+            border-color: var(--toss-line);
+            background: var(--toss-surface);
+        }
+
         .auth-notice {
             margin-bottom: 24px;
             padding: 16px;
@@ -2762,6 +2795,14 @@
 
             .location-search input {
                 grid-column: 1 / -1;
+            }
+
+            .schedule-option {
+                grid-template-columns: minmax(0, 1fr) auto;
+            }
+
+            .schedule-option .time-input {
+                width: 96px;
             }
 
             .subscription-actions {
@@ -3154,29 +3195,38 @@
                 <div class="field">
                     <label>알림 시간</label>
                     <div class="time-options">
-                        <label class="time-option" for="morningEnabled">
-                            <input id="morningEnabled" type="checkbox" checked>
-                            <span>
-                                <strong>아침 06:30</strong>
-                                <span>출근·등교 전 09시 예보를 보내드립니다.</span>
-                            </span>
-                        </label>
-                        <label class="time-option" for="afternoonEnabled">
-                            <input id="afternoonEnabled" type="checkbox">
-                            <span>
-                                <strong>점심 11:30</strong>
-                                <span>오후 외출 전 12시 예보를 보내드립니다.</span>
-                            </span>
-                        </label>
-                        <label class="time-option" for="eveningEnabled">
-                            <input id="eveningEnabled" type="checkbox">
-                            <span>
-                                <strong>저녁 18:30</strong>
-                                <span>퇴근길과 저녁 일정 전 18시 예보를 보내드립니다.</span>
-                            </span>
-                        </label>
+                        <div class="time-option schedule-option">
+                            <label class="schedule-toggle" for="morningEnabled">
+                                <input id="morningEnabled" type="checkbox" checked>
+                                <span>
+                                    <strong>아침 알림</strong>
+                                    <span>출근·등교 전 예보를 보내드립니다.</span>
+                                </span>
+                            </label>
+                            <input class="time-input" id="morningTime" type="time" value="06:30" step="60" aria-label="아침 알림 시각">
+                        </div>
+                        <div class="time-option schedule-option">
+                            <label class="schedule-toggle" for="afternoonEnabled">
+                                <input id="afternoonEnabled" type="checkbox">
+                                <span>
+                                    <strong>점심 알림</strong>
+                                    <span>오후 외출 전 예보를 보내드립니다.</span>
+                                </span>
+                            </label>
+                            <input class="time-input" id="afternoonTime" type="time" value="11:30" step="60" aria-label="점심 알림 시각">
+                        </div>
+                        <div class="time-option schedule-option">
+                            <label class="schedule-toggle" for="eveningEnabled">
+                                <input id="eveningEnabled" type="checkbox">
+                                <span>
+                                    <strong>저녁 알림</strong>
+                                    <span>퇴근길과 저녁 일정 전 예보를 보내드립니다.</span>
+                                </span>
+                            </label>
+                            <input class="time-input" id="eveningTime" type="time" value="18:30" step="60" aria-label="저녁 알림 시각">
+                        </div>
                     </div>
-                    <p class="meta">선택하지 않으면 아침 알림으로 등록됩니다.</p>
+                    <p class="meta">시각은 한국 시간 기준으로 저장되며, 선택하지 않으면 아침 알림만 등록됩니다.</p>
                 </div>
 
                 <div class="smart-alert-card">
@@ -3214,21 +3264,30 @@
 
     <section class="panel subscription-manager" th:if="${signedIn}" aria-label="내 날씨 알림 관리">
         <h2>내 날씨 알림 관리</h2>
-        <p class="intro" id="managerSummary">현재 계정에 연결된 구독을 확인하고 알림 시간을 바꿀 수 있습니다.</p>
+        <p class="intro" id="managerSummary">현재 계정에 연결된 구독을 확인하고 알림 시각을 원하는 분 단위로 바꿀 수 있습니다.</p>
         <div id="managerControls" hidden>
             <div class="time-options">
-                <label class="time-option" for="manageMorning">
-                    <input id="manageMorning" type="checkbox">
-                    <span><strong>아침 06:30</strong><span>출근·등교 전 날씨</span></span>
-                </label>
-                <label class="time-option" for="manageAfternoon">
-                    <input id="manageAfternoon" type="checkbox">
-                    <span><strong>점심 11:30</strong><span>오후 일정 전 날씨</span></span>
-                </label>
-                <label class="time-option" for="manageEvening">
-                    <input id="manageEvening" type="checkbox">
-                    <span><strong>저녁 18:30</strong><span>퇴근길과 저녁 날씨</span></span>
-                </label>
+                <div class="time-option schedule-option">
+                    <label class="schedule-toggle" for="manageMorning">
+                        <input id="manageMorning" type="checkbox">
+                        <span><strong>아침 알림</strong><span>출근·등교 전 날씨</span></span>
+                    </label>
+                    <input class="time-input" id="manageMorningTime" type="time" value="06:30" step="60" aria-label="아침 알림 시각 관리">
+                </div>
+                <div class="time-option schedule-option">
+                    <label class="schedule-toggle" for="manageAfternoon">
+                        <input id="manageAfternoon" type="checkbox">
+                        <span><strong>점심 알림</strong><span>오후 일정 전 날씨</span></span>
+                    </label>
+                    <input class="time-input" id="manageAfternoonTime" type="time" value="11:30" step="60" aria-label="점심 알림 시각 관리">
+                </div>
+                <div class="time-option schedule-option">
+                    <label class="schedule-toggle" for="manageEvening">
+                        <input id="manageEvening" type="checkbox">
+                        <span><strong>저녁 알림</strong><span>퇴근길과 저녁 날씨</span></span>
+                    </label>
+                    <input class="time-input" id="manageEveningTime" type="time" value="18:30" step="60" aria-label="저녁 알림 시각 관리">
+                </div>
             </div>
             <div class="smart-alert-card">
                 <strong>스마트 위험 알림</strong>
@@ -3753,6 +3812,9 @@
             morningEnabled: document.getElementById("morningEnabled").checked,
             afternoonEnabled: document.getElementById("afternoonEnabled").checked,
             eveningEnabled: document.getElementById("eveningEnabled").checked,
+            morningTime: document.getElementById("morningTime").value || "06:30",
+            afternoonTime: document.getElementById("afternoonTime").value || "11:30",
+            eveningTime: document.getElementById("eveningTime").value || "18:30",
             smartAlertEnabled: document.getElementById("smartAlertEnabled").checked,
             rainAlertEnabled: document.getElementById("rainAlertEnabled").checked,
             temperatureAlertEnabled: document.getElementById("temperatureAlertEnabled").checked,
@@ -3847,6 +3909,15 @@
             .filter(Boolean))];
     }
 
+    function normalizeTimeInput(value, fallback) {
+        const match = String(value || "").match(/^(\d{2}):(\d{2})/);
+        if (!match) return fallback;
+        const hour = Number(match[1]);
+        const minute = Number(match[2]);
+        return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59
+            ? `${match[1]}:${match[2]}` : fallback;
+    }
+
     function getNetworkError(error, fallback) {
         return error instanceof TypeError ? fallback : error.message;
     }
@@ -3864,6 +3935,9 @@
             morningEnabled: document.getElementById("morningEnabled").checked,
             afternoonEnabled: document.getElementById("afternoonEnabled").checked,
             eveningEnabled: document.getElementById("eveningEnabled").checked,
+            morningTime: document.getElementById("morningTime").value,
+            afternoonTime: document.getElementById("afternoonTime").value,
+            eveningTime: document.getElementById("eveningTime").value,
             smartAlertEnabled: document.getElementById("smartAlertEnabled").checked,
             rainAlertEnabled: document.getElementById("rainAlertEnabled").checked,
             temperatureAlertEnabled: document.getElementById("temperatureAlertEnabled").checked,
@@ -3887,6 +3961,9 @@
             document.getElementById("morningEnabled").checked = draft.morningEnabled !== false;
             document.getElementById("afternoonEnabled").checked = Boolean(draft.afternoonEnabled);
             document.getElementById("eveningEnabled").checked = Boolean(draft.eveningEnabled);
+            document.getElementById("morningTime").value = normalizeTimeInput(draft.morningTime, "06:30");
+            document.getElementById("afternoonTime").value = normalizeTimeInput(draft.afternoonTime, "11:30");
+            document.getElementById("eveningTime").value = normalizeTimeInput(draft.eveningTime, "18:30");
             document.getElementById("smartAlertEnabled").checked = Boolean(draft.smartAlertEnabled);
             document.getElementById("rainAlertEnabled").checked = draft.rainAlertEnabled !== false;
             document.getElementById("temperatureAlertEnabled").checked = draft.temperatureAlertEnabled !== false;
@@ -4856,6 +4933,9 @@
             document.getElementById("manageMorning").checked = data.morningEnabled;
             document.getElementById("manageAfternoon").checked = data.afternoonEnabled;
             document.getElementById("manageEvening").checked = data.eveningEnabled;
+            document.getElementById("manageMorningTime").value = normalizeTimeInput(data.morningTime, "06:30");
+            document.getElementById("manageAfternoonTime").value = normalizeTimeInput(data.afternoonTime, "11:30");
+            document.getElementById("manageEveningTime").value = normalizeTimeInput(data.eveningTime, "18:30");
             document.getElementById("manageSmartAlert").checked = data.smartAlertEnabled;
             document.getElementById("manageRainAlert").checked = data.rainAlertEnabled;
             document.getElementById("manageTemperatureAlert").checked = data.temperatureAlertEnabled;
@@ -4890,12 +4970,20 @@
                 body: JSON.stringify({
                     morningEnabled: document.getElementById("manageMorning").checked,
                     afternoonEnabled: document.getElementById("manageAfternoon").checked,
-                    eveningEnabled: document.getElementById("manageEvening").checked
+                    eveningEnabled: document.getElementById("manageEvening").checked,
+                    morningTime: normalizeTimeInput(document.getElementById("manageMorningTime").value, "06:30"),
+                    afternoonTime: normalizeTimeInput(document.getElementById("manageAfternoonTime").value, "11:30"),
+                    eveningTime: normalizeTimeInput(document.getElementById("manageEveningTime").value, "18:30")
                 })
             });
             const data = await response.json();
             if (!response.ok) throw new Error(getApiError(data, "알림 시간을 저장하지 못했습니다."));
             document.getElementById("manageMorning").checked = data.morningEnabled;
+            document.getElementById("manageAfternoon").checked = data.afternoonEnabled;
+            document.getElementById("manageEvening").checked = data.eveningEnabled;
+            document.getElementById("manageMorningTime").value = normalizeTimeInput(data.morningTime, "06:30");
+            document.getElementById("manageAfternoonTime").value = normalizeTimeInput(data.afternoonTime, "11:30");
+            document.getElementById("manageEveningTime").value = normalizeTimeInput(data.eveningTime, "18:30");
             showManagerResult(data.message, true);
         } catch (error) {
             showManagerResult(error.message, false);

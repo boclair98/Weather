@@ -1,6 +1,7 @@
 package com.example.WebSideProject.service;
 
 import com.example.WebSideProject.dto.UserDto;
+import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.entity.User;
 import com.example.WebSideProject.event.SubscriptionWelcomeMailRequested;
 import com.example.WebSideProject.repository.UserRepository;
@@ -15,6 +16,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -78,7 +81,10 @@ public class UserService {
             user.updateNotificationTimes(
                     request.isMorningEnabled(),
                     request.isAfternoonEnabled(),
-                    request.isEveningEnabled()
+                    request.isEveningEnabled(),
+                    request.getMorningTime(),
+                    request.getAfternoonTime(),
+                    request.getEveningTime()
             );
             user.recordPrivacyConsent(PRIVACY_CONSENT_VERSION);
             user.subscribe();
@@ -112,6 +118,9 @@ public class UserService {
                 .morningEnabled(morningEnabled)
                 .afternoonEnabled(request.isAfternoonEnabled())
                 .eveningEnabled(request.isEveningEnabled())
+                .morningTime(request.getMorningTime())
+                .afternoonTime(request.getAfternoonTime())
+                .eveningTime(request.getEveningTime())
                 .build();
         user.recordPrivacyConsent(PRIVACY_CONSENT_VERSION);
 
@@ -141,6 +150,9 @@ public class UserService {
                 .morningEnabled(saved.isMorningEnabled())
                 .afternoonEnabled(saved.isAfternoonEnabled())
                 .eveningEnabled(saved.isEveningEnabled())
+                .morningTime(saved.getMorningTime())
+                .afternoonTime(saved.getAfternoonTime())
+                .eveningTime(saved.getEveningTime())
                 .message("구독이 완료되었습니다! 선택한 시간에 날씨를 보내드릴게요 🌤️")
                 .build();
     }
@@ -266,6 +278,21 @@ public class UserService {
         return users;
     }
 
+    public List<User> getDueSubscribedUsers(WeatherPeriod period, LocalTime time) {
+        return switch (period) {
+            case MORNING -> userRepository.findDueMorningSubscribers(time);
+            case AFTERNOON -> userRepository.findDueAfternoonSubscribers(time);
+            case EVENING -> userRepository.findDueEveningSubscribers(time);
+        };
+    }
+
+    @Transactional
+    public boolean claimScheduledMail(Long userId, WeatherPeriod period, LocalDate date) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        return user.claimScheduledMail(period, date);
+    }
+
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(normalizeEmail(email))
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
@@ -289,7 +316,10 @@ public class UserService {
         user.updateNotificationTimes(
                 request.isMorningEnabled(),
                 request.isAfternoonEnabled(),
-                request.isEveningEnabled()
+                request.isEveningEnabled(),
+                request.getMorningTime(),
+                request.getAfternoonTime(),
+                request.getEveningTime()
         );
         return toResponse(user, "알림 시간이 변경되었습니다.");
     }
@@ -418,6 +448,9 @@ public class UserService {
                 .morningEnabled(user.isMorningEnabled())
                 .afternoonEnabled(user.isAfternoonEnabled())
                 .eveningEnabled(user.isEveningEnabled())
+                .morningTime(user.getMorningTime())
+                .afternoonTime(user.getAfternoonTime())
+                .eveningTime(user.getEveningTime())
                 .privacyConsentVersion(user.getPrivacyConsentVersion())
                 .privacyConsentAt(user.getPrivacyConsentAt())
                 .message(message)
