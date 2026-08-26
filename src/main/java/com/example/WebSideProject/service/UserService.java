@@ -51,6 +51,9 @@ public class UserService {
     @Value("${coders.identity.required:false}")
     private boolean codersIdentityRequired;
 
+    @Value("${email.verification.required:false}")
+    private boolean emailVerificationRequired;
+
     @Transactional
     public UserDto.Response register(UserDto.RegisterRequest request, String codersUserId) {
         return registerAll(request, codersUserId).get(0);
@@ -59,20 +62,26 @@ public class UserService {
     @Transactional
     public List<UserDto.Response> registerAll(UserDto.RegisterRequest request, String codersUserId) {
         requireCodersIdentity(codersUserId);
-        if (codersIdentityRequired) {
+        if (codersIdentityRequired || emailVerificationRequired) {
             if (emailVerificationService == null) {
                 throw new IllegalStateException("이메일 인증 기능이 준비되지 않았습니다.");
             }
             List<String> requestedEmails = extractEmails(request);
             if (requestedEmails.size() != 1) {
-                throw new SecurityException("로그인 계정에는 인증된 이메일 하나만 연결할 수 있습니다.");
+                throw new SecurityException("날씨 구독에는 인증된 이메일 하나만 연결할 수 있습니다.");
+            }
+            String verificationOwner = normalizeCodersUserId(codersUserId);
+            if (verificationOwner == null) {
+                verificationOwner = requestedEmails.get(0);
             }
             String verifiedEmail = emailVerificationService.consumeVerifiedEmail(
-                    normalizeCodersUserId(codersUserId),
+                    verificationOwner,
                     request.getVerificationToken(),
                     requestedEmails.get(0)
             );
-            ensureSingleVerifiedEmail(normalizeCodersUserId(codersUserId), verifiedEmail);
+            if (codersIdentityRequired) {
+                ensureSingleVerifiedEmail(normalizeCodersUserId(codersUserId), verifiedEmail);
+            }
             return List.of(registerSingle(request, verifiedEmail, codersUserId));
         }
         return extractEmails(request).stream()
@@ -81,7 +90,9 @@ public class UserService {
     }
 
     private UserDto.Response registerSingle(UserDto.RegisterRequest request, String email, String codersUserId) {
-        String identity = codersIdentityRequired ? normalizeCodersUserId(codersUserId) : null;
+        String identity = (codersIdentityRequired || emailVerificationRequired)
+                ? normalizeCodersUserId(codersUserId)
+                : null;
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
             User user = existingUser.get();

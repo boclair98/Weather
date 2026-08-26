@@ -3833,16 +3833,294 @@
             border-color: #4d936a;
             background: #1d2d24;
         }
+
+        /* K-weather-inspired service shell: clear navigation, data-first cards, one obvious subscription path. */
+        :root {
+            --weather-bg: #f4f8fc;
+            --weather-surface: #ffffff;
+            --weather-ink: #162b40;
+            --weather-muted: #6b7d8f;
+            --weather-line: #dfe9f2;
+            --weather-blue: #1f74c9;
+            --weather-blue-soft: #e9f4ff;
+            --weather-radius: 24px;
+            --weather-shadow: 0 18px 44px rgba(39, 76, 111, .10);
+        }
+
+        body {
+            background: linear-gradient(180deg, #eaf4fb 0%, #f5f8fb 32%, #ffffff 100%);
+        }
+
+        main {
+            width: min(1180px, calc(100% - 48px));
+            padding: 20px 0 72px;
+        }
+
+        .account-bar {
+            width: min(1180px, calc(100% - 48px));
+            margin: 12px auto 0;
+            color: #6b7f92;
+        }
+
+        .weather-app-header {
+            position: sticky;
+            top: 10px;
+            z-index: 30;
+            margin: 0 0 42px;
+            padding: 12px 16px;
+            border: 1px solid rgba(255,255,255,.85);
+            border-radius: 18px;
+            background: rgba(255,255,255,.78);
+            box-shadow: 0 10px 28px rgba(46, 82, 114, .08);
+            backdrop-filter: blur(18px);
+        }
+
+        .weather-brand {
+            color: var(--weather-ink);
+            font-size: 19px;
+        }
+
+        .weather-brand-mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, #4ea3e7, #1f74c9);
+        }
+
+        .weather-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .weather-nav a {
+            display: inline-flex;
+            min-height: 34px;
+            align-items: center;
+            padding: 0 11px;
+            border-radius: 999px;
+            color: #5d7184;
+            font-size: 12px;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .weather-nav a:hover,
+        .weather-nav a:focus-visible {
+            color: var(--weather-blue);
+            background: var(--weather-blue-soft);
+        }
+
+        .weather-nav .weather-nav-cta {
+            color: #ffffff;
+            background: var(--weather-blue);
+            box-shadow: 0 7px 14px rgba(31,116,201,.20);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(340px, 390px);
+            gap: 30px;
+            align-items: start;
+        }
+
+        .layout > section:first-child,
+        .layout > .subscribe-drawer {
+            width: auto;
+        }
+
+        .layout > .subscribe-drawer {
+            position: sticky;
+            top: 92px;
+            margin-top: 0;
+        }
+
+        h1 {
+            max-width: 680px;
+            font-size: clamp(38px, 5vw, 62px);
+            letter-spacing: -.075em;
+        }
+
+        .intro {
+            max-width: 600px;
+            font-size: 16px;
+        }
+
+        .dashboard-search-card {
+            border-color: rgba(210,225,238,.90);
+            background: rgba(255,255,255,.92);
+        }
+
+        .subscribe-quick-action {
+            border-color: #c8dff1;
+            background: linear-gradient(110deg, #eef8ff, #ffffff);
+        }
+
+        .subscribe-drawer {
+            border-color: #cbddea;
+            background: rgba(255,255,255,.92);
+            box-shadow: 0 16px 38px rgba(39, 76, 111, .10);
+        }
+
+        .subscribe-drawer > summary {
+            min-height: 64px;
+            padding: 0 20px;
+            color: #173c5e;
+            background: linear-gradient(100deg, #f0f8ff, #ffffff);
+        }
+
+        .subscribe-drawer > summary > span {
+            font-size: 16px;
+        }
+
+        .subscribe-drawer > summary small {
+            color: #6f879a;
+        }
+
+        .subscription-kicker {
+            margin-bottom: 9px;
+            color: var(--weather-blue);
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: .12em;
+        }
+
+        .auth-notice {
+            border-color: #cde3f3;
+            background: #f2f9ff;
+        }
+
+        .auth-notice strong {
+            color: #1a4e78;
+        }
+
+        .auth-notice span {
+            color: #6c8397;
+        }
+
+        .verification-badge {
+            flex: 0 0 auto;
+            padding: 6px 8px;
+            border-radius: 999px;
+            color: #16714b !important;
+            background: #dcf7e9;
+            font-size: 10px !important;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .email-verification-row {
+            align-items: stretch;
+        }
+
+        .email-verification-row button {
+            min-width: 112px;
+            font-size: 11px;
+        }
+
+        .subscription-actions {
+            position: sticky;
+            bottom: 12px;
+            z-index: 2;
+            margin-right: -4px;
+            margin-left: -4px;
+            padding: 8px 4px 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.96) 38%);
+        }
+
+        body[data-theme="dark"] .weather-app-header,
+        body[data-theme="dark"] .subscribe-drawer > summary,
+        body[data-theme="dark"] .subscribe-quick-action {
+            border-color: #2d4b62;
+            background: rgba(24, 43, 58, .92);
+        }
+
+        body[data-theme="dark"] .weather-nav a {
+            color: #b7cad9;
+        }
+
+        body[data-theme="dark"] .auth-notice {
+            border-color: #2d526d;
+            background: #1a3448;
+        }
+
+        @media (max-width: 900px) {
+            main {
+                width: min(100% - 32px, 760px);
+            }
+
+            .account-bar {
+                width: min(100% - 32px, 760px);
+            }
+
+            .weather-app-header {
+                top: 8px;
+            }
+
+            .layout {
+                display: block;
+            }
+
+            .layout > .subscribe-drawer {
+                position: static;
+                margin-top: 18px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            main {
+                width: min(100% - 20px, 760px);
+            }
+
+            .account-bar {
+                width: min(100% - 20px, 760px);
+            }
+
+            .weather-app-header {
+                flex-wrap: wrap;
+                margin-bottom: 26px;
+                padding: 10px 12px;
+            }
+
+            .weather-brand-caption {
+                display: none;
+            }
+
+            .weather-nav {
+                flex: 1 1 100%;
+                justify-content: space-between;
+                margin: 5px -3px -2px;
+                padding-top: 5px;
+                border-top: 1px solid #e6eef5;
+            }
+
+            .weather-nav a {
+                flex: 1 1 0;
+                justify-content: center;
+                padding: 0 6px;
+                font-size: 11px;
+            }
+
+            h1 {
+                font-size: clamp(34px, 11vw, 46px);
+            }
+
+            .subscription-actions {
+                position: static;
+                margin: 0;
+                padding: 0;
+                background: transparent;
+            }
+        }
     </style>
 </head>
 <body>
 <a class="skip-link" href="#weatherSearch">날씨 검색으로 건너뛰기</a>
 <div class="network-status" id="networkStatus" hidden role="status">오프라인 · 저장된 화면을 보여드려요</div>
 <main id="mainContent">
-    <div class="account-bar" th:if="${codersPlatform}">
-        <span th:if="${signedIn}">Google 로그인 완료 · 이메일 인증 후 내 계정에 구독을 연결할 수 있습니다.</span>
-        <span th:unless="${signedIn}">구독은 Google 로그인과 본인 이메일 인증 후 이용할 수 있습니다.</span>
-        <a class="account-link google" th:unless="${signedIn}" th:href="${loginUrl}">Google로 로그인</a>
+    <div class="account-bar" th:if="${signedIn}">
+        <span>로그인 상태 · 이메일 인증이 완료된 주소로만 날씨를 보내드려요.</span>
         <a class="account-link" th:if="${signedIn}" th:href="${logoutUrl}">로그아웃</a>
     </div>
     <header class="weather-app-header">
@@ -3851,15 +4129,21 @@
             <span>날씨한편</span>
         </a>
         <span class="weather-brand-caption">오늘을 결정하는 날씨</span>
+        <nav class="weather-nav" aria-label="서비스 메뉴">
+            <a href="#weatherSearch">날씨 확인</a>
+            <a href="#weatherPreview">예보 보기</a>
+            <a class="weather-nav-cta" href="#subscribeForm">날씨 구독</a>
+        </nav>
     </header>
     <div class="layout">
         <section>
-            <p class="eyebrow">오늘의 날씨</p>
-            <h1>오늘 날씨, <span class="hero-accent">한눈에</span></h1>
-            <p class="intro">지금 필요한 기온·강수·대기질만 빠르게 확인하고, 외출 준비까지 한 번에 끝내세요.</p>
+            <p class="eyebrow">WEATHER BRIEFING · DAILY</p>
+            <h1>오늘의 날씨를, <span class="hero-accent">필요한 시간에</span></h1>
+            <p class="intro">지역을 선택하고 메일을 인증하면, 출근·외출 전에 맞춤 날씨 브리핑을 받아보세요.</p>
             <div class="hero-badges" aria-label="서비스 특징">
-                <span class="hero-badge">기상청 공식 예보</span>
+                <span class="hero-badge">기상청 원천자료</span>
                 <span class="hero-badge">시간별 · 대기질</span>
+                <span class="hero-badge">메일 인증 구독</span>
                 <button class="hero-install" type="button" id="installApp" hidden>앱으로 설치</button>
             </div>
             <div class="dashboard-search-card" id="weatherSearch" tabindex="-1">
@@ -3880,11 +4164,11 @@
             </div>
             <div class="subscribe-quick-action" th:classappend="${signedIn} ? ' signed-in' : ''">
                 <div>
-                    <strong th:text="${signedIn} ? '이 날씨를 메일로도 받아볼까요?' : '날씨 알림을 받아보세요'">날씨 알림을 받아보세요</strong>
-                    <span>지역을 고르고 이메일만 인증하면 바로 시작할 수 있어요.</span>
+                    <strong>날씨를 메일로 받아보세요</strong>
+                    <span>지역 선택 → 이메일 인증 → 원하는 시간에 날씨 도착</span>
                 </div>
                 <button class="primary" type="button" id="openSubscribeTop">
-                    <span th:text="${signedIn} ? '알림 설정' : '알림 받기'">알림 받기</span>
+                    <span>구독 설정</span>
                 </button>
             </div>
             <div class="weather-preview" id="weatherPreview" hidden>
@@ -4215,19 +4499,20 @@
 
         <details class="subscribe-drawer" th:open="${signedIn}">
             <summary>
-                <span>날씨 알림 받기</span>
-                <small>필요한 시간에만 메일로 받아요</small>
+                <span>날씨 구독</span>
+                <small>인증한 이메일로만 보내드려요</small>
             </summary>
         <section class="panel" aria-label="날씨 구독 신청">
             <form id="subscribeForm" novalidate>
-                <h2 class="panel-heading">이 브리핑을 받아보세요</h2>
-                <p class="panel-description">선택한 위치와 체감 설정 그대로, 필요한 시간에만 보내드립니다.</p>
+                <div class="subscription-kicker">3 STEPS · WEATHER SUBSCRIPTION</div>
+                <h2 class="panel-heading">날씨 구독을 시작해보세요</h2>
+                <p class="panel-description">받을 지역과 시간을 정한 뒤, 이메일 인증을 완료하면 구독이 시작됩니다.</p>
                 <div class="auth-notice" th:classappend="${signedIn} ? ' signed-in' : ''">
                     <div>
-                        <strong th:text="${signedIn} ? 'Google 로그인이 확인됐어요' : '안전한 구독 관리를 위해 로그인해주세요'">Google 로그인</strong>
-                        <span th:text="${signedIn} ? '이 계정에는 이메일 인증을 완료한 주소 1개만 연결됩니다.' : '로그인 후 본인 이메일 인증을 완료해야 구독할 수 있습니다.'">로그인 안내</span>
+                        <strong>이메일 인증이 구독의 기준이에요</strong>
+                        <span>메일함에서 인증 버튼을 누른 주소로만 날씨를 보내드립니다.</span>
                     </div>
-                    <a class="account-link google" th:unless="${signedIn}" th:href="${loginUrl}">Google로 계속</a>
+                    <span class="verification-badge">안전한 구독</span>
                 </div>
                 <div class="field">
                     <label for="name">이름</label>
@@ -4235,12 +4520,12 @@
                 </div>
 
                 <div class="field">
-                    <label for="email">로그인 계정 이메일</label>
+                    <label for="email">받을 이메일</label>
                     <div class="email-verification-row">
                         <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" aria-describedby="emailVerificationStatus" placeholder="본인 이메일을 입력해주세요">
-                        <button class="secondary" type="button" id="requestEmailVerification">인증 메일 보내기</button>
+                        <button class="secondary" type="button" id="requestEmailVerification">1. 인증 메일</button>
                     </div>
-                    <p class="meta" id="emailVerificationStatus" role="status" aria-live="polite">① 이메일 입력 ② 인증 메일의 버튼 클릭 ③ 구독하기를 눌러주세요.</p>
+                    <p class="meta" id="emailVerificationStatus" role="status" aria-live="polite">① 이메일 입력 ② 인증 메일의 버튼 클릭 ③ 구독하기</p>
                     <input id="emailVerificationToken" type="hidden">
                 </div>
 
@@ -4373,7 +4658,6 @@
 
 <script th:inline="javascript" th:attr="nonce=${cspNonce}">
     const signedIn = /*[[${signedIn}]]*/ false;
-    const googleLoginUrl = /*[[${loginUrl}]]*/ "https://coders.kr/oauth/login/google";
     const donationWidgetSelectors = [
         "[data-coders-donate]",
         "[data-coders-donation]",
@@ -4856,11 +5140,6 @@
 
     requestEmailVerificationButton.addEventListener("click", async () => {
         subscriptionResult.className = "result subscription-result";
-        if (!signedIn) {
-            saveSubscriptionDraft();
-            window.location.assign(googleLoginUrl);
-            return;
-        }
 
         const email = emailInput.value.trim().toLowerCase();
         if (!email) {
@@ -4873,6 +5152,7 @@
         requestEmailVerificationButton.textContent = "인증 메일 보내는 중";
         emailVerificationToken = "";
         emailVerificationTokenInput.value = "";
+        saveSubscriptionDraft();
         try {
             const response = await fetch("/api/users/email-verification/request", {
                 method: "POST",
@@ -4897,12 +5177,6 @@
         if (!selectedLocation) {
             showSubscriptionResult("1단계가 남았어요 · 먼저 위에서 지역을 검색하고 선택해주세요.", false);
             locationQuery.focus();
-            return;
-        }
-
-        if (!signedIn) {
-            saveSubscriptionDraft();
-            window.location.assign(googleLoginUrl);
             return;
         }
 
@@ -4973,9 +5247,10 @@
             if (!response.ok) throw new Error(getApiError(data, "구독 처리에 실패했습니다.", response.status));
 
             showSubscriptionResult(data.message || "구독이 완료됐어요 · 선택한 시간에 날씨를 보내드릴게요.", true);
-            setEmailVerificationState("이 이메일은 현재 로그인 계정에 연결되어 있습니다.", true);
+            setEmailVerificationState("이메일 인증이 확인됐어요 · 이 주소로 날씨를 보내드릴게요.", true);
             emailVerificationToken = "";
             emailVerificationTokenInput.value = "";
+            sessionStorage.removeItem(subscriptionDraftKey);
             if (managerControls) {
                 await loadCurrentSubscription();
             }
@@ -5074,10 +5349,11 @@
                 locationMeta.textContent = `선택 위치: ${selectedLocation.locationName} (격자 ${selectedLocation.nx}, ${selectedLocation.ny})`;
                 loadWeatherPreview(selectedLocation);
             }
-            if (signedIn) {
-                openSubscriptionPanel({focusForm: true, scroll: false});
-                showSubscriptionResult("로그인이 완료됐어요 · 이메일 인증을 마치면 구독할 수 있어요.", true);
-                sessionStorage.removeItem(subscriptionDraftKey);
+            openSubscriptionPanel({focusForm: true, scroll: false});
+            if (emailVerificationToken) {
+                showSubscriptionResult("이메일 인증이 완료됐어요 · 같은 주소로 구독하기를 눌러주세요.", true);
+            } else {
+                showSubscriptionResult("입력을 이어서 완료해주세요 · 이메일 인증 후 구독할 수 있어요.", true);
             }
         } catch (error) {
             sessionStorage.removeItem(subscriptionDraftKey);
