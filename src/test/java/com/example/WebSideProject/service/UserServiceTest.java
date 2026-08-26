@@ -108,6 +108,30 @@ class UserServiceTest {
     }
 
     @Test
+    void anonymousSubscriptionUsesOnlyTheVerifiedEmailAddress() {
+        UserRepository repository = mock(UserRepository.class);
+        EmailVerificationService verificationService = mock(EmailVerificationService.class);
+        UserService service = new UserService(repository, mock(ApplicationEventPublisher.class), verificationService);
+        ReflectionTestUtils.setField(service, "emailVerificationRequired", true);
+        when(repository.findByEmail("first@example.com")).thenReturn(Optional.empty());
+        when(repository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(verificationService.consumeVerifiedEmail(
+                eq("first@example.com"), eq("verification-token"), eq("first@example.com")))
+                .thenReturn("first@example.com");
+
+        UserDto.RegisterRequest request = request("first@example.com");
+        request.setVerificationToken("verification-token");
+
+        List<UserDto.Response> responses = service.registerAll(request, null);
+
+        assertThat(responses).hasSize(1);
+        assertThat(responses.get(0).getEmail()).isEqualTo("first@example.com");
+        ArgumentCaptor<User> savedUser = ArgumentCaptor.forClass(User.class);
+        verify(repository).save(savedUser.capture());
+        assertThat(savedUser.getValue().getOwnerId()).isNull();
+    }
+
+    @Test
     void validatedIdentityCannotReplaceAnotherOwnersSubscription() {
         UserRepository repository = mock(UserRepository.class);
         EmailVerificationService verificationService = mock(EmailVerificationService.class);

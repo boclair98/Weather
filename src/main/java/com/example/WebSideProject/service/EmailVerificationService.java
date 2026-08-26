@@ -31,8 +31,8 @@ public class EmailVerificationService {
 
     @Transactional
     public VerificationResponse requestVerification(String ownerId, String email) {
-        String normalizedOwnerId = requireOwnerId(ownerId);
         String normalizedEmail = normalizeEmail(email);
+        String normalizedOwnerId = resolveOwnerId(ownerId, normalizedEmail);
         LocalDateTime now = LocalDateTime.now();
         challengeRepository.deleteObsoleteForOwner(normalizedOwnerId, now);
 
@@ -81,8 +81,8 @@ public class EmailVerificationService {
 
     @Transactional
     public String consumeVerifiedEmail(String ownerId, String rawToken, String expectedEmail) {
-        String normalizedOwnerId = requireOwnerId(ownerId);
         EmailVerificationChallenge challenge = findChallenge(rawToken);
+        String normalizedOwnerId = resolveOwnerId(ownerId, challenge.getEmail());
         LocalDateTime now = LocalDateTime.now();
         if (!normalizedOwnerId.equals(challenge.getOwnerId())) {
             throw new SecurityException("현재 로그인 계정으로 요청한 이메일 인증만 사용할 수 있습니다.");
@@ -108,11 +108,11 @@ public class EmailVerificationService {
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 이메일 인증 링크입니다."));
     }
 
-    private String requireOwnerId(String ownerId) {
-        if (ownerId == null || ownerId.isBlank()) {
-            throw new SecurityException("로그인 후 이메일 인증을 요청해주세요.");
+    private String resolveOwnerId(String ownerId, String fallbackEmail) {
+        if (ownerId != null && !ownerId.isBlank()) {
+            return ownerId.trim();
         }
-        return ownerId.trim();
+        return hash(normalizeEmail(fallbackEmail));
     }
 
     private String normalizeEmail(String email) {

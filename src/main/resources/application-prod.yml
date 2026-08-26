@@ -30,6 +30,10 @@ spring:
       connect-timeout: 2s
 coders:
   identity:
+    required: false
+
+email:
+  verification:
     required: true
 
 app:
