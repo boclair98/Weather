@@ -5,8 +5,8 @@ import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.entity.User;
 import com.example.WebSideProject.event.SubscriptionWelcomeMailRequested;
 import com.example.WebSideProject.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserService {
 
@@ -32,6 +31,22 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final EmailVerificationService emailVerificationService;
+
+    @Autowired
+    public UserService(
+            UserRepository userRepository,
+            ApplicationEventPublisher eventPublisher,
+            EmailVerificationService emailVerificationService
+    ) {
+        this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
+        this.emailVerificationService = emailVerificationService;
+    }
+
+    public UserService(UserRepository userRepository, ApplicationEventPublisher eventPublisher) {
+        this(userRepository, eventPublisher, null);
+    }
 
     @Value("${coders.identity.required:false}")
     private boolean codersIdentityRequired;
@@ -44,6 +59,22 @@ public class UserService {
     @Transactional
     public List<UserDto.Response> registerAll(UserDto.RegisterRequest request, String codersUserId) {
         requireCodersIdentity(codersUserId);
+        if (codersIdentityRequired) {
+            if (emailVerificationService == null) {
+                throw new IllegalStateException("이메일 인증 기능이 준비되지 않았습니다.");
+            }
+            List<String> requestedEmails = extractEmails(request);
+            if (requestedEmails.size() != 1) {
+                throw new SecurityException("로그인 계정에는 인증된 이메일 하나만 연결할 수 있습니다.");
+            }
+            String verifiedEmail = emailVerificationService.consumeVerifiedEmail(
+                    normalizeCodersUserId(codersUserId),
+                    request.getVerificationToken(),
+                    requestedEmails.get(0)
+            );
+            ensureSingleVerifiedEmail(normalizeCodersUserId(codersUserId), verifiedEmail);
+            return List.of(registerSingle(request, verifiedEmail, codersUserId));
+        }
         return extractEmails(request).stream()
                 .map(email -> registerSingle(request, email, codersUserId))
                 .toList();
@@ -185,6 +216,15 @@ public class UserService {
                 throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다: " + candidate);
             }
             recipients.add(email);
+        }
+    }
+
+    private void ensureSingleVerifiedEmail(String ownerId, String verifiedEmail) {
+        Optional<User> existingSubscription = userRepository.findFirstByOwnerIdOrderByIdAsc(ownerId)
+                .or(() -> userRepository.findByCodersUserId(ownerId));
+        if (existingSubscription.isPresent()
+                && !existingSubscription.get().getEmail().equalsIgnoreCase(verifiedEmail)) {
+            throw new SecurityException("로그인 계정에는 이메일 하나만 연결할 수 있습니다. 기존 이메일로 구독하거나 내 데이터 완전 삭제 후 다시 시도해주세요.");
         }
     }
 

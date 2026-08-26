@@ -33,6 +33,7 @@ coders:
     required: true
 
 app:
+  base-url: ${APP_BASE_URL:https://weather.coders.kr}
   rate-limit:
     distributed: true
 

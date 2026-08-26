@@ -1,11 +1,16 @@
 package com.example.WebSideProject.controller;
 
 import com.example.WebSideProject.dto.UserDto;
+import com.example.WebSideProject.service.EmailVerificationService;
 import com.example.WebSideProject.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
@@ -16,6 +21,35 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final EmailVerificationService emailVerificationService;
+
+    @Value("${app.base-url:http://localhost:8080}")
+    private String appBaseUrl;
+
+    @PostMapping("/email-verification/request")
+    public ResponseEntity<EmailVerificationService.VerificationResponse> requestEmailVerification(
+            @Valid @RequestBody UserDto.EmailVerificationRequest request,
+            @RequestHeader(value = "X-Coders-User", required = false) String codersUserId
+    ) {
+        EmailVerificationService.VerificationResponse response = emailVerificationService
+                .requestVerification(codersUserId, request.getEmail());
+        return ResponseEntity.accepted().body(response);
+    }
+
+    @GetMapping("/email-verification/confirm")
+    public ResponseEntity<Void> confirmEmailVerification(@RequestParam String token) {
+        emailVerificationService.confirm(token);
+        URI location = UriComponentsBuilder
+                .fromUriString(appBaseUrl.replaceAll("/+$", ""))
+                .queryParam("emailVerified", token)
+                .build()
+                .encode()
+                .toUri();
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(location)
+                .cacheControl(CacheControl.noStore())
+                .build();
+    }
 
     @PostMapping("/subscribe")
     public ResponseEntity<?> subscribe(

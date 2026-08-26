@@ -964,6 +964,31 @@
             line-height: 1.45;
         }
 
+        .email-verification-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .email-verification-row .secondary {
+            width: auto;
+            white-space: nowrap;
+        }
+
+        #emailVerificationStatus {
+            min-height: 20px;
+            margin: 8px 0 0;
+        }
+
+        #emailVerificationStatus.success {
+            color: #16834b;
+        }
+
+        #emailVerificationStatus.error {
+            color: #c43d3d;
+        }
+
         .subscription-manager {
             margin-top: 28px;
         }
@@ -2285,6 +2310,14 @@
                 align-items: stretch;
                 flex-direction: column;
             }
+
+            .email-verification-row {
+                grid-template-columns: 1fr;
+            }
+
+            .email-verification-row .secondary {
+                width: 100%;
+            }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -2816,8 +2849,8 @@
 <div class="network-status" id="networkStatus" hidden role="status">오프라인 · 저장된 화면을 보여드려요</div>
 <main id="mainContent">
     <div class="account-bar" th:if="${codersPlatform}">
-        <span th:if="${signedIn}">Google 로그인 완료 · 구독과 취소를 이용할 수 있습니다.</span>
-        <span th:unless="${signedIn}">구독과 취소는 Google 로그인 후 이용할 수 있습니다.</span>
+        <span th:if="${signedIn}">Google 로그인 완료 · 이메일 인증 후 내 계정에 구독을 연결할 수 있습니다.</span>
+        <span th:unless="${signedIn}">구독은 Google 로그인과 본인 이메일 인증 후 이용할 수 있습니다.</span>
         <a class="account-link google" th:unless="${signedIn}" th:href="${loginUrl}">Google로 로그인</a>
         <a class="account-link" th:if="${signedIn}" th:href="${logoutUrl}">로그아웃</a>
     </div>
@@ -3177,7 +3210,7 @@
                 <div class="auth-notice" th:classappend="${signedIn} ? ' signed-in' : ''">
                     <div>
                         <strong th:text="${signedIn} ? 'Google 로그인이 확인됐어요' : '안전한 구독 관리를 위해 로그인해주세요'">Google 로그인</strong>
-                        <span th:text="${signedIn} ? '이 계정에 최대 10개 수신 이메일을 연결할 수 있습니다.' : '입력 내용은 이 브라우저에 잠시 보관되며 로그인 후 복원됩니다.'">로그인 안내</span>
+                        <span th:text="${signedIn} ? '이 계정에는 이메일 인증을 완료한 주소 1개만 연결됩니다.' : '로그인 후 본인 이메일 인증을 완료해야 구독할 수 있습니다.'">로그인 안내</span>
                     </div>
                     <a class="account-link google" th:unless="${signedIn}" th:href="${loginUrl}">Google로 계속</a>
                 </div>
@@ -3187,9 +3220,13 @@
                 </div>
 
                 <div class="field">
-                    <label for="emails">받는 이메일</label>
-                    <textarea id="emails" name="emails" autocomplete="email" required maxlength="2048" placeholder="me@example.com&#10;family@example.com"></textarea>
-                    <small>쉼표 또는 줄바꿈으로 최대 10개까지 등록할 수 있어요.</small>
+                    <label for="email">로그인 계정 이메일</label>
+                    <div class="email-verification-row">
+                        <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="본인 이메일을 입력해주세요">
+                        <button class="secondary" type="button" id="requestEmailVerification">인증 메일 보내기</button>
+                    </div>
+                    <p class="meta" id="emailVerificationStatus">인증 메일의 링크를 누른 이메일만 로그인 계정에 연결됩니다.</p>
+                    <input id="emailVerificationToken" type="hidden">
                 </div>
 
                 <div class="field">
@@ -3254,9 +3291,8 @@
 
                 <div class="subscription-actions">
                     <button class="primary" type="submit" id="submitButton">구독하기</button>
-                    <button class="danger" type="button" id="unsubscribeByEmailButton">이메일로 구독 취소</button>
                 </div>
-                <p class="meta">구독 취소 시 위 이메일에 등록된 날씨 알림만 중단됩니다.</p>
+                <p class="meta">구독 해지와 개인정보 삭제는 로그인 후 ‘내 날씨 알림 관리’에서만 가능합니다.</p>
                 <div class="result" id="result" role="status"></div>
             </form>
         </section>
@@ -3345,7 +3381,10 @@
     const favoriteLocations = document.getElementById("favoriteLocations");
     const result = document.getElementById("result");
     const submitButton = document.getElementById("submitButton");
-    const unsubscribeByEmailButton = document.getElementById("unsubscribeByEmailButton");
+    const emailInput = document.getElementById("email");
+    const requestEmailVerificationButton = document.getElementById("requestEmailVerification");
+    const emailVerificationTokenInput = document.getElementById("emailVerificationToken");
+    const emailVerificationStatus = document.getElementById("emailVerificationStatus");
     const searchButton = document.getElementById("searchLocation");
     const currentLocationButton = document.getElementById("currentLocation");
     const weatherPreview = document.getElementById("weatherPreview");
@@ -3781,6 +3820,51 @@
     });
     renderFavoriteLocations();
 
+    let emailVerificationToken = "";
+    restoreEmailVerificationFromUrl();
+    emailInput.addEventListener("input", () => {
+        if (!emailVerificationToken) return;
+        emailVerificationToken = "";
+        emailVerificationTokenInput.value = "";
+        setEmailVerificationState("이메일이 바뀌었습니다. 변경한 주소로 다시 인증 메일을 보내주세요.", false);
+    });
+
+    requestEmailVerificationButton.addEventListener("click", async () => {
+        result.className = "result";
+        if (!signedIn) {
+            saveSubscriptionDraft();
+            window.location.assign(googleLoginUrl);
+            return;
+        }
+
+        const email = emailInput.value.trim().toLowerCase();
+        if (!email) {
+            setEmailVerificationState("본인 이메일을 입력한 뒤 인증 메일을 보내주세요.", false);
+            emailInput.focus();
+            return;
+        }
+
+        requestEmailVerificationButton.disabled = true;
+        requestEmailVerificationButton.textContent = "인증 메일 보내는 중";
+        emailVerificationToken = "";
+        emailVerificationTokenInput.value = "";
+        try {
+            const response = await fetch("/api/users/email-verification/request", {
+                method: "POST",
+                headers: {"Content-Type": "application/json", Accept: "application/json"},
+                body: JSON.stringify({email})
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(getApiError(data, "인증 메일을 보내지 못했습니다."));
+            setEmailVerificationState(data.message || "인증 메일을 보냈습니다. 메일의 인증 버튼을 눌러주세요.", true);
+        } catch (error) {
+            setEmailVerificationState(getNetworkError(error, "인증 메일 요청 중 서버 연결이 끊겼습니다."), false);
+        } finally {
+            requestEmailVerificationButton.disabled = false;
+            requestEmailVerificationButton.textContent = "인증 메일 보내기";
+        }
+    });
+
     document.getElementById("subscribeForm").addEventListener("submit", async (event) => {
         event.preventDefault();
         result.className = "result";
@@ -3801,7 +3885,8 @@
 
         const payload = {
             name: document.getElementById("name").value.trim(),
-            email: "",
+            email: emailInput.value.trim().toLowerCase(),
+            verificationToken: emailVerificationTokenInput.value.trim(),
             locationName: locationContext(selectedLocation),
             latitude: selectedLocation.latitude,
             longitude: selectedLocation.longitude,
@@ -3823,21 +3908,18 @@
             privacyConsent: document.getElementById("privacyConsent").checked
         };
 
-        const recipients = getRecipients();
-        if (!recipients.length) {
-            showResult("받을 이메일을 하나 이상 입력해주세요.", false);
+        if (!payload.email) {
+            showResult("본인 이메일을 입력해주세요.", false);
             submitButton.disabled = false;
             submitButton.textContent = "구독하기";
             return;
         }
-        if (recipients.length > 10) {
-            showResult("한 번에 최대 10개의 이메일을 등록할 수 있습니다.", false);
+        if (!emailVerificationToken) {
+            showResult("인증 메일의 링크를 먼저 눌러주세요.", false);
             submitButton.disabled = false;
             submitButton.textContent = "구독하기";
             return;
         }
-        payload.email = recipients[0];
-        payload.emails = recipients;
 
         try {
             const response = await fetch("/api/users/subscribe", {
@@ -3849,7 +3931,10 @@
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(getApiError(data, "구독 처리에 실패했습니다."));
 
-            showResult(data.message || `${recipients.length}개의 이메일 구독이 완료되었습니다. 메일함을 확인해주세요.`, true);
+            showResult(data.message || "이메일 인증이 확인되어 구독이 완료되었습니다. 메일함을 확인해주세요.", true);
+            setEmailVerificationState("이 이메일은 현재 로그인 계정에 연결되어 있습니다.", true);
+            emailVerificationToken = "";
+            emailVerificationTokenInput.value = "";
             if (managerControls) {
                 await loadCurrentSubscription();
             }
@@ -3861,52 +3946,19 @@
         }
     });
 
-    unsubscribeByEmailButton.addEventListener("click", async () => {
-        result.className = "result";
-        const recipients = getRecipients();
-        if (!recipients.length) {
-            showResult("구독을 취소할 이메일을 하나 이상 입력해주세요.", false);
-            return;
-        }
-        if (recipients.length > 10) {
-            showResult("한 번에 최대 10개의 이메일을 처리할 수 있습니다.", false);
-            return;
-        }
-        if (!signedIn) {
-            saveSubscriptionDraft();
-            window.location.assign(googleLoginUrl);
-            return;
-        }
-        if (!window.confirm(`${recipients.join(", ")}의 날씨 알림 구독을 취소할까요?`)) {
-            return;
-        }
+    function setEmailVerificationState(message, ok) {
+        emailVerificationStatus.textContent = message;
+        emailVerificationStatus.className = ok ? "meta success" : "meta error";
+    }
 
-        unsubscribeByEmailButton.disabled = true;
-        submitButton.disabled = true;
-        unsubscribeByEmailButton.textContent = "취소 처리 중";
-        try {
-            const response = await fetch("/api/users/unsubscribe", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({email: recipients[0], emails: recipients})
-            });
-            const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(getApiError(data, "구독 취소에 실패했습니다."));
-            showResult(data.message || `${recipients.length}개의 이메일 구독이 취소되었습니다.`, true);
-        } catch (error) {
-            showResult(getNetworkError(error, "구독 취소 중 서버 연결이 끊겼습니다. 잠시 후 다시 시도해주세요."), false);
-        } finally {
-            unsubscribeByEmailButton.disabled = false;
-            submitButton.disabled = false;
-            unsubscribeByEmailButton.textContent = "이메일로 구독 취소";
-        }
-    });
-
-    function getRecipients() {
-        return [...new Set(document.getElementById("emails").value
-            .split(/[,;\s]+/)
-            .map((email) => email.trim().toLowerCase())
-            .filter(Boolean))];
+    function restoreEmailVerificationFromUrl() {
+        const token = new URLSearchParams(window.location.search).get("emailVerified");
+        if (!token) return;
+        emailVerificationToken = token;
+        emailVerificationTokenInput.value = token;
+        setEmailVerificationState("이메일 인증이 완료되었습니다. 같은 이메일로 구독을 완료해주세요.", true);
+        const cleanUrl = `${window.location.pathname}${window.location.hash || ""}`;
+        window.history.replaceState({}, document.title, cleanUrl);
     }
 
     function normalizeTimeInput(value, fallback) {
@@ -3925,7 +3977,7 @@
     function saveSubscriptionDraft() {
         const draft = {
             name: document.getElementById("name").value,
-            emails: document.getElementById("emails").value,
+            email: emailInput.value,
             ageGroup: "NONE",
             gender: "NONE",
             temperatureSensitivity: document.getElementById("temperatureSensitivity").value,
@@ -3955,7 +4007,7 @@
         try {
             const draft = JSON.parse(stored);
             document.getElementById("name").value = draft.name || "";
-            document.getElementById("emails").value = draft.emails || "";
+            emailInput.value = draft.email || "";
             document.getElementById("temperatureSensitivity").value = draft.temperatureSensitivity || "NONE";
             document.getElementById("activityType").value = draft.activityType || "DAILY";
             document.getElementById("morningEnabled").checked = draft.morningEnabled !== false;
@@ -3976,7 +4028,7 @@
                 loadWeatherPreview(selectedLocation);
             }
             if (signedIn) {
-                showResult("Google 로그인이 완료됐습니다. 구독 또는 구독 취소 버튼을 다시 눌러주세요.", true);
+                showResult("로그인이 완료됐습니다. 이메일 인증을 마친 뒤 구독 버튼을 눌러주세요.", true);
                 sessionStorage.removeItem(subscriptionDraftKey);
             }
         } catch (error) {
@@ -4930,6 +4982,8 @@
             const data = await response.json();
             if (!response.ok) throw new Error(getApiError(data, "구독 정보를 불러오지 못했습니다."));
             managerSummary.textContent = `${data.name} · ${data.email} · ${data.locationName}`;
+            emailInput.value = data.email || "";
+            setEmailVerificationState("현재 로그인 계정에 연결된 이메일입니다. 변경하려면 새 인증 메일을 요청해주세요.", true);
             document.getElementById("manageMorning").checked = data.morningEnabled;
             document.getElementById("manageAfternoon").checked = data.afternoonEnabled;
             document.getElementById("manageEvening").checked = data.eveningEnabled;

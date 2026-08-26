@@ -39,6 +39,28 @@ public class MailService {
         sendWeatherMailInternal(user, weather, "[날씨 주의] " + alertSummary);
     }
 
+    @Async
+    public void sendEmailVerificationMail(String email, String verificationUrl) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(email);
+            helper.setSubject("날씨한편 이메일 인증");
+
+            Context context = new Context();
+            context.setVariable("email", email);
+            context.setVariable("verificationUrl", verificationUrl);
+            String html = templateEngine.process("email-verification-mail", context);
+            helper.setText(html, true);
+            mailSender.send(message);
+            log.info("이메일 인증 메일 발송 완료");
+        } catch (MessagingException e) {
+            log.error("이메일 인증 메일 발송 실패", e);
+        } catch (Exception e) {
+            log.error("이메일 인증 메일 처리 중 예상치 못한 오류", e);
+        }
+    }
+
     private void sendWeatherMailInternal(User user, WeatherDto weather, String subject) {
         try {
             WeatherDto styledWeather = weather.withStylePreference(

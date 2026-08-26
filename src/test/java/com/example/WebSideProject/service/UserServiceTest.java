@@ -19,7 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -78,21 +80,27 @@ class UserServiceTest {
     }
 
     @Test
-    void oneValidatedIdentityCanOwnMultipleRecipients() {
+    void oneValidatedIdentityOwnsOnlyTheVerifiedRecipient() {
         UserRepository repository = mock(UserRepository.class);
-        UserService service = new UserService(repository, mock(ApplicationEventPublisher.class));
+        EmailVerificationService verificationService = mock(EmailVerificationService.class);
+        UserService service = new UserService(repository, mock(ApplicationEventPublisher.class), verificationService);
         ReflectionTestUtils.setField(service, "codersIdentityRequired", true);
         when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
         when(repository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(verificationService.consumeVerifiedEmail(
+                eq("validated-google-user"), eq("verification-token"), eq("first@example.com")))
+                .thenReturn("first@example.com");
+        UserDto.RegisterRequest request = request("first@example.com");
+        request.setVerificationToken("verification-token");
 
         List<UserDto.Response> responses = service.registerAll(
-                request("first@example.com, second@example.com"),
+                request,
                 "validated-google-user"
         );
 
-        assertThat(responses).hasSize(2);
+        assertThat(responses).hasSize(1);
         ArgumentCaptor<User> users = ArgumentCaptor.forClass(User.class);
-        verify(repository, times(2)).save(users.capture());
+        verify(repository).save(users.capture());
         assertThat(users.getAllValues()).extracting(User::getOwnerId)
                 .containsOnly("validated-google-user");
         assertThat(users.getAllValues()).extracting(User::getCodersUserId)
@@ -102,7 +110,8 @@ class UserServiceTest {
     @Test
     void validatedIdentityCannotReplaceAnotherOwnersSubscription() {
         UserRepository repository = mock(UserRepository.class);
-        UserService service = new UserService(repository, mock(ApplicationEventPublisher.class));
+        EmailVerificationService verificationService = mock(EmailVerificationService.class);
+        UserService service = new UserService(repository, mock(ApplicationEventPublisher.class), verificationService);
         ReflectionTestUtils.setField(service, "codersIdentityRequired", true);
         User owned = User.builder()
                 .name("기존 사용자")
@@ -113,10 +122,42 @@ class UserServiceTest {
                 .ny(127)
                 .build();
         when(repository.findByEmail("owned@example.com")).thenReturn(Optional.of(owned));
+        when(verificationService.consumeVerifiedEmail(
+                eq("different-owner"), eq("verification-token"), eq("owned@example.com")))
+                .thenReturn("owned@example.com");
+        UserDto.RegisterRequest request = request("owned@example.com");
+        request.setVerificationToken("verification-token");
 
-        assertThatThrownBy(() -> service.registerAll(request("owned@example.com"), "different-owner"))
+        assertThatThrownBy(() -> service.registerAll(request, "different-owner"))
                 .isInstanceOf(SecurityException.class)
                 .hasMessageContaining("본인의 구독");
+    }
+
+    @Test
+    void validatedIdentityCannotAttachASecondEmail() {
+        UserRepository repository = mock(UserRepository.class);
+        EmailVerificationService verificationService = mock(EmailVerificationService.class);
+        UserService service = new UserService(repository, mock(ApplicationEventPublisher.class), verificationService);
+        ReflectionTestUtils.setField(service, "codersIdentityRequired", true);
+        User existing = User.builder()
+                .name("기존 사용자")
+                .email("first@example.com")
+                .ownerId("validated-user")
+                .nx(60)
+                .ny(127)
+                .build();
+        when(repository.findFirstByOwnerIdOrderByIdAsc("validated-user"))
+                .thenReturn(Optional.of(existing));
+        when(verificationService.consumeVerifiedEmail(
+                eq("validated-user"), eq("verification-token"), eq("second@example.com")))
+                .thenReturn("second@example.com");
+        UserDto.RegisterRequest request = request("second@example.com");
+        request.setVerificationToken("verification-token");
+
+        assertThatThrownBy(() -> service.registerAll(request, "validated-user"))
+                .isInstanceOf(SecurityException.class)
+                .hasMessageContaining("이메일 하나만");
+        verify(repository, never()).save(any(User.class));
     }
 
     @Test

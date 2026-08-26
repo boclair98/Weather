@@ -30,6 +30,9 @@ public class UserDto {
         @Size(max = 2048, message = "이메일 입력값이 너무 깁니다")
         private String email;
 
+        @Size(max = 128, message = "이메일 인증 토큰이 너무 깁니다")
+        private String verificationToken;
+
         @Size(max = 10, message = "한 번에 최대 10개의 이메일을 등록할 수 있습니다")
         private List<@Email(message = "올바른 이메일 형식이 아닙니다") @Size(max = 254, message = "이메일은 254자 이하여야 합니다") String> emails;
 
@@ -162,6 +165,15 @@ public class UserDto {
 
         @Size(max = 10, message = "한 번에 최대 10개의 이메일을 처리할 수 있습니다")
         private List<@Email(message = "올바른 이메일 형식이 아닙니다") @Size(max = 254, message = "이메일은 254자 이하여야 합니다") String> emails;
+    }
+
+    @Getter
+    @Setter
+    public static class EmailVerificationRequest {
+        @NotBlank(message = "본인 이메일을 입력해주세요")
+        @Email(message = "올바른 이메일 형식이 아닙니다")
+        @Size(max = 254, message = "이메일은 254자 이하여야 합니다")
+        private String email;
     }
 
     @Getter
