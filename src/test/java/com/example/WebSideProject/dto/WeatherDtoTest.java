@@ -176,4 +176,29 @@ class WeatherDtoTest {
         });
         assertThat(risky.getDecisionExplanation()).contains("가장 큰 변수");
     }
+
+    @Test
+    void actionFirstDecisionAndDataQualityStayConsistentForWebAndMail() {
+        WeatherDto warning = WeatherDto.builder()
+                .tmp("31")
+                .pty("1")
+                .pop("80")
+                .weatherWarningTitle("폭염경보")
+                .sourceFieldCount(6)
+                .build();
+
+        assertThat(warning.getDecisionHeadline()).isEqualTo("오늘은 안전을 먼저 챙겨요");
+        assertThat(warning.getDecisionDetail()).contains("폭염경보");
+        assertThat(warning.getDataQualityLabel()).isEqualTo("원천자료 확인");
+    }
+
+    @Test
+    void fallbackDataIsClearlyMarkedWithoutClaimingForecastConfidence() {
+        WeatherDto fallback = WeatherDto.builder()
+                .fallbackData(true)
+                .sourceFieldCount(6)
+                .build();
+
+        assertThat(fallback.getDataQualityLabel()).isEqualTo("마지막 정상자료");
+    }
 }

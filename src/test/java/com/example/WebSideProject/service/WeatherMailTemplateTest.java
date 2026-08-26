@@ -66,6 +66,9 @@ class WeatherMailTemplateTest {
 
         assertThat(html)
                 .contains("30초 브리핑")
+                .contains("TODAY'S CALL")
+                .contains("오늘은 안전을 먼저 챙겨요")
+                .contains("자료 원천자료 확인")
                 .contains("강남역")
                 .contains("폭염경보")
                 .contains("10 · 매우 높음")

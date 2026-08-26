@@ -864,6 +864,66 @@ public class WeatherDto {
         return alerts.isEmpty() ? "특별한 위험 신호 없음" : String.join(" · ", alerts) + " 주의";
     }
 
+    /**
+     * A short, action-first decision title shared by the web card and email.
+     * Keeping this on the server makes the most important sentence consistent
+     * for every client and avoids duplicating weather thresholds in JavaScript.
+     */
+    public String getDecisionHeadline() {
+        if (hasWeatherWarning()) {
+            return "오늘은 안전을 먼저 챙겨요";
+        }
+        if (isSnowy()) {
+            return "미끄럼을 피할 준비가 필요해요";
+        }
+        if (isRainRisk()) {
+            return "우산 하나로 하루가 훨씬 편해져요";
+        }
+        if (isBadAirQuality()) {
+            return "공기가 탁해 야외 시간을 줄여요";
+        }
+        if (getOutingScore() >= 85) {
+            return "지금 움직이기 좋은 날이에요";
+        }
+        if (getOutingScore() >= 70) {
+            return "가볍게 준비하면 무난한 날이에요";
+        }
+        return "외출 전 작은 준비가 필요한 날이에요";
+    }
+
+    /** A one-sentence reason that can be read without opening a detail panel. */
+    public String getDecisionDetail() {
+        if (hasWeatherWarning()) {
+            return getWeatherWarningTitle() + "이 발효 중이에요. 중요한 일정은 공식 안전수칙을 먼저 확인하세요.";
+        }
+        if (isRainRisk()) {
+            return getUmbrellaAdvice() + " · " + getOutingScoreAdvice();
+        }
+        if (isBadAirQuality()) {
+            return getAirQualityAdvice();
+        }
+        return getOutingScoreAdvice();
+    }
+
+    /**
+     * Describes data completeness rather than pretending a forecast has a
+     * statistical probability. This keeps the UI transparent when a fallback
+     * response or a partially populated KMA payload is used.
+     */
+    public String getDataQualityLabel() {
+        if (isFallbackData()) {
+            return "마지막 정상자료";
+        }
+        int fields = getSourceFieldCount();
+        if (fields < 0 || fields >= 6) {
+            return "원천자료 확인";
+        }
+        if (fields >= 4) {
+            return "일부 항목 보완";
+        }
+        return "자료 확인 필요";
+    }
+
     private String getStyleContext(TemperatureSensitivity sensitivity, ActivityType activity) {
         String sensitivityLabel = switch (sensitivity) {
             case COLD -> "추위를 많이 타는 체감 기준으로";

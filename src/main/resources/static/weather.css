@@ -1280,26 +1280,195 @@ body[data-theme="dark"] #mainContent .share-weather {
     font-size: 18px;
 }
 
+#mainContent .go-out-window {
+    position: relative;
+    overflow: hidden;
+    margin-top: 16px;
+    padding: 20px;
+    border: 1px solid rgba(49, 130, 246, .22);
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--blue-soft), var(--surface-subtle));
+}
+
+#mainContent .go-out-window::after {
+    position: absolute;
+    top: -34px;
+    right: -22px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(49, 130, 246, .09);
+    content: "";
+    pointer-events: none;
+}
+
+#mainContent .go-out-window-top,
+#mainContent .go-out-window-range,
+#mainContent .go-out-window-actions {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+#mainContent .go-out-window-top > div {
+    display: grid;
+    gap: 4px;
+}
+
+#mainContent .go-out-window-eyebrow {
+    color: var(--blue-ink);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .8px;
+}
+
+#mainContent .go-out-window-top strong {
+    color: var(--text);
+    font-size: 17px;
+    font-weight: 900;
+    letter-spacing: -.4px;
+}
+
+#mainContent .go-out-window-score {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    border-radius: 999px;
+    color: var(--blue-ink);
+    background: var(--surface);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+#mainContent .go-out-window-range {
+    align-items: baseline;
+    margin-top: 17px;
+}
+
+#mainContent .go-out-window-range strong {
+    color: var(--text);
+    font-size: 26px;
+    letter-spacing: -1px;
+}
+
+#mainContent .go-out-window-range span,
+#mainContent .go-out-window-actions > span {
+    color: var(--text-tertiary);
+    font-size: 11px;
+}
+
+#mainContent .go-out-window-track {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-auto-columns: minmax(14px, 1fr);
+    grid-auto-flow: column;
+    align-items: end;
+    gap: 4px;
+    height: 38px;
+    margin-top: 13px;
+    padding: 0 1px;
+}
+
+#mainContent .go-out-window-bar {
+    display: block;
+    min-width: 7px;
+    height: var(--window-score);
+    min-height: 7px;
+    border-radius: 999px 999px 3px 3px;
+    background: rgba(49, 130, 246, .23);
+    transition: height var(--ease), background var(--ease), transform var(--ease);
+}
+
+#mainContent .go-out-window-bar.recommended {
+    background: var(--blue);
+    transform: scaleX(1.12);
+}
+
+#mainContent .go-out-window-reason {
+    margin: 12px 0 0;
+}
+
+#mainContent .go-out-window > p {
+    position: relative;
+    z-index: 1;
+    margin: 12px 0 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+#mainContent .go-out-window-actions {
+    align-items: center;
+    margin-top: 15px;
+}
+
+#mainContent .go-out-window-actions .secondary {
+    min-height: 42px;
+    padding: 9px 13px;
+    color: var(--blue-ink);
+    background: var(--surface);
+    font-size: 12px;
+}
+
 #mainContent .weather-score {
     display: flex;
-    align-items: baseline;
-    gap: 10px;
+    align-items: center;
+    gap: 16px;
     margin-top: 22px;
     padding: 22px;
     border-radius: 18px;
     background: var(--blue);
 }
 
-#mainContent .weather-score strong {
+#mainContent .weather-score-main {
+    display: grid;
+    flex: 0 0 auto;
+    gap: 2px;
+}
+
+#mainContent .weather-score-eyebrow {
+    color: rgba(255, 255, 255, .7);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .8px;
+}
+
+#mainContent .weather-score-main strong {
     color: #fff;
     font-size: 34px;
     font-weight: 800;
     letter-spacing: -1px;
 }
 
-#mainContent .weather-score span {
+#mainContent .weather-score-copy {
+    display: grid;
+    min-width: 0;
+    gap: 3px;
+}
+
+#mainContent .weather-score-copy strong {
+    overflow-wrap: anywhere;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+#mainContent .weather-score-copy span {
+    overflow-wrap: anywhere;
+    color: rgba(255, 255, 255, .82);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+#mainContent .weather-score > #outingScoreLabel {
+    flex: 0 0 auto;
+    margin-left: auto;
     color: rgba(255, 255, 255, .82);
     font-weight: 700;
+    white-space: nowrap;
 }
 
 #mainContent .weather-detail {
@@ -1753,6 +1922,35 @@ body[data-theme="dark"] #mainContent .share-weather {
     font-size: 13px;
 }
 
+.mail-preview-call {
+    display: grid;
+    gap: 4px;
+    margin-top: 18px;
+    padding: 15px 16px;
+    border: 1px solid rgba(49, 130, 246, .2);
+    border-radius: 16px;
+    background: var(--blue-soft);
+}
+
+.mail-preview-call > span {
+    color: var(--blue-ink);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .7px;
+}
+
+.mail-preview-call > strong {
+    color: var(--text);
+    font-size: 16px;
+}
+
+.mail-preview-call > p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
 .mail-preview-score {
     display: flex;
     align-items: center;
@@ -2005,6 +2203,9 @@ body[data-theme="dark"] #mainContent .share-weather {
     #mainContent .weather-toolbar,
     #mainContent .daily-insight-top,
     #mainContent .hourly-weather-header,
+    #mainContent .go-out-window-top,
+    #mainContent .go-out-window-range,
+    #mainContent .go-out-window-actions,
     #mainContent .planner-header,
     #mainContent .decision-window-header,
     #mainContent .decision-summary,
@@ -2047,6 +2248,21 @@ body[data-theme="dark"] #mainContent .share-weather {
         grid-column: 1 / -1;
     }
 
+    #mainContent .weather-score {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    #mainContent .weather-score-copy {
+        flex: 1 1 180px;
+    }
+
+    #mainContent .weather-score > #outingScoreLabel {
+        width: 100%;
+        margin-left: 0;
+    }
+
     #mainContent .daily-periods,
     #mainContent .weather-chip-row,
     #mainContent .action-grid,
@@ -2065,6 +2281,23 @@ body[data-theme="dark"] #mainContent .share-weather {
     #mainContent .daily-period-card {
         min-height: 96px;
         padding: 12px;
+    }
+
+    #mainContent .go-out-window-range {
+        align-items: flex-start;
+        gap: 3px;
+    }
+
+    #mainContent .go-out-window-range strong {
+        font-size: 24px;
+    }
+
+    #mainContent .go-out-window-actions {
+        align-items: stretch;
+    }
+
+    #mainContent .go-out-window-actions .secondary {
+        width: 100%;
     }
 
     #mainContent .decision-explanation,

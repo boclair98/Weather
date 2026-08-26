@@ -16,7 +16,7 @@ class FrontendContractTest {
 
         assertThat(html)
                 .contains("/manifest.webmanifest")
-                .contains("/weather.css?v=20260826-toss-v1")
+                .contains("/weather.css?v=20260827-window-v1")
                 .contains("data-day-offset=\"0\"")
                 .contains("data-day-offset=\"1\"")
                 .contains("data-day-offset=\"2\"")
@@ -44,6 +44,10 @@ class FrontendContractTest {
                 .contains("id=\"briefingPreviewDialog\"")
                 .contains("id=\"favoriteLocation\"")
                 .contains("id=\"snapshotNote\"")
+                .contains("id=\"goOutWindow\"")
+                .contains("renderGoOutWindow")
+                .contains("useRecommendedWindow")
+                .contains("TODAY'S CALL")
                 .contains("requestJson")
                 .contains("weather-last-snapshot-v2");
         assertThat(html)
@@ -56,6 +60,7 @@ class FrontendContractTest {
         assertThat(css)
                 .contains("--blue: #3182f6")
                 .contains("#mainContent .dashboard-search-card")
+                .contains("#mainContent .go-out-window")
                 .contains("@media (max-width: 760px)")
                 .contains("@media (prefers-reduced-motion: reduce)");
     }
