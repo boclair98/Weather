@@ -16,6 +16,7 @@ class FrontendContractTest {
 
         assertThat(html)
                 .contains("/manifest.webmanifest")
+                .contains("/weather.css?v=20260826-toss-v1")
                 .contains("data-day-offset=\"0\"")
                 .contains("data-day-offset=\"1\"")
                 .contains("data-day-offset=\"2\"")
@@ -27,7 +28,10 @@ class FrontendContractTest {
                 .contains("restoreSharedWeather")
                 .contains("navigator.serviceWorker.register")
                 .contains("href=\"#weatherSearch\"")
-                .contains("prefers-reduced-motion")
+                .contains("id=\"openSubscribeNav\"")
+                .contains("class=\"subscription-options\"")
+                .contains("updateSubscriptionSubmitState")
+                .contains("aria-pressed=\"true\"")
                 .contains("aria-busy")
                 .contains("id=\"personalizationSummary\"")
                 .contains("id=\"decisionExplanation\"")
@@ -47,6 +51,13 @@ class FrontendContractTest {
                 .contains("id=\"plannerQuality\"")
                 .contains("id=\"privacyConsent\"")
                 .contains("/api/users/me/data");
+
+        String css = classpathText("/static/weather.css");
+        assertThat(css)
+                .contains("--blue: #3182f6")
+                .contains("#mainContent .dashboard-search-card")
+                .contains("@media (max-width: 760px)")
+                .contains("@media (prefers-reduced-motion: reduce)");
     }
 
     @Test

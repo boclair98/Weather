@@ -3,25 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light only">
     <title>날씨한편 이메일 인증</title>
 </head>
-<body style="margin:0;background:#f4f7fb;color:#172033;font-family:Arial,'Noto Sans KR',sans-serif;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px;">
-    <tr><td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #e5eaf2;border-radius:24px;overflow:hidden;">
-            <tr><td style="padding:28px 32px;background:linear-gradient(135deg,#2563eb,#6d8eff);color:#ffffff;">
-                <div style="font-size:13px;letter-spacing:.08em;opacity:.86;">WEATHER HANPYEON</div>
-                <h1 style="margin:10px 0 0;font-size:28px;line-height:1.25;">이메일 주소를 확인해주세요</h1>
-            </td></tr>
-            <tr><td style="padding:32px;">
-                <p style="margin:0 0 12px;font-size:16px;line-height:1.7;">로그인 계정에 날씨 알림을 연결하려면 아래 버튼을 눌러 이메일 소유권을 확인해야 합니다.</p>
-                <p style="margin:0 0 24px;color:#66758d;font-size:14px;line-height:1.6;">인증 대상: <strong th:text="${email}">you@example.com</strong><br>링크는 15분 동안만 유효합니다.</p>
-                <a th:href="${verificationUrl}" style="display:inline-block;padding:15px 22px;border-radius:12px;background:#2563eb;color:#ffffff;font-weight:700;text-decoration:none;">이메일 인증하고 계속하기</a>
-                <p style="margin:26px 0 0;color:#8b97aa;font-size:12px;line-height:1.6;">본인이 요청하지 않았다면 이 메일을 무시해주세요. 인증을 완료하지 않으면 구독이 생성되지 않습니다.</p>
-            </td></tr>
-            <tr><td style="padding:18px 32px;background:#f8fafc;color:#8b97aa;font-size:12px;">날씨한편 · 로그인 계정 전용 날씨 브리핑</td></tr>
-        </table>
-    </td></tr>
+<body bgcolor="#f2f4f6" style="margin:0;padding:0;background-color:#f2f4f6;color:#191f28;font-family:'Malgun Gothic','Apple SD Gothic Neo',Arial,sans-serif;">
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;color:#f2f4f6;font-size:1px;line-height:1px;">15분 안에 이메일 인증을 완료해 주세요.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f2f4f6" style="width:100%;border-collapse:collapse;background-color:#f2f4f6;">
+    <tr>
+        <td align="center" style="padding:32px 16px;">
+            <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="width:100%;max-width:560px;border-collapse:separate;border-spacing:0;border:1px solid #e5e8eb;border-radius:24px;background-color:#ffffff;">
+                <tr>
+                    <td style="padding:28px 30px 0;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td width="36" height="36" align="center" valign="middle" bgcolor="#3182f6" style="width:36px;height:36px;border-radius:12px;background-color:#3182f6;color:#ffffff;font-size:18px;line-height:36px;">☁</td>
+                                <td style="padding-left:10px;color:#191f28;font-size:16px;line-height:22px;font-weight:700;">날씨한편</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:34px 30px 30px;">
+                        <h1 style="margin:0;color:#191f28;font-size:28px;line-height:38px;font-weight:700;letter-spacing:-1px;word-break:keep-all;">이메일을 인증해 주세요</h1>
+                        <p style="margin:12px 0 0;color:#4e5968;font-size:15px;line-height:24px;word-break:keep-all;overflow-wrap:break-word;">인증이 끝나면 선택한 지역의 날씨를 원하는 시간에 받아볼 수 있어요.</p>
+
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f7f8fa" style="width:100%;margin-top:24px;border-collapse:separate;border-radius:16px;background-color:#f7f8fa;">
+                            <tr>
+                                <td style="padding:17px 18px;">
+                                    <div style="color:#8b95a1;font-size:12px;line-height:18px;">인증할 이메일</div>
+                                    <div th:text="${email}" style="padding-top:4px;color:#191f28;font-size:15px;line-height:22px;font-weight:700;word-break:break-all;">you@example.com</div>
+                                    <div style="padding-top:8px;color:#8b95a1;font-size:12px;line-height:18px;">이 링크는 15분 동안 사용할 수 있어요.</div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#3182f6" style="width:100%;margin-top:20px;border-collapse:separate;border-radius:14px;background-color:#3182f6;">
+                            <tr>
+                                <td align="center" bgcolor="#3182f6" style="border-radius:14px;background-color:#3182f6;mso-padding-alt:16px 20px;">
+                                    <a th:href="${verificationUrl}" style="display:block;padding:16px 20px;color:#ffffff;font-size:15px;line-height:22px;font-weight:700;text-align:center;text-decoration:none;">이메일 인증하기</a>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="margin:22px 0 0;color:#8b95a1;font-size:11px;line-height:18px;word-break:keep-all;">버튼이 열리지 않으면 아래 주소를 브라우저에 붙여 넣어주세요.</p>
+                        <p style="margin:5px 0 0;color:#6b7684;font-size:11px;line-height:17px;word-break:break-all;"><a th:href="${verificationUrl}" th:text="${verificationUrl}" style="color:#6b7684;text-decoration:underline;">인증 링크</a></p>
+                        <p style="margin:24px 0 0;color:#8b95a1;font-size:12px;line-height:20px;word-break:keep-all;">직접 요청하지 않았다면 이 메일을 무시해 주세요. 인증하지 않으면 구독은 만들어지지 않아요.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td bgcolor="#f7f8fa" style="padding:18px 30px;border-radius:0 0 24px 24px;background-color:#f7f8fa;color:#8b95a1;font-size:11px;line-height:18px;">날씨한편 · 필요한 날씨만 간단하게</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
 </table>
 </body>
 </html>

@@ -1,0 +1,2200 @@
+:root {
+    color-scheme: light;
+    --page: #f2f4f6;
+    --surface: #ffffff;
+    --surface-subtle: #f7f8fa;
+    --surface-strong: #eef1f4;
+    --text: #191f28;
+    --text-secondary: #4e5968;
+    --text-tertiary: #8b95a1;
+    --line: #e5e8eb;
+    --blue: #3182f6;
+    --blue-hover: #1b64da;
+    --blue-soft: #e8f3ff;
+    --blue-ink: #1b64da;
+    --green: #00a878;
+    --green-soft: #e8faf4;
+    --red: #f04452;
+    --red-soft: #fff0f1;
+    --orange: #f59f00;
+    --orange-soft: #fff7e6;
+    --shadow: 0 8px 28px rgba(25, 31, 40, .06);
+    --shadow-large: 0 20px 60px rgba(25, 31, 40, .09);
+    --radius: 24px;
+    --radius-small: 16px;
+    --ease: 180ms cubic-bezier(.2, .8, .2, 1);
+}
+
+body[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #101318;
+    --surface: #191d24;
+    --surface-subtle: #222831;
+    --surface-strong: #2b323d;
+    --text: #f2f4f6;
+    --text-secondary: #c2c8d0;
+    --text-tertiary: #8f99a7;
+    --line: #303844;
+    --blue: #4593ff;
+    --blue-hover: #6aa9ff;
+    --blue-soft: #172d4d;
+    --blue-ink: #8fc0ff;
+    --green-soft: #123a31;
+    --red-soft: #3b2025;
+    --orange-soft: #3d321e;
+    --shadow: 0 8px 30px rgba(0, 0, 0, .18);
+    --shadow-large: 0 24px 70px rgba(0, 0, 0, .28);
+}
+
+html {
+    scroll-behavior: smooth;
+    background: var(--page);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    overflow-x: hidden;
+    color: var(--text);
+    background: var(--page);
+    font-family: Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    word-break: keep-all;
+    -webkit-font-smoothing: antialiased;
+    transition: color var(--ease), background var(--ease);
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button,
+summary,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button,
+summary {
+    cursor: pointer;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+a:focus-visible {
+    outline: 3px solid rgba(49, 130, 246, .3);
+    outline-offset: 3px;
+}
+
+.skip-link {
+    position: fixed;
+    z-index: 200;
+    top: 12px;
+    left: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    color: #fff;
+    background: var(--blue);
+    transform: translateY(-160%);
+    transition: transform var(--ease);
+}
+
+.skip-link:focus {
+    transform: translateY(0);
+}
+
+.network-status {
+    position: fixed;
+    z-index: 180;
+    top: 14px;
+    left: 50%;
+    width: max-content;
+    max-width: calc(100% - 32px);
+    padding: 10px 16px;
+    border-radius: 999px;
+    color: #fff;
+    background: #333d4b;
+    box-shadow: var(--shadow-large);
+    font-size: 13px;
+    font-weight: 700;
+    transform: translateX(-50%);
+}
+
+#mainContent {
+    width: min(calc(100% - 40px), 960px);
+    margin: 0 auto;
+    padding: 18px 0 72px;
+}
+
+#mainContent .account-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 10px;
+    padding: 11px 16px;
+    border-radius: 14px;
+    color: var(--text-secondary);
+    background: var(--surface);
+    font-size: 13px;
+}
+
+#mainContent .account-link {
+    flex: 0 0 auto;
+    color: var(--blue-ink);
+    font-weight: 700;
+}
+
+#mainContent .weather-app-header {
+    position: sticky;
+    z-index: 100;
+    top: 12px;
+    display: flex;
+    align-items: center;
+    min-height: 64px;
+    padding: 9px 10px 9px 18px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+#mainContent .weather-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+}
+
+#mainContent .weather-brand-mark {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border-radius: 12px;
+    color: #fff;
+    background: var(--blue);
+    font-size: 19px;
+    line-height: 1;
+}
+
+#mainContent .weather-brand-caption {
+    display: none;
+}
+
+#mainContent .weather-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+}
+
+#mainContent .weather-nav a {
+    min-height: 44px;
+    padding: 11px 15px;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 700;
+    transition: color var(--ease), background var(--ease), transform var(--ease);
+}
+
+#mainContent .weather-nav a:hover {
+    color: var(--text);
+    background: var(--surface-subtle);
+}
+
+#mainContent .weather-nav .weather-nav-cta {
+    color: #fff;
+    background: var(--blue);
+}
+
+#mainContent .weather-nav .weather-nav-cta:hover {
+    color: #fff;
+    background: var(--blue-hover);
+}
+
+#mainContent .layout {
+    display: block;
+    width: 100%;
+}
+
+#mainContent .layout > section {
+    min-width: 0;
+}
+
+#mainContent .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    margin: 76px 0 0;
+    padding: 6px 12px;
+    border-radius: 999px;
+    color: var(--blue-ink);
+    background: var(--blue-soft);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: -.1px;
+}
+
+#mainContent h1 {
+    max-width: 760px;
+    margin: 18px 0 0;
+    color: var(--text);
+    font-size: clamp(42px, 7vw, 64px);
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -2.4px;
+}
+
+#mainContent .hero-accent {
+    display: block;
+    color: var(--blue);
+}
+
+#mainContent .intro {
+    max-width: 660px;
+    margin: 22px 0 0;
+    color: var(--text-secondary);
+    font-size: 18px;
+    line-height: 1.65;
+    letter-spacing: -.35px;
+}
+
+#mainContent .hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+#mainContent .hero-badge,
+#mainContent .hero-install {
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 8px 13px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    background: var(--surface);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+#mainContent .hero-install {
+    color: var(--blue-ink);
+}
+
+#mainContent .dashboard-search-card {
+    margin-top: 44px;
+    padding: 30px;
+    border: 0;
+    border-radius: 28px;
+    background: var(--surface);
+    box-shadow: var(--shadow-large);
+}
+
+#mainContent .dashboard-search-copy {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 18px;
+}
+
+#mainContent .dashboard-search-copy strong {
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -.7px;
+}
+
+#mainContent .dashboard-search-copy span {
+    color: var(--text-tertiary);
+    font-size: 14px;
+}
+
+#mainContent .location-search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 10px;
+}
+
+#mainContent input,
+#mainContent select,
+#mainContent textarea {
+    width: 100%;
+    min-width: 0;
+    min-height: 52px;
+    padding: 13px 16px;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    color: var(--text);
+    background: var(--surface-subtle);
+    transition: border-color var(--ease), background var(--ease), box-shadow var(--ease);
+}
+
+#mainContent input::placeholder,
+#mainContent textarea::placeholder {
+    color: var(--text-tertiary);
+}
+
+#mainContent input:hover,
+#mainContent select:hover,
+#mainContent textarea:hover {
+    background: var(--surface-strong);
+}
+
+#mainContent input:focus,
+#mainContent select:focus,
+#mainContent textarea:focus {
+    border-color: var(--blue);
+    outline: 0;
+    background: var(--surface);
+    box-shadow: 0 0 0 4px rgba(49, 130, 246, .13);
+}
+
+#mainContent input.has-error {
+    border-color: var(--red);
+    background: var(--red-soft);
+}
+
+#mainContent input.has-success {
+    border-color: var(--green);
+    background: var(--green-soft);
+}
+
+#mainContent button.primary,
+#mainContent button.secondary,
+#mainContent button.danger,
+#mainContent .calendar-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 13px 20px;
+    border: 0;
+    border-radius: 14px;
+    font-weight: 800;
+    letter-spacing: -.2px;
+    transition: background var(--ease), color var(--ease), transform var(--ease), opacity var(--ease);
+}
+
+#mainContent button.primary,
+#mainContent .calendar-button {
+    color: #fff;
+    background: var(--blue);
+}
+
+#mainContent button.primary:hover,
+#mainContent .calendar-button:hover {
+    background: var(--blue-hover);
+    transform: translateY(-1px);
+}
+
+#mainContent button.secondary {
+    color: var(--text-secondary);
+    background: var(--surface-strong);
+}
+
+#mainContent button.secondary:hover {
+    color: var(--text);
+    background: var(--line);
+}
+
+#mainContent button.danger {
+    color: var(--red);
+    background: var(--red-soft);
+}
+
+#mainContent button:disabled {
+    cursor: wait;
+    opacity: .55;
+    transform: none !important;
+}
+
+#mainContent .location-results {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+#mainContent .location-option {
+    width: 100%;
+    min-height: 50px;
+    padding: 12px 16px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    color: var(--text-secondary);
+    background: var(--surface);
+    text-align: left;
+    transition: color var(--ease), border-color var(--ease), background var(--ease);
+}
+
+#mainContent .location-option:hover,
+#mainContent .location-option.selected {
+    border-color: var(--blue);
+    color: var(--blue-ink);
+    background: var(--blue-soft);
+}
+
+#mainContent .meta {
+    margin: 12px 0 0;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+#mainContent .meta.success {
+    color: var(--green);
+    font-weight: 700;
+}
+
+#mainContent .meta.pending {
+    color: var(--blue-ink);
+    font-weight: 700;
+}
+
+#mainContent .meta.error {
+    color: var(--red);
+    font-weight: 700;
+}
+
+#mainContent .location-section-label,
+#mainContent .location-group-title {
+    display: block;
+    margin-top: 18px;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+#mainContent .favorite-locations {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+#mainContent .favorite-location,
+#mainContent .saved-location {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    background: var(--surface-subtle);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+#mainContent .saved-location {
+    padding-right: 5px;
+}
+
+#mainContent .saved-location .favorite-location {
+    min-height: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+#mainContent .saved-location-remove {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    place-items: center;
+    color: var(--text-tertiary);
+    background: transparent;
+}
+
+#mainContent .location-empty {
+    color: var(--text-tertiary);
+    font-size: 13px;
+}
+
+#mainContent .result {
+    margin-top: 14px;
+    padding: 13px 15px;
+    border-radius: 13px;
+    color: var(--text-secondary);
+    background: var(--surface-subtle);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+#mainContent .result:empty,
+#mainContent .snapshot-note:empty {
+    display: none;
+}
+
+#mainContent .result.ok {
+    color: #087a59;
+    background: var(--green-soft);
+}
+
+#mainContent .result.error,
+#mainContent .decision-error,
+#mainContent .planner-error,
+#mainContent .hourly-error {
+    color: var(--red);
+    background: var(--red-soft);
+}
+
+#mainContent .subscribe-quick-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 16px;
+    padding: 24px 26px;
+    border: 0;
+    border-radius: 22px;
+    background: var(--blue-soft);
+}
+
+#mainContent .subscribe-quick-action > div {
+    display: grid;
+    gap: 4px;
+}
+
+#mainContent .subscribe-quick-action strong {
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -.45px;
+}
+
+#mainContent .subscribe-quick-action span {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+#mainContent .subscribe-quick-action button span {
+    color: #fff;
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+#mainContent .subscribe-quick-action button {
+    flex: 0 0 auto;
+}
+
+#mainContent .subscribe-drawer,
+#mainContent .manager-drawer,
+#mainContent .advanced-tools,
+#mainContent .secondary-insights {
+    overflow: clip;
+    margin: 16px 0 0;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+#mainContent .subscribe-drawer > summary,
+#mainContent .manager-drawer > summary,
+#mainContent .advanced-tools > summary,
+#mainContent .secondary-insights > summary {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 76px;
+    padding: 18px 60px 18px 24px;
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 800;
+    list-style: none;
+}
+
+#mainContent .subscribe-drawer > summary::-webkit-details-marker,
+#mainContent .manager-drawer > summary::-webkit-details-marker,
+#mainContent .advanced-tools > summary::-webkit-details-marker,
+#mainContent .secondary-insights > summary::-webkit-details-marker {
+    display: none;
+}
+
+#mainContent .subscribe-drawer > summary::after,
+#mainContent .manager-drawer > summary::after,
+#mainContent .advanced-tools > summary::after,
+#mainContent .secondary-insights > summary::after {
+    position: absolute;
+    right: 22px;
+    display: grid;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    place-items: center;
+    color: var(--text-secondary);
+    background: var(--surface-subtle);
+    content: "+";
+    font-size: 20px;
+    font-weight: 500;
+    transition: transform var(--ease), background var(--ease);
+}
+
+#mainContent details[open] > summary::after {
+    content: "−";
+    transform: rotate(180deg);
+}
+
+#mainContent .subscribe-drawer > summary > span {
+    display: grid;
+    gap: 3px;
+}
+
+#mainContent .subscribe-drawer > summary small,
+#mainContent .manager-drawer > summary span,
+#mainContent .advanced-tools > summary span {
+    margin-left: 10px;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#mainContent .subscribe-drawer[open] > summary,
+#mainContent .manager-drawer[open] > summary,
+#mainContent .advanced-tools[open] > summary,
+#mainContent .secondary-insights[open] > summary {
+    border-bottom: 1px solid var(--line);
+}
+
+#mainContent .panel {
+    padding: 30px;
+    border: 0;
+    border-radius: 0;
+    background: var(--surface);
+    box-shadow: none;
+}
+
+#mainContent .subscription-kicker {
+    color: var(--blue-ink);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+#mainContent .panel-heading,
+#mainContent .panel h2 {
+    margin: 8px 0 0;
+    color: var(--text);
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.3;
+    letter-spacing: -.9px;
+}
+
+#mainContent .panel-description {
+    margin: 10px 0 0;
+    color: var(--text-secondary);
+    font-size: 15px;
+}
+
+#mainContent .auth-notice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 24px;
+    padding: 18px;
+    border: 0;
+    border-radius: var(--radius-small);
+    color: var(--text-secondary);
+    background: var(--blue-soft);
+}
+
+#mainContent .auth-notice > div {
+    display: grid;
+    gap: 3px;
+}
+
+#mainContent .auth-notice strong {
+    color: var(--text);
+    font-size: 15px;
+}
+
+#mainContent .auth-notice span {
+    font-size: 13px;
+}
+
+#mainContent .verification-badge {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    border-radius: 999px;
+    color: var(--blue-ink);
+    background: var(--surface);
+    font-size: 12px !important;
+    font-weight: 800;
+}
+
+#mainContent .field {
+    margin-top: 26px;
+}
+
+#mainContent .subscription-options {
+    overflow: clip;
+    margin-top: 24px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--surface-subtle);
+}
+
+#mainContent .subscription-options > summary {
+    position: relative;
+    display: grid;
+    gap: 3px;
+    min-height: 72px;
+    padding: 16px 54px 16px 18px;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 800;
+    list-style: none;
+}
+
+#mainContent .subscription-options > summary::-webkit-details-marker {
+    display: none;
+}
+
+#mainContent .subscription-options > summary::after {
+    position: absolute;
+    top: 20px;
+    right: 16px;
+    display: grid;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    place-items: center;
+    color: var(--text-secondary);
+    background: var(--surface);
+    content: "+";
+    font-size: 19px;
+    font-weight: 500;
+}
+
+#mainContent .subscription-options[open] > summary::after {
+    content: "−";
+}
+
+#mainContent .subscription-options > summary small {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+#mainContent .subscription-options[open] > summary {
+    border-bottom: 1px solid var(--line);
+}
+
+#mainContent .subscription-options > .field,
+#mainContent .subscription-options > .smart-alert-card {
+    margin-right: 18px;
+    margin-left: 18px;
+}
+
+#mainContent .subscription-options > .smart-alert-card {
+    margin-bottom: 18px;
+}
+
+#mainContent .field > label,
+#mainContent .decision-field > label,
+#mainContent .split-fields label {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+#mainContent .email-verification-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+}
+
+#mainContent .time-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+#mainContent .time-option {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-small);
+    color: var(--text-secondary);
+    background: var(--surface-subtle);
+}
+
+#mainContent .schedule-option {
+    flex-direction: column;
+}
+
+#mainContent .schedule-toggle {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+#mainContent .schedule-toggle > span,
+#mainContent .time-option > span {
+    display: grid;
+    gap: 3px;
+}
+
+#mainContent .schedule-toggle strong,
+#mainContent .time-option strong {
+    color: var(--text);
+    font-size: 14px;
+}
+
+#mainContent .schedule-toggle span span,
+#mainContent .time-option span span {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+#mainContent input[type="checkbox"] {
+    width: 20px;
+    min-width: 20px;
+    height: 20px;
+    min-height: 20px;
+    margin: 1px 0 0;
+    padding: 0;
+    accent-color: var(--blue);
+    box-shadow: none;
+}
+
+#mainContent .time-input {
+    min-height: 44px;
+    background: var(--surface);
+}
+
+#mainContent .smart-alert-card {
+    display: grid;
+    gap: 8px;
+    margin-top: 26px;
+    padding: 20px;
+    border: 0;
+    border-radius: 18px;
+    color: var(--text-secondary);
+    background: var(--surface-subtle);
+}
+
+#mainContent .smart-alert-card > strong {
+    color: var(--text);
+    font-size: 16px;
+}
+
+#mainContent .smart-alert-card > span {
+    font-size: 13px;
+}
+
+#mainContent .smart-alert-master {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    color: var(--text);
+    font-weight: 700;
+}
+
+#mainContent .smart-alert-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+
+#mainContent .smart-alert-option {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--surface);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+#mainContent .smart-alert-card + .time-option {
+    margin-top: 20px;
+}
+
+#mainContent .subscription-actions {
+    margin-top: 24px;
+}
+
+#mainContent .subscription-actions .primary {
+    width: 100%;
+    min-height: 56px;
+    font-size: 16px;
+}
+
+#mainContent .weather-preview {
+    overflow: clip;
+    margin-top: 24px;
+    border: 0;
+    border-radius: 28px;
+    background: var(--surface);
+    box-shadow: var(--shadow-large);
+    transition: opacity var(--ease), transform var(--ease);
+}
+
+#mainContent #weatherSearch,
+#mainContent #weatherPreview,
+#mainContent #subscribeForm {
+    scroll-margin-top: 104px;
+}
+
+#mainContent .weather-preview.is-loading {
+    opacity: .65;
+}
+
+#mainContent .weather-preview-header {
+    padding: 30px;
+    border-bottom: 1px solid var(--line);
+    background: var(--blue-soft);
+}
+
+#mainContent #weatherPreview.weather-sunny .weather-preview-header {
+    background: var(--orange-soft);
+}
+
+#mainContent #weatherPreview.weather-rain .weather-preview-header,
+#mainContent #weatherPreview.weather-snow .weather-preview-header {
+    background: #eaf1f8;
+}
+
+body[data-theme="dark"] #mainContent #weatherPreview.weather-rain .weather-preview-header,
+body[data-theme="dark"] #mainContent #weatherPreview.weather-snow .weather-preview-header {
+    background: #203044;
+}
+
+#mainContent .weather-header-top,
+#mainContent .weather-toolbar,
+#mainContent .daily-insight-top,
+#mainContent .hourly-weather-header,
+#mainContent .planner-header,
+#mainContent .decision-window-header,
+#mainContent .decision-summary,
+#mainContent .route-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+#mainContent .weather-preview-title {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+#mainContent .day-tabs,
+#mainContent .period-tabs {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 13px;
+    background: rgba(255, 255, 255, .65);
+}
+
+body[data-theme="dark"] #mainContent .day-tabs,
+body[data-theme="dark"] #mainContent .period-tabs {
+    background: rgba(0, 0, 0, .16);
+}
+
+#mainContent .day-tab,
+#mainContent .period-tab {
+    min-height: 38px;
+    padding: 8px 13px;
+    border: 0;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    background: transparent;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+#mainContent .day-tab.selected,
+#mainContent .period-tab.selected {
+    color: var(--text);
+    background: var(--surface);
+    box-shadow: 0 2px 8px rgba(25, 31, 40, .08);
+}
+
+#mainContent .weather-preview-main {
+    margin-top: 28px;
+    color: var(--text);
+    font-size: clamp(30px, 6vw, 44px);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -1.4px;
+}
+
+#mainContent .weather-toolbar {
+    align-items: flex-end;
+    margin-top: 24px;
+}
+
+#mainContent .weather-toolbar-meta {
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
+#mainContent .weather-tool-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+#mainContent .weather-tool-button,
+#mainContent .share-weather {
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid rgba(139, 149, 161, .18);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, .58);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+body[data-theme="dark"] #mainContent .weather-tool-button,
+body[data-theme="dark"] #mainContent .share-weather {
+    background: rgba(0, 0, 0, .14);
+}
+
+#mainContent .weather-preview-body {
+    padding: 30px;
+    background: var(--surface);
+}
+
+#mainContent .period-tabs {
+    background: var(--surface-subtle);
+}
+
+#mainContent .current-weather {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) repeat(3, minmax(120px, .7fr));
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#mainContent .current-weather-copy,
+#mainContent .current-weather-metric {
+    display: grid;
+    align-content: center;
+    gap: 6px;
+    min-height: 100px;
+    padding: 16px;
+    border-radius: var(--radius-small);
+    background: var(--surface-subtle);
+}
+
+#mainContent .current-weather-copy strong,
+#mainContent .current-weather-metric strong {
+    color: var(--text);
+    font-size: 17px;
+}
+
+#mainContent .current-weather-copy span,
+#mainContent .current-weather-metric span {
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
+#mainContent .snapshot-note {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    background: var(--orange-soft);
+    font-size: 13px;
+}
+
+#mainContent .daily-insight,
+#mainContent .decision-explanation,
+#mainContent .safety-board,
+#mainContent .style-personalizer,
+#mainContent .style-preview,
+#mainContent .hourly-weather {
+    margin-top: 16px;
+    padding: 20px;
+    border: 0;
+    border-radius: 18px;
+    background: var(--surface-subtle);
+}
+
+#mainContent .daily-insight-label,
+#mainContent .decision-explanation-eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--blue-ink);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+#mainContent .daily-insight strong,
+#mainContent .decision-explanation-title,
+#mainContent .hourly-weather-header strong {
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 800;
+}
+
+#mainContent .daily-insight p,
+#mainContent .decision-explanation-copy {
+    margin: 10px 0 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+#mainContent .daily-periods {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+}
+
+#mainContent .daily-period-card {
+    display: grid;
+    gap: 6px;
+    min-height: 108px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-small);
+    color: var(--text-secondary);
+    background: var(--surface);
+    text-align: left;
+}
+
+#mainContent .daily-period-card.selected {
+    border-color: var(--blue);
+    background: var(--blue-soft);
+}
+
+#mainContent .daily-period-card strong {
+    color: var(--text);
+    font-size: 16px;
+}
+
+#mainContent .daily-period-card small {
+    color: var(--text-tertiary);
+}
+
+#mainContent .hourly-weather-header > div {
+    display: grid;
+    gap: 3px;
+}
+
+#mainContent .hourly-weather-header span,
+#mainContent .hourly-source {
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
+#mainContent .hourly-rain-summary {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    border-radius: 999px;
+    color: var(--blue-ink) !important;
+    background: var(--blue-soft);
+    font-weight: 800;
+}
+
+#mainContent .hourly-track {
+    display: grid;
+    grid-auto-columns: minmax(102px, 1fr);
+    grid-auto-flow: column;
+    gap: 8px;
+    margin: 16px -4px 10px;
+    padding: 4px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+}
+
+#mainContent .hourly-item {
+    display: grid;
+    gap: 5px;
+    min-height: 118px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+}
+
+#mainContent .hourly-item.rain-risk {
+    border-color: rgba(49, 130, 246, .35);
+    background: var(--blue-soft);
+}
+
+#mainContent .hourly-item time,
+#mainContent .hourly-item span {
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
+#mainContent .hourly-item strong {
+    color: var(--text);
+    font-size: 18px;
+}
+
+#mainContent .weather-score {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 22px;
+    padding: 22px;
+    border-radius: 18px;
+    background: var(--blue);
+}
+
+#mainContent .weather-score strong {
+    color: #fff;
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+#mainContent .weather-score span {
+    color: rgba(255, 255, 255, .82);
+    font-weight: 700;
+}
+
+#mainContent .weather-detail {
+    margin: 16px 4px 0;
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+#mainContent .secondary-insights {
+    border: 1px solid var(--line);
+    box-shadow: none;
+}
+
+#mainContent .secondary-insights > summary {
+    min-height: 64px;
+    font-size: 15px;
+}
+
+#mainContent .decision-explanation {
+    margin: 0 18px 16px;
+}
+
+#mainContent .decision-explanation-header {
+    align-items: flex-start;
+}
+
+#mainContent .decision-explanation-profile {
+    max-width: 42%;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    text-align: right;
+}
+
+#mainContent .risk-factor-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+#mainContent .risk-factor,
+#mainContent .risk-factor-empty {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 13px;
+    background: var(--surface);
+}
+
+#mainContent .risk-factor-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--blue);
+}
+
+#mainContent .risk-factor > div {
+    display: grid;
+    gap: 2px;
+}
+
+#mainContent .risk-factor strong {
+    color: var(--text);
+    font-size: 13px;
+}
+
+#mainContent .risk-factor span,
+#mainContent .risk-factor small,
+#mainContent .risk-factor-empty {
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
+#mainContent .risk-factor-impact {
+    color: var(--red) !important;
+    font-weight: 800;
+}
+
+#mainContent .weather-chip-row,
+#mainContent .action-grid,
+#mainContent .safety-grid,
+#mainContent .style-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0 18px 16px;
+}
+
+#mainContent .weather-chip,
+#mainContent .action-card,
+#mainContent .safety-item,
+#mainContent .style-item {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+    padding: 16px;
+    border-radius: 14px;
+    background: var(--surface-subtle);
+}
+
+#mainContent .weather-chip span,
+#mainContent .action-card span,
+#mainContent .safety-item span,
+#mainContent .style-item span {
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
+#mainContent .weather-chip strong,
+#mainContent .action-card strong,
+#mainContent .safety-item strong,
+#mainContent .style-item strong {
+    overflow-wrap: anywhere;
+    color: var(--text);
+    font-size: 15px;
+}
+
+#mainContent .safety-board,
+#mainContent .style-personalizer,
+#mainContent .style-preview {
+    margin: 0 18px 16px;
+}
+
+#mainContent .safety-board-header,
+#mainContent .style-personalizer > div:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+#mainContent .safety-board-header strong,
+#mainContent .style-personalizer strong,
+#mainContent .style-preview-title {
+    color: var(--text);
+    font-size: 17px;
+    font-weight: 800;
+}
+
+#mainContent .safety-board-header span,
+#mainContent .style-personalizer span,
+#mainContent .style-preview-detail {
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
+#mainContent .warning-banner {
+    margin-top: 14px;
+    padding: 13px 14px;
+    border-radius: 13px;
+    color: var(--red);
+    background: var(--red-soft);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+#mainContent .safety-grid,
+#mainContent .style-grid {
+    margin: 16px 0 0;
+}
+
+#mainContent .safety-item small {
+    color: var(--text-tertiary);
+    font-size: 11px;
+}
+
+#mainContent .style-personalizer {
+    display: grid;
+    gap: 16px;
+}
+
+#mainContent .split-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+#mainContent .style-preview-title,
+#mainContent .style-preview-detail {
+    margin: 0;
+}
+
+#mainContent .style-preview-detail {
+    margin-top: 6px;
+}
+
+#mainContent .style-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+#mainContent .style-item-wide {
+    grid-column: span 2;
+}
+
+#mainContent .advanced-tools {
+    margin-top: 24px;
+}
+
+#mainContent .advanced-tools > section,
+#mainContent .route-planner,
+#mainContent .decision-window,
+#mainContent .weather-planner {
+    margin: 0;
+    padding: 28px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--surface);
+    box-shadow: none;
+}
+
+#mainContent .advanced-tools > section:last-child,
+#mainContent .route-planner:last-child,
+#mainContent .decision-window:last-child,
+#mainContent .weather-planner:last-child {
+    border-bottom: 0;
+}
+
+#mainContent .decision-window h2,
+#mainContent .weather-planner h2,
+#mainContent .route-planner h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -.6px;
+}
+
+#mainContent .decision-window p,
+#mainContent .weather-planner p,
+#mainContent .route-planner > p {
+    margin: 8px 0 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+#mainContent .decision-badge,
+#mainContent .planner-recommendation,
+#mainContent .decision-improvement {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    border-radius: 999px;
+    color: var(--blue-ink);
+    background: var(--blue-soft);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+#mainContent .decision-form,
+#mainContent .route-form {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#mainContent .route-form {
+    grid-template-columns: 1fr 1fr auto;
+}
+
+#mainContent .decision-field {
+    min-width: 0;
+}
+
+#mainContent .decision-result,
+#mainContent .route-result {
+    margin-top: 18px;
+    padding: 20px;
+    border-radius: 18px;
+    background: var(--surface-subtle);
+}
+
+#mainContent .decision-summary h3,
+#mainContent .route-result h3,
+#mainContent .planner-day h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: 17px;
+}
+
+#mainContent .decision-candidates,
+#mainContent .planner-days,
+#mainContent .route-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+}
+
+#mainContent .decision-candidate,
+#mainContent .planner-day,
+#mainContent .route-metric {
+    display: grid;
+    gap: 6px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    color: var(--text-secondary);
+    background: var(--surface);
+    font-size: 13px;
+}
+
+#mainContent .decision-candidate.recommended,
+#mainContent .planner-day.recommended {
+    border-color: var(--blue);
+    background: var(--blue-soft);
+}
+
+#mainContent .planner-day-top,
+#mainContent .decision-actions,
+#mainContent .planner-actions,
+#mainContent .manager-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+#mainContent .planner-score {
+    color: var(--blue-ink);
+    font-weight: 800;
+}
+
+#mainContent .decision-actions,
+#mainContent .planner-actions {
+    margin-top: 16px;
+}
+
+#mainContent .planner-packing {
+    display: grid;
+    gap: 3px;
+}
+
+#mainContent .planner-packing span,
+#mainContent .planner-trust,
+#mainContent .route-places {
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
+#mainContent .planner-trust {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+#mainContent .planner-trust a {
+    color: var(--blue-ink);
+    font-weight: 700;
+}
+
+#mainContent .route-checklist {
+    margin: 16px 0 0;
+    padding-left: 20px;
+    color: var(--text-secondary);
+}
+
+#mainContent .manager-drawer {
+    margin-top: 24px;
+}
+
+#mainContent .manager-actions {
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+#mainContent .site-footer {
+    margin: 38px 0 0;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    text-align: center;
+}
+
+.briefing-dialog {
+    width: min(calc(100% - 32px), 620px);
+    max-height: calc(100dvh - 32px);
+    padding: 0;
+    overflow: auto;
+    border: 0;
+    border-radius: 26px;
+    color: var(--text);
+    background: var(--surface);
+    box-shadow: var(--shadow-large);
+}
+
+.briefing-dialog::backdrop {
+    background: rgba(25, 31, 40, .58);
+}
+
+.mail-preview-shell {
+    overflow: clip;
+    background: var(--surface);
+}
+
+.mail-preview-topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--line);
+}
+
+.mail-preview-brand {
+    color: var(--text);
+    font-size: 17px;
+}
+
+.mail-preview-topbar > span {
+    color: var(--text-tertiary);
+    font-size: 11px;
+}
+
+.mail-preview-close {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    margin-left: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    place-items: center;
+    color: var(--text-secondary);
+    background: var(--surface-subtle);
+    font-size: 22px;
+}
+
+.mail-preview-content {
+    padding: 28px;
+}
+
+.mail-preview-kicker {
+    margin: 0;
+    color: var(--blue-ink);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.mail-preview-title {
+    margin: 8px 0 0;
+    color: var(--text);
+    font-size: 30px;
+    letter-spacing: -1px;
+}
+
+.mail-preview-date {
+    margin: 8px 0 0;
+    color: var(--text-tertiary);
+    font-size: 13px;
+}
+
+.mail-preview-score {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 22px;
+    padding: 20px;
+    border-radius: 18px;
+    color: #fff;
+    background: var(--blue);
+}
+
+.mail-preview-score span,
+.mail-preview-score em {
+    color: rgba(255, 255, 255, .8);
+    font-size: 12px;
+    font-style: normal;
+}
+
+.mail-preview-score strong {
+    display: block;
+    font-size: 28px;
+}
+
+.mail-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.mail-preview-metric,
+.mail-preview-section {
+    padding: 16px;
+    border-radius: 14px;
+    background: var(--surface-subtle);
+}
+
+.mail-preview-metric {
+    display: grid;
+    gap: 4px;
+}
+
+.mail-preview-metric span {
+    color: var(--text-tertiary);
+    font-size: 11px;
+}
+
+.mail-preview-metric strong {
+    color: var(--text);
+}
+
+.mail-preview-section {
+    margin-top: 10px;
+}
+
+.mail-preview-section h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: 14px;
+}
+
+.mail-preview-section p {
+    margin: 6px 0 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.mail-preview-footer {
+    padding: 16px 24px 22px;
+    color: var(--text-tertiary);
+    background: var(--surface-subtle);
+    font-size: 11px;
+    text-align: center;
+}
+
+@media (max-width: 760px) {
+    #mainContent {
+        width: min(calc(100% - 24px), 640px);
+        padding-top: 8px;
+    }
+
+    #mainContent .account-bar {
+        align-items: flex-start;
+        padding: 10px 12px;
+        font-size: 11px;
+    }
+
+    #mainContent .weather-app-header {
+        top: 8px;
+        min-height: 58px;
+        padding: 7px 7px 7px 12px;
+        border-radius: 17px;
+    }
+
+    #mainContent .weather-brand {
+        gap: 8px;
+        font-size: 16px;
+    }
+
+    #mainContent .weather-brand-mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 11px;
+    }
+
+    #mainContent .weather-nav a:not(.weather-nav-cta) {
+        display: none;
+    }
+
+    #mainContent .weather-nav .weather-nav-cta {
+        min-height: 42px;
+        padding: 10px 13px;
+        font-size: 13px;
+    }
+
+    #mainContent .eyebrow {
+        margin-top: 50px;
+    }
+
+    #mainContent h1 {
+        margin-top: 14px;
+        font-size: clamp(36px, 11vw, 48px);
+        letter-spacing: -1.7px;
+    }
+
+    #mainContent .intro {
+        margin-top: 18px;
+        font-size: 16px;
+    }
+
+    #mainContent .hero-badges {
+        margin-top: 20px;
+    }
+
+    #mainContent .hero-badge,
+    #mainContent .hero-install {
+        min-height: 34px;
+        padding: 7px 10px;
+        font-size: 11px;
+    }
+
+    #mainContent .dashboard-search-card {
+        margin-top: 30px;
+        padding: 20px;
+        border-radius: 22px;
+    }
+
+    #mainContent .dashboard-search-copy {
+        display: grid;
+        gap: 4px;
+        margin-bottom: 14px;
+    }
+
+    #mainContent .dashboard-search-copy strong {
+        font-size: 19px;
+    }
+
+    #mainContent .dashboard-search-copy span {
+        font-size: 13px;
+    }
+
+    #mainContent .location-search {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    #mainContent .location-search input {
+        grid-column: 1 / -1;
+    }
+
+    #mainContent .location-search button {
+        width: 100%;
+        min-height: 48px;
+    }
+
+    #mainContent .subscribe-quick-action {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 16px;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    #mainContent .subscribe-quick-action button {
+        width: 100%;
+    }
+
+    #mainContent .subscribe-drawer > summary,
+    #mainContent .manager-drawer > summary,
+    #mainContent .advanced-tools > summary,
+    #mainContent .secondary-insights > summary {
+        min-height: 68px;
+        padding: 16px 54px 16px 18px;
+        font-size: 16px;
+    }
+
+    #mainContent .subscribe-drawer > summary::after,
+    #mainContent .manager-drawer > summary::after,
+    #mainContent .advanced-tools > summary::after,
+    #mainContent .secondary-insights > summary::after {
+        right: 16px;
+    }
+
+    #mainContent .subscribe-drawer > summary small,
+    #mainContent .manager-drawer > summary span,
+    #mainContent .advanced-tools > summary span {
+        display: block;
+        margin: 3px 0 0;
+        font-size: 11px;
+    }
+
+    #mainContent .panel {
+        padding: 22px 18px;
+    }
+
+    #mainContent .panel-heading,
+    #mainContent .panel h2 {
+        font-size: 24px;
+    }
+
+    #mainContent .auth-notice {
+        align-items: flex-start;
+        padding: 16px;
+    }
+
+    #mainContent .verification-badge {
+        display: none;
+    }
+
+    #mainContent .email-verification-row,
+    #mainContent .time-options,
+    #mainContent .smart-alert-grid,
+    #mainContent .split-fields {
+        grid-template-columns: 1fr;
+    }
+
+    #mainContent .email-verification-row button {
+        width: 100%;
+    }
+
+    #mainContent .weather-preview {
+        border-radius: 22px;
+    }
+
+    #mainContent .weather-preview-header,
+    #mainContent .weather-preview-body {
+        padding: 20px;
+    }
+
+    #mainContent .weather-header-top,
+    #mainContent .weather-toolbar,
+    #mainContent .daily-insight-top,
+    #mainContent .hourly-weather-header,
+    #mainContent .planner-header,
+    #mainContent .decision-window-header,
+    #mainContent .decision-summary,
+    #mainContent .route-result-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    #mainContent .weather-preview-main {
+        margin-top: 22px;
+        font-size: 31px;
+    }
+
+    #mainContent .weather-toolbar {
+        margin-top: 18px;
+    }
+
+    #mainContent .weather-tool-actions {
+        width: 100%;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        padding-bottom: 3px;
+        overflow-x: auto;
+    }
+
+    #mainContent .weather-tool-button {
+        flex: 0 0 auto;
+        min-height: 44px;
+    }
+
+    #mainContent .current-weather {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #mainContent .current-weather-copy {
+        grid-column: 1 / -1;
+    }
+
+    #mainContent .current-weather-metric:last-child {
+        grid-column: 1 / -1;
+    }
+
+    #mainContent .daily-periods,
+    #mainContent .weather-chip-row,
+    #mainContent .action-grid,
+    #mainContent .safety-grid,
+    #mainContent .style-grid,
+    #mainContent .decision-candidates,
+    #mainContent .planner-days,
+    #mainContent .route-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    #mainContent .daily-periods {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    #mainContent .daily-period-card {
+        min-height: 96px;
+        padding: 12px;
+    }
+
+    #mainContent .decision-explanation,
+    #mainContent .safety-board,
+    #mainContent .style-personalizer,
+    #mainContent .style-preview,
+    #mainContent .weather-chip-row,
+    #mainContent .action-grid {
+        margin-right: 12px;
+        margin-left: 12px;
+    }
+
+    #mainContent .decision-explanation-header {
+        flex-direction: column;
+    }
+
+    #mainContent .decision-explanation-profile {
+        max-width: none;
+        text-align: left;
+    }
+
+    #mainContent .style-item-wide {
+        grid-column: auto;
+    }
+
+    #mainContent .advanced-tools > section,
+    #mainContent .route-planner,
+    #mainContent .decision-window,
+    #mainContent .weather-planner {
+        padding: 22px 18px;
+    }
+
+    #mainContent .decision-form,
+    #mainContent .route-form {
+        grid-template-columns: 1fr;
+    }
+
+    #mainContent .decision-actions,
+    #mainContent .planner-actions,
+    #mainContent .manager-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    #mainContent .decision-actions button,
+    #mainContent .planner-actions button,
+    #mainContent .manager-actions button {
+        width: 100%;
+    }
+
+    .briefing-dialog {
+        width: calc(100% - 20px);
+        max-height: calc(100dvh - 20px);
+        border-radius: 22px;
+    }
+
+    .mail-preview-content {
+        padding: 22px 18px;
+    }
+}
+
+@media (max-width: 420px) {
+    #mainContent h1 {
+        font-size: 34px;
+    }
+
+    #mainContent .day-tabs,
+    #mainContent .period-tabs {
+        width: 100%;
+    }
+
+    #mainContent .day-tab,
+    #mainContent .period-tab {
+        flex: 1 1 0;
+        padding-inline: 8px;
+    }
+
+    #mainContent .daily-period-card {
+        font-size: 12px;
+    }
+
+    .mail-preview-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+@media print {
+    body {
+        background: #fff;
+    }
+
+    #mainContent {
+        width: 100%;
+        padding: 0;
+    }
+
+    #mainContent .weather-app-header,
+    #mainContent .account-bar,
+    #mainContent .eyebrow,
+    #mainContent h1,
+    #mainContent .intro,
+    #mainContent .hero-badges,
+    #mainContent .dashboard-search-card,
+    #mainContent .subscribe-quick-action,
+    #mainContent .subscribe-drawer,
+    #mainContent .manager-drawer,
+    #mainContent .advanced-tools,
+    #mainContent .site-footer,
+    #mainContent .weather-tool-actions {
+        display: none !important;
+    }
+
+    #mainContent .weather-preview {
+        margin: 0;
+        border: 1px solid #ddd;
+        box-shadow: none;
+    }
+}
