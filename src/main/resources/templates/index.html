@@ -3704,6 +3704,135 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        .subscribe-quick-action {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 12px;
+            padding: 14px 16px;
+            border: 1px solid #cfe5fb;
+            border-radius: 20px;
+            background: rgba(255,255,255,.82);
+            box-shadow: 0 8px 20px rgba(55,79,108,.08);
+        }
+
+        .subscribe-quick-action strong,
+        .subscribe-quick-action span {
+            display: block;
+        }
+
+        .subscribe-quick-action strong {
+            color: #1d4267;
+            font-size: 14px;
+        }
+
+        .subscribe-quick-action span {
+            margin-top: 3px;
+            color: #72869b;
+            font-size: 11px;
+            line-height: 1.45;
+        }
+
+        .subscribe-quick-action button {
+            flex: 0 0 auto;
+            min-height: 38px;
+            padding: 0 14px;
+            white-space: nowrap;
+        }
+
+        .subscribe-quick-action.signed-in {
+            border-color: #ccebd8;
+            background: #f3fbf6;
+        }
+
+        .subscription-result {
+            margin-top: 14px;
+            padding: 13px 14px;
+            line-height: 1.55;
+            font-size: 13px;
+        }
+
+        .subscription-result::before {
+            display: inline-grid;
+            width: 20px;
+            height: 20px;
+            margin-right: 7px;
+            place-items: center;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 900;
+            vertical-align: -3px;
+        }
+
+        .subscription-result.ok::before {
+            content: "✓";
+            color: #087443;
+            background: #d9f7e7;
+        }
+
+        .subscription-result.error::before {
+            content: "!";
+            color: #a52b2b;
+            background: #ffe0e0;
+        }
+
+        #email.has-error {
+            border-color: #e48b8b;
+            background: #fff8f8;
+        }
+
+        #email.has-success {
+            border-color: #82c99e;
+            background: #f6fff8;
+        }
+
+        @media (max-width: 560px) {
+            .subscribe-quick-action {
+                position: sticky;
+                bottom: 12px;
+                z-index: 15;
+                align-items: flex-start;
+                padding: 12px;
+            }
+
+            .subscribe-quick-action strong {
+                font-size: 13px;
+            }
+
+            .subscribe-quick-action span {
+                font-size: 10px;
+            }
+
+            .subscribe-quick-action button {
+                min-height: 36px;
+                padding: 0 12px;
+            }
+        }
+
+        body[data-theme="dark"] .subscribe-quick-action {
+            border-color: #2c4a63;
+            background: #192b3a;
+        }
+
+        body[data-theme="dark"] .subscribe-quick-action strong {
+            color: #e6f2ff;
+        }
+
+        body[data-theme="dark"] .subscribe-quick-action span {
+            color: #a8bdcf;
+        }
+
+        body[data-theme="dark"] #email.has-error {
+            border-color: #9b6060;
+            background: #2a1f22;
+        }
+
+        body[data-theme="dark"] #email.has-success {
+            border-color: #4d936a;
+            background: #1d2d24;
+        }
     </style>
 </head>
 <body>
@@ -3745,9 +3874,18 @@
                 </div>
                 <div class="location-results" id="locationResults" aria-label="위치 검색 결과"></div>
                 <p class="meta" id="locationMeta" aria-live="polite">지역을 검색하거나 현재 위치를 선택해주세요.</p>
-                <div class="result" id="result" role="status"></div>
+                <div class="result" id="searchResult" role="status" aria-live="polite"></div>
                 <span class="location-section-label">빠른 이동</span>
                 <div class="favorite-locations" id="favoriteLocations" aria-label="저장한 장소와 최근 본 장소"></div>
+            </div>
+            <div class="subscribe-quick-action" th:classappend="${signedIn} ? ' signed-in' : ''">
+                <div>
+                    <strong th:text="${signedIn} ? '이 날씨를 메일로도 받아볼까요?' : '날씨 알림을 받아보세요'">날씨 알림을 받아보세요</strong>
+                    <span>지역을 고르고 이메일만 인증하면 바로 시작할 수 있어요.</span>
+                </div>
+                <button class="primary" type="button" id="openSubscribeTop">
+                    <span th:text="${signedIn} ? '알림 설정' : '알림 받기'">알림 받기</span>
+                </button>
             </div>
             <div class="weather-preview" id="weatherPreview" hidden>
                 <div class="weather-preview-header">
@@ -4099,10 +4237,10 @@
                 <div class="field">
                     <label for="email">로그인 계정 이메일</label>
                     <div class="email-verification-row">
-                        <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="본인 이메일을 입력해주세요">
+                        <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" aria-describedby="emailVerificationStatus" placeholder="본인 이메일을 입력해주세요">
                         <button class="secondary" type="button" id="requestEmailVerification">인증 메일 보내기</button>
                     </div>
-                    <p class="meta" id="emailVerificationStatus">인증 메일의 링크를 누른 이메일만 로그인 계정에 연결됩니다.</p>
+                    <p class="meta" id="emailVerificationStatus" role="status" aria-live="polite">① 이메일 입력 ② 인증 메일의 버튼 클릭 ③ 구독하기를 눌러주세요.</p>
                     <input id="emailVerificationToken" type="hidden">
                 </div>
 
@@ -4170,7 +4308,7 @@
                     <button class="primary" type="submit" id="submitButton">구독하기</button>
                 </div>
                 <p class="meta">구독 해지와 개인정보 삭제는 로그인 후 ‘내 날씨 알림 관리’에서만 가능합니다.</p>
-                <div class="result" id="result" role="status"></div>
+                <div class="result subscription-result" id="subscriptionResult" role="status" aria-live="polite"></div>
             </form>
         </section>
         </details>
@@ -4262,7 +4400,10 @@
     const locationResults = document.getElementById("locationResults");
     const locationMeta = document.getElementById("locationMeta");
     const favoriteLocations = document.getElementById("favoriteLocations");
-    const result = document.getElementById("result");
+    const searchResult = document.getElementById("searchResult");
+    const subscriptionResult = document.getElementById("subscriptionResult");
+    const subscribeDrawer = document.querySelector(".subscribe-drawer");
+    const openSubscribeTop = document.getElementById("openSubscribeTop");
     const submitButton = document.getElementById("submitButton");
     const emailInput = document.getElementById("email");
     const requestEmailVerificationButton = document.getElementById("requestEmailVerification");
@@ -4595,7 +4736,7 @@
             });
             const payload = await response.json().catch(() => ({}));
             if (!response.ok) {
-                const error = new Error(getApiError(payload, fallbackMessage));
+                const error = new Error(getApiError(payload, fallbackMessage, response.status));
                 error.status = response.status;
                 error.requestId = response.headers.get("X-Request-Id");
                 throw error;
@@ -4686,6 +4827,7 @@
         if (event.target === briefingPreviewDialog) briefingPreviewDialog.close();
     });
     printWeatherButton.addEventListener("click", () => window.print());
+    openSubscribeTop.addEventListener("click", openSubscriptionPanel);
     locationQuery.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -4713,7 +4855,7 @@
     });
 
     requestEmailVerificationButton.addEventListener("click", async () => {
-        result.className = "result";
+        subscriptionResult.className = "result subscription-result";
         if (!signedIn) {
             saveSubscriptionDraft();
             window.location.assign(googleLoginUrl);
@@ -4738,7 +4880,7 @@
                 body: JSON.stringify({email})
             });
             const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(getApiError(data, "인증 메일을 보내지 못했습니다."));
+            if (!response.ok) throw new Error(getApiError(data, "인증 메일을 보내지 못했습니다.", response.status));
             setEmailVerificationState(data.message || "인증 메일을 보냈습니다. 메일의 인증 버튼을 눌러주세요.", true);
         } catch (error) {
             setEmailVerificationState(getNetworkError(error, "인증 메일 요청 중 서버 연결이 끊겼습니다."), false);
@@ -4750,10 +4892,11 @@
 
     document.getElementById("subscribeForm").addEventListener("submit", async (event) => {
         event.preventDefault();
-        result.className = "result";
+        subscriptionResult.className = "result subscription-result";
 
         if (!selectedLocation) {
-            showResult("날씨를 받을 위치를 먼저 선택해주세요.", false);
+            showSubscriptionResult("1단계가 남았어요 · 먼저 위에서 지역을 검색하고 선택해주세요.", false);
+            locationQuery.focus();
             return;
         }
 
@@ -4792,13 +4935,15 @@
         };
 
         if (!payload.email) {
-            showResult("본인 이메일을 입력해주세요.", false);
+            showSubscriptionResult("이메일 주소를 입력해주세요.", false);
+            emailInput.focus();
             submitButton.disabled = false;
             submitButton.textContent = "구독하기";
             return;
         }
         if (!emailVerificationToken) {
-            showResult("인증 메일의 링크를 먼저 눌러주세요.", false);
+            showSubscriptionResult("이메일 인증이 아직 안 됐어요 · 받은 메일의 ‘이메일 인증하기’ 버튼을 먼저 눌러주세요.", false);
+            requestEmailVerificationButton.focus();
             submitButton.disabled = false;
             submitButton.textContent = "구독하기";
             return;
@@ -4812,9 +4957,9 @@
             });
 
             const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(getApiError(data, "구독 처리에 실패했습니다."));
+            if (!response.ok) throw new Error(getApiError(data, "구독 처리에 실패했습니다.", response.status));
 
-            showResult(data.message || "이메일 인증이 확인되어 구독이 완료되었습니다. 메일함을 확인해주세요.", true);
+            showSubscriptionResult(data.message || "구독이 완료됐어요 · 선택한 시간에 날씨를 보내드릴게요.", true);
             setEmailVerificationState("이 이메일은 현재 로그인 계정에 연결되어 있습니다.", true);
             emailVerificationToken = "";
             emailVerificationTokenInput.value = "";
@@ -4822,7 +4967,7 @@
                 await loadCurrentSubscription();
             }
         } catch (error) {
-            showResult(getNetworkError(error, "구독 처리 중 서버 연결이 끊겼습니다. 잠시 후 다시 시도해주세요."), false);
+            showSubscriptionResult(getNetworkError(error, "구독 처리 중 연결이 끊겼어요 · 잠시 후 다시 시도해주세요."), false);
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = "구독하기";
@@ -4832,6 +4977,9 @@
     function setEmailVerificationState(message, ok) {
         emailVerificationStatus.textContent = message;
         emailVerificationStatus.className = ok ? "meta success" : "meta error";
+        emailInput.classList.toggle("has-error", !ok);
+        emailInput.classList.toggle("has-success", ok);
+        emailInput.setAttribute("aria-invalid", String(!ok));
     }
 
     function restoreEmailVerificationFromUrl() {
@@ -4854,7 +5002,10 @@
     }
 
     function getNetworkError(error, fallback) {
-        return error instanceof TypeError ? fallback : error.message;
+        const message = String(error?.message || "").trim();
+        return error instanceof TypeError || !message || message === "Failed to fetch"
+            ? fallback
+            : message;
     }
 
     function saveSubscriptionDraft() {
@@ -4911,7 +5062,8 @@
                 loadWeatherPreview(selectedLocation);
             }
             if (signedIn) {
-                showResult("로그인이 완료됐습니다. 이메일 인증을 마친 뒤 구독 버튼을 눌러주세요.", true);
+                openSubscriptionPanel({focusForm: true, scroll: false});
+                showSubscriptionResult("로그인이 완료됐어요 · 이메일 인증을 마치면 구독할 수 있어요.", true);
                 sessionStorage.removeItem(subscriptionDraftKey);
             }
         } catch (error) {
@@ -4946,7 +5098,7 @@
             selectLocation(locations[0], 0);
         } catch (error) {
             locationMeta.textContent = "지역을 검색한 뒤 결과를 선택해주세요.";
-            showResult(error.message, false);
+            showResult(getNetworkError(error, "지역 검색 서버에 연결할 수 없어요. 잠시 후 다시 시도해주세요."), false);
         } finally {
             searchButton.disabled = false;
             searchButton.textContent = "검색";
@@ -4975,7 +5127,7 @@
                 renderLocationResults([location]);
                 selectLocation(location, 0);
             } catch (error) {
-                showResult(error.message, false);
+                showResult(getNetworkError(error, "현재 위치를 확인할 수 없어요. 위치 권한을 확인하거나 지역명을 검색해주세요."), false);
             } finally {
                 currentLocationButton.disabled = false;
                 currentLocationButton.textContent = "현재 위치";
@@ -5143,8 +5295,33 @@
     }
 
     function showResult(message, ok) {
-        result.textContent = message;
-        result.className = ok ? "result ok" : "result error";
+        searchResult.textContent = message;
+        searchResult.className = ok ? "result ok" : "result error";
+    }
+
+    function showSubscriptionResult(message, ok) {
+        subscriptionResult.textContent = message;
+        subscriptionResult.className = ok
+            ? "result subscription-result ok"
+            : "result subscription-result error";
+    }
+
+    function openSubscriptionPanel(options = {}) {
+        const {focusForm = true, scroll = true} = options;
+        if (!subscribeDrawer) return;
+        subscribeDrawer.open = true;
+        const hasLocation = Boolean(selectedLocation);
+        const target = hasLocation ? document.getElementById("name") : locationQuery;
+        const scrollTarget = hasLocation ? subscribeDrawer : document.getElementById("weatherSearch");
+        if (!hasLocation) {
+            showSubscriptionResult("먼저 받을 지역을 선택해주세요 · 지역을 고르면 여기서 바로 이어서 설정할 수 있어요.", false);
+        }
+        if (scroll) {
+            scrollTarget?.scrollIntoView({behavior: "smooth", block: "center"});
+        }
+        if (focusForm) {
+            window.setTimeout(() => target?.focus(), scroll ? 350 : 0);
+        }
     }
 
     function locationContext(location) {
@@ -5255,8 +5432,9 @@
                 weatherDetail.textContent = "네트워크가 회복되면 새로고침 버튼으로 최신 예보를 다시 확인할 수 있어요.";
             } else {
                 weatherPreviewMain.textContent = "날씨 확인 실패";
-                weatherDetail.textContent = error.message;
-                showResult(error.message, false);
+                const message = getNetworkError(error, "날씨 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+                weatherDetail.textContent = message;
+                showResult(message, false);
             }
         } finally {
             if (weatherLoadVersion === loadVersion) {
@@ -5324,7 +5502,7 @@
             if (error.name === "AbortError") return;
             hourlyHeadline.textContent = "시간별 상세 예보를 잠시 사용할 수 없어요.";
             hourlyRainSummary.textContent = "재시도 필요";
-            hourlyError.textContent = error.message;
+            hourlyError.textContent = getNetworkError(error, "시간별 예보를 불러오지 못했어요. 잠시 후 새로고침해주세요.");
             hourlyError.hidden = false;
         } finally {
             hourlyWeather.setAttribute("aria-busy", "false");
@@ -5390,7 +5568,7 @@
         } catch (error) {
             if (error.name === "AbortError") return;
             weatherPlannerData = null;
-            plannerError.textContent = error.message;
+            plannerError.textContent = getNetworkError(error, "플래너를 계산하지 못했어요. 잠시 후 다시 시도해주세요.");
             plannerError.hidden = false;
             plannerHeadline.textContent = "3일 비교를 잠시 사용할 수 없어요.";
             plannerRecommendation.textContent = "재시도 필요";
@@ -5467,7 +5645,7 @@
         } catch (error) {
             if (error.name === "AbortError") return;
             weatherDecisionData = null;
-            decisionError.textContent = error.message;
+            decisionError.textContent = getNetworkError(error, "추천 시간을 계산하지 못했어요. 날짜와 시간을 다시 확인해주세요.");
             decisionError.hidden = false;
         } finally {
             decisionWindow.setAttribute("aria-busy", "false");
@@ -5825,7 +6003,7 @@
             });
         } catch (error) {
             if (error.name === "AbortError") return;
-            routeHeadline.textContent = error.message;
+            routeHeadline.textContent = getNetworkError(error, "경로 날씨를 계산하지 못했어요. 출발지와 목적지를 다시 확인해주세요.");
         } finally {
             loadRouteBriefingButton.disabled = false;
             loadRouteBriefingButton.textContent = "경로 분석";
@@ -5894,7 +6072,7 @@
                 await loadWeatherPreview(selectedLocation);
             }
         } catch (error) {
-            showManagerResult(error.message, false);
+            showManagerResult(getNetworkError(error, "구독 정보를 불러오지 못했어요. 로그인 상태를 확인해주세요."), false);
         }
     }
 
@@ -5923,7 +6101,7 @@
             document.getElementById("manageEveningTime").value = normalizeTimeInput(data.eveningTime, "18:30");
             showManagerResult(data.message, true);
         } catch (error) {
-            showManagerResult(error.message, false);
+            showManagerResult(getNetworkError(error, "알림 시간을 저장하지 못했어요. 잠시 후 다시 시도해주세요."), false);
         } finally {
             saveNotifications.disabled = false;
         }
@@ -5941,7 +6119,7 @@
             showManagerResult(data.message, true);
             managerControls.hidden = true;
         } catch (error) {
-            showManagerResult(error.message, false);
+            showManagerResult(getNetworkError(error, "구독을 해지하지 못했어요. 잠시 후 다시 시도해주세요."), false);
             cancelSubscription.disabled = false;
         }
     }
@@ -5951,9 +6129,27 @@
         managerResult.className = ok ? "result ok" : "result error";
     }
 
-    function getApiError(data, fallback) {
-        const message = data && data.message ? data.message : fallback;
-        return data && data.requestId ? `${message} (문의 코드: ${data.requestId})` : message;
+    function getApiError(data, fallback, responseStatus = null) {
+        const rawMessage = data && data.message ? String(data.message).trim() : "";
+        const code = String(data?.code || "");
+        const status = Number(responseStatus || data?.status || 0);
+        let message = rawMessage || fallback;
+
+        if (code === "RATE_LIMITED") {
+            message = "요청이 잠시 많아요 · 1분 후 다시 시도해주세요.";
+        } else if (code === "DATABASE_UNAVAILABLE") {
+            message = "서버가 잠시 바빠요 · 잠시 후 다시 시도해주세요.";
+        } else if (status === 401 || code === "UNAUTHORIZED") {
+            message = "먼저 Google 로그인을 완료해주세요.";
+        } else if (code === "ACCESS_DENIED" && !/(로그인|이메일|인증|계정)/.test(rawMessage)) {
+            message = "로그인 계정과 이메일 인증을 확인해주세요.";
+        } else if (status >= 500 && !rawMessage) {
+            message = "서버가 잠시 바빠요 · 잠시 후 다시 시도해주세요.";
+        }
+
+        return data?.requestId
+            ? `${message} 문제가 계속되면 오류 코드 ${data.requestId}를 알려주세요.`
+            : message;
     }
 
     async function updateSmartAlerts() {
@@ -5974,7 +6170,7 @@
             if (!response.ok) throw new Error(getApiError(data, "스마트 알림을 저장하지 못했습니다."));
             showManagerResult(data.message, true);
         } catch (error) {
-            showManagerResult(error.message, false);
+            showManagerResult(getNetworkError(error, "스마트 알림을 저장하지 못했어요. 잠시 후 다시 시도해주세요."), false);
         } finally {
             saveSmartAlerts.disabled = false;
         }
@@ -6000,7 +6196,7 @@
             showManagerResult("구독과 저장된 개인정보를 완전히 삭제했습니다.", true);
             managerControls.hidden = true;
         } catch (error) {
-            showManagerResult(error.message, false);
+            showManagerResult(getNetworkError(error, "개인정보를 삭제하지 못했어요. 잠시 후 다시 시도해주세요."), false);
             deletePersonalData.disabled = false;
         }
     }
