@@ -74,3 +74,18 @@ X-Request-Id: 요청 추적 ID
 ```
 
 `PATCH /api/users/me/notifications`가 성공하면 저장된 시각과 사용 여부가 함께 반환됩니다. 발송 작업은 매분 해당 시각의 구독자만 조회하며, 같은 사용자·시간대는 한국 날짜마다 한 번만 claim하여 다중 인스턴스 환경의 중복 발송을 줄입니다.
+
+## 로그인 이메일 소유권 인증
+
+운영 환경에서는 Coders 인증 게이트웨이가 전달하는 `X-Coders-User` UUID를 구독 소유자로 사용합니다. 게이트웨이는 원문 Google 이메일을 애플리케이션에 전달하지 않으므로, 구독 화면에서 이메일 소유권 인증을 한 번 완료해야 합니다.
+
+1. 로그인 상태에서 `POST /api/users/email-verification/request`를 호출합니다.
+
+   ```json
+   { "email": "me@example.com" }
+   ```
+
+2. 메일의 인증 링크(`GET /api/users/email-verification/confirm?token=...`)를 15분 안에 엽니다.
+3. 인증 링크가 돌려준 토큰을 `POST /api/users/subscribe`의 `verificationToken`으로 전달합니다.
+
+운영 구독 요청은 `email`과 `verificationToken`을 정확히 한 개씩 요구하고, 인증 챌린지의 이메일과 요청 이메일이 다르면 거부합니다. 토큰은 서버에 SHA-256 해시로 저장하고 구독에 사용한 즉시 폐기합니다. 이메일 인증 챌린지에는 `ownerId`가 함께 저장되므로 다른 로그인 계정이 토큰을 재사용할 수 없습니다.
