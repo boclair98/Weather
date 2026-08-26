@@ -4219,7 +4219,7 @@
                 <small>필요한 시간에만 메일로 받아요</small>
             </summary>
         <section class="panel" aria-label="날씨 구독 신청">
-            <form id="subscribeForm">
+            <form id="subscribeForm" novalidate>
                 <h2 class="panel-heading">이 브리핑을 받아보세요</h2>
                 <p class="panel-description">선택한 위치와 체감 설정 그대로, 필요한 시간에만 보내드립니다.</p>
                 <div class="auth-notice" th:classappend="${signedIn} ? ' signed-in' : ''">
@@ -4903,6 +4903,19 @@
         if (!signedIn) {
             saveSubscriptionDraft();
             window.location.assign(googleLoginUrl);
+            return;
+        }
+
+        const nameInput = document.getElementById("name");
+        const privacyConsent = document.getElementById("privacyConsent");
+        if (!nameInput.value.trim()) {
+            showSubscriptionResult("이름을 입력해주세요 · 메일에 표시될 이름이에요.", false);
+            nameInput.focus();
+            return;
+        }
+        if (!privacyConsent.checked) {
+            showSubscriptionResult("필수 동의가 남아 있어요 · 개인정보 수집·이용 동의를 확인해주세요.", false);
+            privacyConsent.focus();
             return;
         }
 
