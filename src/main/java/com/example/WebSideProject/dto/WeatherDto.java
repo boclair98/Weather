@@ -785,7 +785,7 @@ public class WeatherDto {
             return "#1f4f7a";
         }
         if ("1".equals(sky)) {
-            return "#d97706";
+            return "#b45309";
         }
         if ("4".equals(sky)) {
             return "#475569";
