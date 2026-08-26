@@ -2842,6 +2842,867 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Focused weather surface: a calm, glanceable layout for desktop and mobile. */
+        :root {
+            --weather-bg: #edf4fb;
+            --weather-surface: #ffffff;
+            --weather-ink: #172033;
+            --weather-muted: #6b7684;
+            --weather-line: #e4ebf3;
+            --weather-blue: #3182f6;
+            --weather-blue-soft: #eaf4ff;
+            --weather-radius: 26px;
+            --weather-shadow: 0 18px 46px rgba(62, 91, 125, .12);
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #dbe9f6 0%, #eef4f9 36%, #f7f8fa 100%);
+            color: var(--weather-ink);
+        }
+
+        main {
+            width: min(760px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 22px 0 56px;
+        }
+
+        .account-bar {
+            width: min(760px, calc(100% - 32px));
+            max-width: none;
+            margin: 14px auto 0;
+            padding: 0;
+            justify-content: space-between;
+            color: #5f6f82;
+            font-size: 12px;
+        }
+
+        .account-bar > span {
+            min-width: 0;
+        }
+
+        .account-link {
+            flex: 0 0 auto;
+            min-height: 34px;
+            border-radius: 999px;
+            padding: 0 13px;
+            font-size: 12px;
+        }
+
+        .weather-app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 4px 0 34px;
+        }
+
+        .weather-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--weather-ink);
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: -.04em;
+            text-decoration: none;
+        }
+
+        .weather-brand-mark {
+            display: inline-grid;
+            width: 32px;
+            height: 32px;
+            place-items: center;
+            border-radius: 11px;
+            color: #ffffff;
+            background: linear-gradient(145deg, #5ba5ff, #3182f6);
+            box-shadow: 0 8px 18px rgba(49, 130, 246, .24);
+            font-size: 18px;
+        }
+
+        .weather-brand-caption {
+            color: #7b8795;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .layout {
+            display: block;
+        }
+
+        .layout > section:first-child,
+        .layout > .subscribe-drawer {
+            width: 100%;
+            min-width: 0;
+        }
+
+        h1 {
+            max-width: none;
+            margin-bottom: 12px;
+            color: var(--weather-ink);
+            font-size: clamp(34px, 8vw, 52px);
+            line-height: 1.08;
+            letter-spacing: -.065em;
+        }
+
+        .eyebrow {
+            margin-bottom: 12px;
+            color: var(--weather-blue);
+            font-size: 12px;
+        }
+
+        .intro {
+            max-width: 540px;
+            color: #647386;
+            font-size: 15px;
+            line-height: 1.65;
+        }
+
+        .hero-badges {
+            gap: 7px;
+            margin-top: 16px;
+        }
+
+        .hero-badge {
+            padding: 6px 9px;
+            border-color: rgba(160, 185, 211, .55);
+            color: #52657b;
+            background: rgba(255, 255, 255, .64);
+            font-size: 11px;
+        }
+
+        .dashboard-search-card {
+            margin-top: 22px;
+            padding: 18px;
+            border: 1px solid rgba(255, 255, 255, .85);
+            border-radius: var(--weather-radius);
+            background: rgba(255, 255, 255, .84);
+            box-shadow: var(--weather-shadow);
+            backdrop-filter: blur(18px);
+        }
+
+        .dashboard-search-copy {
+            margin-bottom: 13px;
+        }
+
+        .dashboard-search-copy strong {
+            color: var(--weather-ink);
+            font-size: 16px;
+            letter-spacing: -.03em;
+        }
+
+        .dashboard-search-copy span {
+            color: #7a8796;
+        }
+
+        .location-search {
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 8px;
+        }
+
+        .location-search input {
+            min-width: 0;
+        }
+
+        .location-search #currentLocation {
+            grid-column: 1 / -1;
+            width: 100%;
+            min-height: 38px;
+            border-color: transparent;
+            color: #4e6b88;
+            background: #f2f6fa;
+        }
+
+        input,
+        select,
+        textarea {
+            min-height: 44px;
+            border-color: var(--weather-line);
+            border-radius: 14px;
+            color: var(--weather-ink);
+            background: #fbfdff;
+        }
+
+        button {
+            border-radius: 13px;
+        }
+
+        .primary {
+            min-height: 44px;
+            border-radius: 14px;
+            background: var(--weather-blue);
+            box-shadow: 0 8px 16px rgba(49, 130, 246, .2);
+        }
+
+        .secondary {
+            min-height: 42px;
+            border-radius: 13px;
+            border-color: var(--weather-line);
+            color: #526579;
+            background: #f2f6fa;
+        }
+
+        .weather-preview {
+            margin-top: 16px;
+            border: 0;
+            border-radius: var(--weather-radius);
+            background: transparent;
+            box-shadow: none;
+            overflow: visible;
+        }
+
+        .weather-preview-header,
+        .weather-preview.weather-sunny .weather-preview-header,
+        .weather-preview.weather-rain .weather-preview-header,
+        .weather-preview.weather-snow .weather-preview-header,
+        .weather-preview.weather-cloudy .weather-preview-header {
+            padding: 22px 22px 20px;
+            border-radius: var(--weather-radius) var(--weather-radius) 0 0;
+            background: linear-gradient(145deg, #7da9c8 0%, #527b9e 100%);
+            box-shadow: 0 16px 34px rgba(64, 100, 131, .18);
+        }
+
+        .weather-preview.weather-sunny .weather-preview-header {
+            background: linear-gradient(145deg, #7bb9e7 0%, #528fbb 100%);
+        }
+
+        .weather-preview.weather-rain .weather-preview-header {
+            background: linear-gradient(145deg, #71869f 0%, #455c76 100%);
+        }
+
+        .weather-preview.weather-snow .weather-preview-header {
+            background: linear-gradient(145deg, #9ab8ce 0%, #638ca9 100%);
+        }
+
+        .weather-preview.weather-cloudy .weather-preview-header {
+            background: linear-gradient(145deg, #889dad 0%, #607687 100%);
+        }
+
+        .weather-preview-title {
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+        }
+
+        .weather-preview-main {
+            margin-top: 12px;
+            font-size: clamp(34px, 8vw, 52px);
+            line-height: 1.08;
+            letter-spacing: -.065em;
+        }
+
+        .day-tabs {
+            padding: 3px;
+            border: 1px solid rgba(255, 255, 255, .25);
+            border-radius: 13px;
+            background: rgba(255, 255, 255, .16);
+        }
+
+        .day-tab {
+            min-height: 32px;
+            padding: 0 10px;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, .78);
+            background: transparent;
+            font-size: 11px;
+        }
+
+        .day-tab.selected {
+            color: #35566f;
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(32, 66, 97, .15);
+        }
+
+        .weather-toolbar {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top-color: rgba(255, 255, 255, .24);
+        }
+
+        .weather-toolbar-meta {
+            color: rgba(255, 255, 255, .78);
+            font-size: 11px;
+        }
+
+        .weather-tool-actions {
+            gap: 6px;
+        }
+
+        .weather-tool-button {
+            min-height: 32px;
+            padding: 0 9px;
+            border: 1px solid rgba(255, 255, 255, .28);
+            border-radius: 10px;
+            color: #ffffff;
+            background: rgba(255, 255, 255, .13);
+            font-size: 11px;
+        }
+
+        #printWeather {
+            display: none;
+        }
+
+        .weather-preview-body {
+            padding: 16px;
+            border-radius: 0 0 var(--weather-radius) var(--weather-radius);
+            background: rgba(248, 251, 255, .94);
+            box-shadow: var(--weather-shadow);
+        }
+
+        .period-tabs {
+            gap: 4px;
+            margin-bottom: 12px;
+            padding: 4px;
+            border-radius: 15px;
+            background: #e7eef6;
+        }
+
+        .period-tab {
+            height: 36px;
+            border: 0;
+            border-radius: 11px;
+            color: #748294;
+            background: transparent;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .period-tab.selected {
+            color: var(--weather-ink);
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(49, 71, 95, .1);
+        }
+
+        .current-weather {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 14px;
+            border: 0;
+            border-radius: 22px;
+            background: linear-gradient(145deg, #e5f2ff, #f4f9ff);
+        }
+
+        .current-weather-copy {
+            grid-column: 1 / -1;
+        }
+
+        .current-weather-copy strong {
+            color: #23466a;
+            font-size: 14px;
+        }
+
+        .current-weather-copy span {
+            color: #6f8297;
+            font-size: 12px;
+        }
+
+        .current-weather-metric {
+            min-width: 0;
+            padding: 11px 8px;
+            border: 1px solid rgba(255, 255, 255, .8);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, .76);
+        }
+
+        .current-weather-metric span {
+            font-size: 10px;
+        }
+
+        .current-weather-metric strong {
+            font-size: 15px;
+        }
+
+        .daily-insight {
+            margin-bottom: 12px;
+            padding: 16px;
+            border: 0;
+            border-radius: 20px;
+            background: #ffffff;
+            box-shadow: 0 7px 18px rgba(55, 79, 108, .06);
+        }
+
+        .daily-insight strong {
+            color: var(--weather-ink);
+            font-size: 16px;
+            letter-spacing: -.03em;
+        }
+
+        .daily-insight p {
+            color: #718093;
+            font-size: 12px;
+        }
+
+        .share-weather {
+            min-height: 32px;
+            padding: 0 10px;
+            border-radius: 10px;
+            color: var(--weather-blue);
+            background: var(--weather-blue-soft);
+            font-size: 11px;
+        }
+
+        .daily-periods {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 7px;
+            margin-bottom: 12px;
+        }
+
+        .daily-period-card {
+            min-height: 78px;
+            padding: 11px 9px;
+            border: 0;
+            border-radius: 17px;
+            color: #667689;
+            background: #ffffff;
+            box-shadow: 0 5px 14px rgba(55, 79, 108, .06);
+            text-align: left;
+        }
+
+        .daily-period-card.selected {
+            color: #245d9f;
+            background: #e9f4ff;
+            box-shadow: inset 0 0 0 1px #b8dcff;
+        }
+
+        .daily-period-card strong {
+            color: var(--weather-ink);
+            font-size: 14px;
+        }
+
+        .daily-period-card small {
+            color: #8492a0;
+            font-size: 10px;
+        }
+
+        .hourly-weather {
+            margin: 12px 0;
+            padding: 14px 0 4px;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+        }
+
+        .hourly-weather-header {
+            padding: 0 2px 10px;
+        }
+
+        .hourly-weather-header strong {
+            color: var(--weather-ink);
+            font-size: 14px;
+        }
+
+        .hourly-weather-header span {
+            color: #8290a0;
+            font-size: 11px;
+        }
+
+        .hourly-rain-summary {
+            padding: 5px 8px;
+            border-radius: 999px;
+            color: #2673cb !important;
+            background: #e7f3ff;
+            font-weight: 800;
+        }
+
+        .hourly-track {
+            grid-auto-columns: minmax(76px, 84px);
+            gap: 7px;
+            padding: 2px 2px 10px;
+        }
+
+        .hourly-item {
+            min-height: 112px;
+            padding: 11px 8px;
+            border: 0;
+            border-radius: 17px;
+            background: #ffffff;
+            box-shadow: 0 5px 14px rgba(55, 79, 108, .07);
+        }
+
+        .hourly-item.rain-risk {
+            background: #edf7ff;
+            box-shadow: inset 0 0 0 1px #cce7ff;
+        }
+
+        .hourly-item time {
+            color: #8390a0;
+            font-size: 10px;
+        }
+
+        .hourly-item strong {
+            color: var(--weather-ink);
+            font-size: 18px;
+        }
+
+        .hourly-item span {
+            color: #728196;
+            font-size: 10px;
+        }
+
+        .weather-score {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-top: 8px;
+            padding: 15px 16px;
+            border-radius: 20px;
+            color: #245d9f;
+            background: #eaf4ff;
+        }
+
+        .weather-score strong {
+            color: #1d5fa6;
+            font-size: 30px;
+            letter-spacing: -.06em;
+        }
+
+        .weather-score span {
+            color: #6d8296;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .weather-detail {
+            margin: 10px 2px 0;
+            color: #66788d;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .secondary-insights,
+        .advanced-tools,
+        .subscribe-drawer,
+        .manager-drawer {
+            border: 1px solid var(--weather-line);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, .8);
+            box-shadow: 0 7px 18px rgba(55, 79, 108, .05);
+        }
+
+        .secondary-insights {
+            margin-top: 14px;
+            background: rgba(255, 255, 255, .62);
+        }
+
+        .secondary-insights > summary,
+        .advanced-tools > summary,
+        .subscribe-drawer > summary,
+        .manager-drawer > summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            min-height: 48px;
+            padding: 0 16px;
+            color: var(--weather-ink);
+            cursor: pointer;
+            list-style: none;
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .secondary-insights > summary::-webkit-details-marker,
+        .advanced-tools > summary::-webkit-details-marker,
+        .subscribe-drawer > summary::-webkit-details-marker,
+        .manager-drawer > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .secondary-insights > summary::after,
+        .advanced-tools > summary::after,
+        .subscribe-drawer > summary::after,
+        .manager-drawer > summary::after {
+            flex: 0 0 auto;
+            color: #8b98a6;
+            content: "+";
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        .secondary-insights[open] > summary::after,
+        .advanced-tools[open] > summary::after,
+        .subscribe-drawer[open] > summary::after,
+        .manager-drawer[open] > summary::after {
+            content: "−";
+        }
+
+        .secondary-insights[open] > summary,
+        .advanced-tools[open] > summary,
+        .subscribe-drawer[open] > summary,
+        .manager-drawer[open] > summary {
+            border-bottom: 1px solid var(--weather-line);
+        }
+
+        .secondary-insights > :not(summary),
+        .advanced-tools > :not(summary) {
+            margin-right: 12px;
+            margin-left: 12px;
+        }
+
+        .advanced-tools {
+            margin-top: 16px;
+            background: rgba(255, 255, 255, .7);
+        }
+
+        .advanced-tools > summary span,
+        .subscribe-drawer > summary small,
+        .manager-drawer > summary span {
+            margin-left: auto;
+            color: #8a98a8;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .advanced-tools > section {
+            margin-top: 12px;
+            margin-bottom: 12px;
+        }
+
+        .subscribe-drawer {
+            margin-top: 16px;
+            overflow: hidden;
+        }
+
+        .subscribe-drawer > summary,
+        .manager-drawer > summary {
+            min-height: 58px;
+            padding: 0 18px;
+        }
+
+        .subscribe-drawer > summary > span,
+        .manager-drawer > summary {
+            letter-spacing: -.025em;
+        }
+
+        .subscribe-drawer > .panel,
+        .manager-drawer > .panel {
+            margin: 0;
+            border: 0;
+            border-top: 1px solid var(--weather-line);
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .panel {
+            padding: 20px;
+            background: rgba(255, 255, 255, .9);
+        }
+
+        .panel-heading {
+            margin-top: 0;
+            color: var(--weather-ink);
+            font-size: 20px;
+        }
+
+        .panel-description {
+            margin-bottom: 18px;
+            color: var(--weather-muted);
+            font-size: 13px;
+        }
+
+        .auth-notice,
+        .smart-alert-card,
+        .time-option {
+            border-radius: 16px;
+        }
+
+        .subscription-manager,
+        .manager-drawer {
+            margin-top: 14px;
+        }
+
+        .manager-drawer > .panel h2 {
+            margin-top: 0;
+            font-size: 18px;
+        }
+
+        .site-footer {
+            margin-top: 24px;
+            color: #8b97a5;
+        }
+
+        /* Coders support/donation widgets are intentionally not part of the product UI. */
+        [data-coders-donate],
+        [data-coders-donation],
+        #coders-donate,
+        .coders-donate,
+        [id*="coders-donate" i],
+        [class*="coders-donate" i],
+        [id*="coders-sponsor" i],
+        [class*="coders-sponsor" i] {
+            display: none !important;
+        }
+
+        body[data-theme="dark"] {
+            background: linear-gradient(180deg, #172535 0%, #111a25 48%, #101418 100%);
+        }
+
+        body[data-theme="dark"] .weather-app-header,
+        body[data-theme="dark"] h1,
+        body[data-theme="dark"] .weather-brand,
+        body[data-theme="dark"] .dashboard-search-copy strong,
+        body[data-theme="dark"] .daily-insight strong,
+        body[data-theme="dark"] .hourly-weather-header strong,
+        body[data-theme="dark"] .hourly-item strong,
+        body[data-theme="dark"] .secondary-insights > summary,
+        body[data-theme="dark"] .advanced-tools > summary,
+        body[data-theme="dark"] .subscribe-drawer > summary,
+        body[data-theme="dark"] .manager-drawer > summary {
+            color: #f2f4f6;
+        }
+
+        body[data-theme="dark"] .dashboard-search-card,
+        body[data-theme="dark"] .weather-preview-body,
+        body[data-theme="dark"] .secondary-insights,
+        body[data-theme="dark"] .advanced-tools,
+        body[data-theme="dark"] .subscribe-drawer,
+        body[data-theme="dark"] .manager-drawer,
+        body[data-theme="dark"] .panel,
+        body[data-theme="dark"] .daily-insight,
+        body[data-theme="dark"] .daily-period-card,
+        body[data-theme="dark"] .hourly-item {
+            border-color: #2c3a49;
+            background: #18232f;
+        }
+
+        body[data-theme="dark"] input,
+        body[data-theme="dark"] select,
+        body[data-theme="dark"] textarea,
+        body[data-theme="dark"] .location-search #currentLocation,
+        body[data-theme="dark"] .period-tabs {
+            border-color: #2c3a49;
+            color: #f2f4f6;
+            background: #121b25;
+        }
+
+        body[data-theme="dark"] .secondary-insights[open] > summary,
+        body[data-theme="dark"] .advanced-tools[open] > summary,
+        body[data-theme="dark"] .subscribe-drawer[open] > summary,
+        body[data-theme="dark"] .manager-drawer[open] > summary {
+            border-bottom-color: #2c3a49;
+        }
+
+        @media (max-width: 560px) {
+            main {
+                width: min(100% - 20px, 760px);
+                padding-top: 16px;
+            }
+
+            .account-bar {
+                width: min(100% - 20px, 760px);
+                align-items: flex-start;
+                flex-wrap: wrap;
+                margin-top: 10px;
+                line-height: 1.45;
+            }
+
+            .account-bar > span {
+                flex: 1 1 100%;
+            }
+
+            .weather-app-header {
+                margin-bottom: 24px;
+            }
+
+            .weather-brand-caption {
+                font-size: 11px;
+            }
+
+            .dashboard-search-copy {
+                display: block;
+            }
+
+            .dashboard-search-copy span {
+                display: block;
+                margin-top: 4px;
+            }
+
+            .weather-preview-header {
+                padding: 20px 16px 18px;
+            }
+
+            .weather-header-top {
+                display: block;
+            }
+
+            .day-tabs {
+                display: inline-flex;
+                margin-top: 12px;
+            }
+
+            .weather-toolbar {
+                display: block;
+            }
+
+            .weather-tool-actions {
+                margin-top: 9px;
+            }
+
+            .weather-tool-button {
+                flex: 1 1 auto;
+            }
+
+            .weather-preview-body {
+                padding: 12px;
+            }
+
+            .current-weather {
+                padding: 12px;
+            }
+
+            .current-weather-metric {
+                padding: 10px 5px;
+            }
+
+            .current-weather-metric strong {
+                font-size: 13px;
+            }
+
+            .daily-periods {
+                grid-template-columns: 1fr;
+            }
+
+            .daily-period-card {
+                display: grid;
+                grid-template-columns: 58px minmax(0, 1fr) auto;
+                min-height: 58px;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 12px;
+            }
+
+            .daily-period-card small {
+                text-align: right;
+            }
+
+            .secondary-insights > :not(summary),
+            .advanced-tools > :not(summary) {
+                margin-right: 8px;
+                margin-left: 8px;
+            }
+
+            .secondary-insights > summary,
+            .advanced-tools > summary,
+            .subscribe-drawer > summary,
+            .manager-drawer > summary {
+                padding-right: 13px;
+                padding-left: 13px;
+            }
+
+            .advanced-tools > summary span,
+            .subscribe-drawer > summary small,
+            .manager-drawer > summary span {
+                max-width: 44%;
+                text-align: right;
+            }
+
+            .manager-actions {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2854,17 +3715,21 @@
         <a class="account-link google" th:unless="${signedIn}" th:href="${loginUrl}">Google로 로그인</a>
         <a class="account-link" th:if="${signedIn}" th:href="${logoutUrl}">로그아웃</a>
     </div>
+    <header class="weather-app-header">
+        <a class="weather-brand" href="/" aria-label="날씨한편 홈">
+            <span class="weather-brand-mark" aria-hidden="true">☁</span>
+            <span>날씨한편</span>
+        </a>
+        <span class="weather-brand-caption">오늘을 결정하는 날씨</span>
+    </header>
     <div class="layout">
         <section>
-            <p class="eyebrow">내 위치의 정확한 생활 날씨</p>
-            <h1>오늘 날씨를<br><span class="hero-accent">한눈에 확인</span>하세요</h1>
-            <p class="intro">시간별 기온과 비, 대기질, 자외선, 공식 기상특보를 한 화면에서 빠르게 확인하세요.</p>
+            <p class="eyebrow">오늘의 날씨</p>
+            <h1>오늘 날씨, <span class="hero-accent">한눈에</span></h1>
+            <p class="intro">지금 필요한 기온·강수·대기질만 빠르게 확인하고, 외출 준비까지 한 번에 끝내세요.</p>
             <div class="hero-badges" aria-label="서비스 특징">
-                <span class="hero-badge">시간별 예보</span>
-                <span class="hero-badge">강수 시작·종료</span>
-                <span class="hero-badge">대기질·자외선</span>
-                <span class="hero-badge">공식 기상특보</span>
-                <span class="hero-badge">필요할 때만 이메일</span>
+                <span class="hero-badge">기상청 공식 예보</span>
+                <span class="hero-badge">시간별 · 대기질</span>
                 <button class="hero-install" type="button" id="installApp" hidden>앱으로 설치</button>
             </div>
             <div class="dashboard-search-card" id="weatherSearch" tabindex="-1">
@@ -2960,6 +3825,8 @@
                         <span id="outingScoreLabel">-</span>
                     </div>
                     <p class="weather-detail" id="weatherDetail">위치를 선택하면 날씨에 맞는 외출 조언을 보여드립니다.</p>
+                    <details class="secondary-insights">
+                        <summary>대기질·안전·옷차림 더 보기</summary>
                     <section class="decision-explanation" aria-labelledby="decisionExplanationTitle" aria-live="polite">
                         <div class="decision-explanation-header">
                             <div>
@@ -3067,6 +3934,7 @@
                             </div>
                         </div>
                     </div>
+                    </details>
                 </div>
             </div>
             <dialog class="briefing-dialog" id="briefingPreviewDialog" aria-labelledby="briefingPreviewTitle">
@@ -3108,6 +3976,8 @@
                     <div class="mail-preview-footer">메일형 브리핑 미리보기입니다. 구독한 수신처에는 같은 내용이 선택한 시간에 발송됩니다.</div>
                 </div>
             </dialog>
+            <details class="advanced-tools">
+                <summary>더 많은 날씨 도구 <span>일정·경로까지 맞춤 분석</span></summary>
             <section class="decision-window" id="decisionWindow" hidden aria-label="비를 피하는 외출 시간 추천" aria-live="polite">
                 <div class="decision-window-header">
                     <div>
@@ -3201,8 +4071,14 @@
                     <ul class="route-checklist" id="routeChecklist"></ul>
                 </div>
             </section>
+            </details>
         </section>
 
+        <details class="subscribe-drawer" th:open="${signedIn}">
+            <summary>
+                <span>날씨 알림 받기</span>
+                <small>필요한 시간에만 메일로 받아요</small>
+            </summary>
         <section class="panel" aria-label="날씨 구독 신청">
             <form id="subscribeForm">
                 <h2 class="panel-heading">이 브리핑을 받아보세요</h2>
@@ -3296,9 +4172,12 @@
                 <div class="result" id="result" role="status"></div>
             </form>
         </section>
+        </details>
     </div>
 
-    <section class="panel subscription-manager" th:if="${signedIn}" aria-label="내 날씨 알림 관리">
+    <details class="manager-drawer" th:if="${signedIn}" th:open="${signedIn}">
+        <summary>내 날씨 알림 관리 <span>시간·위험 알림·구독 해지</span></summary>
+    <section class="panel subscription-manager" aria-label="내 날씨 알림 관리">
         <h2>내 날씨 알림 관리</h2>
         <p class="intro" id="managerSummary">현재 계정에 연결된 구독을 확인하고 알림 시각을 원하는 분 단위로 바꿀 수 있습니다.</p>
         <div id="managerControls" hidden>
@@ -3348,27 +4227,29 @@
         </div>
         <div class="result" id="managerResult" role="status"></div>
     </section>
+    </details>
 
-    <section class="benefit-grid" aria-label="서비스 안내">
-        <div class="benefit-card">
-            <strong>내 일정에 맞춘 알림</strong>
-            <span>아침·점심·저녁 중 필요한 시간만 골라 받아보세요.</span>
-        </div>
-        <div class="benefit-card">
-            <strong>외출 판단을 한눈에</strong>
-            <span>강수·특보·자외선·꽃가루·대기질을 종합한 외출 점수를 제공합니다.</span>
-        </div>
-        <div class="benefit-card">
-            <strong>출발부터 도착까지</strong>
-            <span>경로 시간과 양쪽 날씨를 비교해 도착지 준비물을 알려드립니다.</span>
-        </div>
-    </section>
     <p class="site-footer">날씨한편 · 데이터 제공: 기상청 · 예보는 실제 관측과 다를 수 있습니다.</p>
 </main>
 
 <script th:inline="javascript" th:attr="nonce=${cspNonce}">
     const signedIn = /*[[${signedIn}]]*/ false;
     const googleLoginUrl = /*[[${loginUrl}]]*/ "https://coders.kr/oauth/login/google";
+    const donationWidgetSelectors = [
+        "[data-coders-donate]",
+        "[data-coders-donation]",
+        "#coders-donate",
+        ".coders-donate",
+        '[id*="coders-donate" i]',
+        '[class*="coders-donate" i]',
+        '[id*="coders-sponsor" i]',
+        '[class*="coders-sponsor" i]'
+    ];
+    const removeDonationWidgets = () => {
+        document.querySelectorAll(donationWidgetSelectors.join(",")).forEach((widget) => widget.remove());
+    };
+    removeDonationWidgets();
+    new MutationObserver(removeDonationWidgets).observe(document.body, { childList: true, subtree: true });
     const subscriptionDraftKey = "weather-subscription-draft";
     const recentLocationsKey = "weather-recent-locations";
     const savedLocationsKey = "weather-saved-locations";
