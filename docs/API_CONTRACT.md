@@ -85,7 +85,24 @@ X-Request-Id: 요청 추적 ID
    { "email": "me@example.com" }
    ```
 
-2. 메일의 인증 링크(`GET /api/users/email-verification/confirm?token=...`)를 15분 안에 엽니다.
-3. 인증 링크가 돌려준 토큰을 `POST /api/users/subscribe`의 `verificationToken`으로 전달합니다.
+   응답은 인증 대상 이메일과 만료시각을 반환합니다. 메일에는 링크 대신 6자리 숫자만 표시됩니다.
 
-운영 구독 요청은 `email`과 `verificationToken`을 정확히 한 개씩 요구하고, 인증 챌린지의 이메일과 요청 이메일이 다르면 거부합니다. 토큰은 서버에 SHA-256 해시로 저장하고 구독에 사용한 즉시 폐기합니다. 이메일 인증 챌린지에는 `ownerId`가 함께 저장되므로 다른 로그인 계정이 토큰을 재사용할 수 없습니다.
+2. 메일의 6자리 번호를 화면에 입력하고 `POST /api/users/email-verification/confirm`을 15분 안에 호출합니다.
+
+   ```json
+   { "email": "me@example.com", "code": "042731" }
+   ```
+
+   번호가 일치하면 `200 OK`와 함께 인증 완료 메시지를 반환합니다. 틀린 번호는 `400 INVALID_REQUEST`로 거절하며, 한 챌린지에서 5회 틀리면 새 번호를 요청해야 합니다. 새 번호를 요청하면 이전 번호는 즉시 무효화됩니다.
+
+3. 같은 6자리 번호를 `POST /api/users/subscribe`의 `verificationCode`로 전달합니다.
+
+   ```json
+   {
+     "email": "me@example.com",
+     "verificationCode": "042731",
+     "privacyConsent": true
+   }
+   ```
+
+운영 구독 요청은 `email`과 `verificationCode`를 정확히 한 개씩 요구하고, 인증 챌린지의 이메일과 요청 이메일이 다르면 거부합니다. 인증번호는 서버에 SHA-256 해시로만 저장하고 구독에 사용한 즉시 폐기합니다. 이메일 인증 챌린지에는 `ownerId`가 함께 저장되므로 다른 로그인 계정이 번호를 재사용할 수 없습니다. 이미 발송된 구버전 링크를 처리하기 위해 `GET /api/users/email-verification/confirm?token=...`과 `verificationToken`은 호환 기간 동안만 유지합니다.

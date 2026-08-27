@@ -74,9 +74,14 @@ public class UserService {
             if (verificationOwner == null) {
                 verificationOwner = requestedEmails.get(0);
             }
+            String verificationCredential = request.getVerificationCode();
+            if (verificationCredential == null || verificationCredential.isBlank()) {
+                // Accept the old field while clients roll forward to the code UI.
+                verificationCredential = request.getVerificationToken();
+            }
             String verifiedEmail = emailVerificationService.consumeVerifiedEmail(
                     verificationOwner,
-                    request.getVerificationToken(),
+                    verificationCredential,
                     requestedEmails.get(0)
             );
             if (codersIdentityRequired) {

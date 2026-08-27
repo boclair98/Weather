@@ -13,6 +13,15 @@ public interface EmailVerificationChallengeRepository extends JpaRepository<Emai
 
     Optional<EmailVerificationChallenge> findByTokenHash(String tokenHash);
 
+    Optional<EmailVerificationChallenge> findFirstByOwnerIdAndEmailOrderByCreatedAtDesc(
+            String ownerId,
+            String email
+    );
+
+    @Modifying
+    @Query("delete from EmailVerificationChallenge c where c.ownerId = :ownerId")
+    int deleteAllForOwner(@Param("ownerId") String ownerId);
+
     @Modifying
     @Query("delete from EmailVerificationChallenge c where c.ownerId = :ownerId and (c.consumedAt is not null or c.expiresAt <= :now)")
     int deleteObsoleteForOwner(@Param("ownerId") String ownerId, @Param("now") LocalDateTime now);

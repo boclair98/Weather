@@ -909,6 +909,42 @@ a:focus-visible {
     gap: 10px;
 }
 
+#mainContent .email-code-panel {
+    margin-top: 14px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--surface-subtle);
+}
+
+#mainContent .email-code-panel > label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+#mainContent .email-code-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+}
+
+#mainContent #emailVerificationCode {
+    color: var(--blue-ink);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: .32em;
+    text-align: center;
+}
+
+#mainContent .email-code-panel .meta {
+    margin-top: 9px;
+    font-size: 12px;
+}
+
 #mainContent .time-options {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2278,6 +2314,15 @@ body[data-theme="dark"] #mainContent .share-weather {
 
     #mainContent .email-verification-row button {
         width: 100%;
+    }
+
+    #mainContent .email-code-row,
+    #mainContent .email-code-row button {
+        width: 100%;
+    }
+
+    #mainContent .email-code-row {
+        grid-template-columns: 1fr;
     }
 
     #mainContent .weather-preview {

@@ -40,7 +40,7 @@ public class MailService {
     }
 
     @Async
-    public void sendEmailVerificationMail(String email, String verificationUrl) {
+    public void sendEmailVerificationMail(String email, String verificationCode) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -49,7 +49,7 @@ public class MailService {
 
             Context context = new Context();
             context.setVariable("email", email);
-            context.setVariable("verificationUrl", verificationUrl);
+            context.setVariable("verificationCode", verificationCode);
             String html = templateEngine.process("email-verification-mail", context);
             helper.setText(html, true);
             mailSender.send(message);

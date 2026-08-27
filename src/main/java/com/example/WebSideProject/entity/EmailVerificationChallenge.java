@@ -19,7 +19,8 @@ import java.time.LocalDateTime;
         name = "email_verification_challenges",
         indexes = {
                 @Index(name = "idx_email_verification_owner", columnList = "ownerId"),
-                @Index(name = "idx_email_verification_expires", columnList = "expiresAt")
+                @Index(name = "idx_email_verification_expires", columnList = "expiresAt"),
+                @Index(name = "idx_email_verification_owner_email_created", columnList = "ownerId, email, createdAt")
         }
 )
 @Getter
@@ -38,6 +39,10 @@ public class EmailVerificationChallenge {
 
     @Column(nullable = false, unique = true, length = 64)
     private String tokenHash;
+
+    /** Number of incorrect code submissions for this challenge. */
+    @Column(nullable = false)
+    private int failedAttempts;
 
     @Column(nullable = false)
     private LocalDateTime expiresAt;
@@ -68,6 +73,10 @@ public class EmailVerificationChallenge {
             LocalDateTime expiresAt
     ) {
         return new EmailVerificationChallenge(ownerId, email, tokenHash, expiresAt);
+    }
+
+    public void recordFailedAttempt() {
+        failedAttempts++;
     }
 
     @PrePersist

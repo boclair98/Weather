@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Pattern;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,6 +33,14 @@ public class UserDto {
 
         @Size(max = 128, message = "이메일 인증 토큰이 너무 깁니다")
         private String verificationToken;
+
+        /**
+         * 이메일로 받은 6자리 인증번호입니다. 이전 링크 인증 클라이언트와의
+         * 호환성을 위해 verificationToken도 잠시 허용하지만, 새 화면은 이
+         * 필드를 사용합니다.
+         */
+        @Pattern(regexp = "\\d{6}", message = "이메일 인증번호 6자리를 입력해주세요")
+        private String verificationCode;
 
         @Size(max = 10, message = "한 번에 최대 10개의 이메일을 등록할 수 있습니다")
         private List<@Email(message = "올바른 이메일 형식이 아닙니다") @Size(max = 254, message = "이메일은 254자 이하여야 합니다") String> emails;
@@ -174,6 +183,19 @@ public class UserDto {
         @Email(message = "올바른 이메일 형식이 아닙니다")
         @Size(max = 254, message = "이메일은 254자 이하여야 합니다")
         private String email;
+    }
+
+    @Getter
+    @Setter
+    public static class EmailVerificationConfirmRequest {
+        @NotBlank(message = "본인 이메일을 입력해주세요")
+        @Email(message = "올바른 이메일 형식이 아닙니다")
+        @Size(max = 254, message = "이메일은 254자 이하여야 합니다")
+        private String email;
+
+        @NotBlank(message = "이메일 인증번호를 입력해주세요")
+        @Pattern(regexp = "\\d{6}", message = "이메일 인증번호 6자리를 입력해주세요")
+        private String code;
     }
 
     @Getter

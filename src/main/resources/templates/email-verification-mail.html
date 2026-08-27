@@ -7,7 +7,7 @@
     <title>날씨한편 이메일 인증</title>
 </head>
 <body bgcolor="#f2f4f6" style="margin:0;padding:0;background-color:#f2f4f6;color:#191f28;font-family:'Malgun Gothic','Apple SD Gothic Neo',Arial,sans-serif;">
-<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;color:#f2f4f6;font-size:1px;line-height:1px;">15분 안에 이메일 인증을 완료해 주세요.</div>
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;color:#f2f4f6;font-size:1px;line-height:1px;">날씨한편 인증번호를 입력해 15분 안에 이메일 인증을 완료해 주세요.</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f2f4f6" style="width:100%;border-collapse:collapse;background-color:#f2f4f6;">
     <tr>
         <td align="center" style="padding:32px 16px;">
@@ -24,30 +24,30 @@
                 </tr>
                 <tr>
                     <td style="padding:34px 30px 30px;">
-                        <h1 style="margin:0;color:#191f28;font-size:28px;line-height:38px;font-weight:700;letter-spacing:-1px;word-break:keep-all;">이메일을 인증해 주세요</h1>
-                        <p style="margin:12px 0 0;color:#4e5968;font-size:15px;line-height:24px;word-break:keep-all;overflow-wrap:break-word;">인증이 끝나면 선택한 지역의 날씨를 원하는 시간에 받아볼 수 있어요.</p>
+                        <h1 style="margin:0;color:#191f28;font-size:28px;line-height:38px;font-weight:700;letter-spacing:-1px;word-break:keep-all;">인증번호를 입력해 주세요</h1>
+                        <p style="margin:12px 0 0;color:#4e5968;font-size:15px;line-height:24px;word-break:keep-all;overflow-wrap:break-word;">아래 번호를 날씨한편 화면에 입력하면 내 이메일 인증이 완료돼요.</p>
 
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f7f8fa" style="width:100%;margin-top:24px;border-collapse:separate;border-radius:16px;background-color:#f7f8fa;">
                             <tr>
                                 <td style="padding:17px 18px;">
                                     <div style="color:#8b95a1;font-size:12px;line-height:18px;">인증할 이메일</div>
                                     <div th:text="${email}" style="padding-top:4px;color:#191f28;font-size:15px;line-height:22px;font-weight:700;word-break:break-all;">you@example.com</div>
-                                    <div style="padding-top:8px;color:#8b95a1;font-size:12px;line-height:18px;">이 링크는 15분 동안 사용할 수 있어요.</div>
+                                    <div style="padding-top:8px;color:#8b95a1;font-size:12px;line-height:18px;">인증번호는 15분 동안 사용할 수 있어요.</div>
                                 </td>
                             </tr>
                         </table>
 
-                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#3182f6" style="width:100%;margin-top:20px;border-collapse:separate;border-radius:14px;background-color:#3182f6;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#eef5ff" style="width:100%;margin-top:20px;border-collapse:separate;border:1px solid #d6e5ff;border-radius:18px;background-color:#eef5ff;">
                             <tr>
-                                <td align="center" bgcolor="#3182f6" style="border-radius:14px;background-color:#3182f6;mso-padding-alt:16px 20px;">
-                                    <a th:href="${verificationUrl}" style="display:block;padding:16px 20px;color:#ffffff;font-size:15px;line-height:22px;font-weight:700;text-align:center;text-decoration:none;">이메일 인증하기</a>
+                                <td align="center" style="padding:20px 16px 18px;border-radius:18px;">
+                                    <div style="color:#6b7684;font-size:11px;line-height:17px;font-weight:700;letter-spacing:1.8px;">VERIFICATION CODE</div>
+                                    <div th:text="${verificationCode}" style="padding-top:8px;color:#1b64da;font-size:36px;line-height:44px;font-weight:800;letter-spacing:9px;font-family:'Courier New',monospace;">123456</div>
+                                    <div style="padding-top:6px;color:#6b7684;font-size:12px;line-height:18px;">화면의 인증번호 입력란에 그대로 입력해 주세요.</div>
                                 </td>
                             </tr>
                         </table>
 
-                        <p style="margin:22px 0 0;color:#8b95a1;font-size:11px;line-height:18px;word-break:keep-all;">버튼이 열리지 않으면 아래 주소를 브라우저에 붙여 넣어주세요.</p>
-                        <p style="margin:5px 0 0;color:#6b7684;font-size:11px;line-height:17px;word-break:break-all;"><a th:href="${verificationUrl}" th:text="${verificationUrl}" style="color:#6b7684;text-decoration:underline;">인증 링크</a></p>
-                        <p style="margin:24px 0 0;color:#8b95a1;font-size:12px;line-height:20px;word-break:keep-all;">직접 요청하지 않았다면 이 메일을 무시해 주세요. 인증하지 않으면 구독은 만들어지지 않아요.</p>
+                        <p style="margin:24px 0 0;color:#8b95a1;font-size:12px;line-height:20px;word-break:keep-all;">직접 요청하지 않았다면 이 메일을 무시해 주세요. 번호를 입력하지 않으면 구독은 만들어지지 않아요.</p>
                     </td>
                 </tr>
                 <tr>

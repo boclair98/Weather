@@ -16,7 +16,7 @@ class FrontendContractTest {
 
         assertThat(html)
                 .contains("/manifest.webmanifest")
-                .contains("/weather.css?v=20260827-product-v2")
+                .contains("/weather.css?v=20260827-verify-code-v1")
                 .contains("data-day-offset=\"0\"")
                 .contains("data-day-offset=\"1\"")
                 .contains("data-day-offset=\"2\"")
@@ -53,6 +53,10 @@ class FrontendContractTest {
                 .contains("id=\"goOutWindow\"")
                 .contains("renderGoOutWindow")
                 .contains("useRecommendedWindow")
+                .contains("id=\"emailVerificationCode\"")
+                .contains("id=\"confirmEmailVerification\"")
+                .contains("/api/users/email-verification/confirm")
+                .contains("인증번호 6자리를 입력해주세요")
                 .contains("TODAY'S CALL")
                 .contains("requestJson")
                 .contains("weather-last-snapshot-v2");

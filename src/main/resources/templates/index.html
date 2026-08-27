@@ -18,7 +18,7 @@
     <title>날씨한편 | 내 위치 맞춤 날씨 알림</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/weather.css?v=20260827-product-v2">
+    <link rel="stylesheet" href="/weather.css?v=20260827-verify-code-v1">
 </head>
 <body>
 <a class="skip-link" href="#weatherSearch">날씨 검색으로 건너뛰기</a>
@@ -469,9 +469,17 @@
                     <label for="email">받을 이메일</label>
                     <div class="email-verification-row">
                         <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" aria-describedby="emailVerificationStatus" placeholder="본인 이메일을 입력해주세요">
-                        <button class="secondary" type="button" id="requestEmailVerification">인증 메일 보내기</button>
+                        <button class="secondary" type="button" id="requestEmailVerification">인증번호 받기</button>
                     </div>
-                    <p class="meta" id="emailVerificationStatus" role="status" aria-live="polite">이메일을 입력하고 인증 메일의 버튼을 눌러주세요.</p>
+                    <p class="meta" id="emailVerificationStatus" role="status" aria-live="polite">본인 이메일로 6자리 인증번호를 보내드려요.</p>
+                    <div class="email-code-panel" id="emailVerificationCodePanel" hidden>
+                        <label for="emailVerificationCode">이메일 인증번호</label>
+                        <div class="email-code-row">
+                            <input id="emailVerificationCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" aria-describedby="emailVerificationCodeHint" placeholder="6자리 숫자" aria-label="이메일 인증번호">
+                            <button class="secondary" type="button" id="confirmEmailVerification" disabled>번호 확인</button>
+                        </div>
+                        <p class="meta" id="emailVerificationCodeHint">메일로 받은 번호를 입력하면 구독을 시작할 수 있어요. 15분 후 만료됩니다.</p>
+                    </div>
                     <input id="emailVerificationToken" type="hidden">
                 </div>
 
@@ -645,6 +653,9 @@
     const submitButton = document.getElementById("submitButton");
     const emailInput = document.getElementById("email");
     const requestEmailVerificationButton = document.getElementById("requestEmailVerification");
+    const emailVerificationCodePanel = document.getElementById("emailVerificationCodePanel");
+    const emailVerificationCodeInput = document.getElementById("emailVerificationCode");
+    const confirmEmailVerificationButton = document.getElementById("confirmEmailVerification");
     const emailVerificationTokenInput = document.getElementById("emailVerificationToken");
     const emailVerificationStatus = document.getElementById("emailVerificationStatus");
     const searchButton = document.getElementById("searchLocation");
@@ -1150,14 +1161,30 @@
     renderFavoriteLocations();
 
     let emailVerificationToken = "";
+    let verificationRequestedEmail = "";
     restoreEmailVerificationFromUrl();
     updateSubscriptionSubmitState();
     emailInput.addEventListener("input", () => {
-        if (!emailVerificationToken) return;
+        if (!emailVerificationToken && !verificationRequestedEmail) return;
         emailVerificationToken = "";
         emailVerificationTokenInput.value = "";
-        setEmailVerificationState("이메일이 바뀌었어요. 변경한 주소로 다시 인증해주세요.", "error");
+        verificationRequestedEmail = "";
+        emailVerificationCodeInput.value = "";
+        emailVerificationCodeInput.disabled = false;
+        emailVerificationCodeInput.classList.remove("has-success", "has-error");
+        confirmEmailVerificationButton.disabled = true;
+        confirmEmailVerificationButton.textContent = "번호 확인";
+        emailVerificationCodePanel.hidden = true;
+        setEmailVerificationState("이메일이 바뀌었어요. 변경한 주소로 인증번호를 다시 받아주세요.", "error");
         updateSubscriptionSubmitState();
+    });
+
+    emailVerificationCodeInput.addEventListener("input", () => {
+        emailVerificationCodeInput.value = emailVerificationCodeInput.value.replace(/[^0-9]/g, "").slice(0, 6);
+        const ready = emailVerificationCodeInput.value.length === 6;
+        confirmEmailVerificationButton.disabled = !ready || Boolean(emailVerificationToken);
+        emailVerificationCodeInput.classList.remove("has-error");
+        emailVerificationCodeInput.setAttribute("aria-invalid", "false");
     });
 
     requestEmailVerificationButton.addEventListener("click", async () => {
@@ -1171,9 +1198,16 @@
         }
 
         requestEmailVerificationButton.disabled = true;
-        requestEmailVerificationButton.textContent = "인증 메일 보내는 중";
+        requestEmailVerificationButton.textContent = "인증번호 보내는 중";
         emailVerificationToken = "";
         emailVerificationTokenInput.value = "";
+        verificationRequestedEmail = email;
+        emailVerificationCodeInput.value = "";
+        emailVerificationCodeInput.disabled = false;
+        emailVerificationCodeInput.classList.remove("has-success", "has-error");
+        confirmEmailVerificationButton.disabled = true;
+        confirmEmailVerificationButton.textContent = "번호 확인";
+        emailVerificationCodePanel.hidden = false;
         updateSubscriptionSubmitState();
         saveSubscriptionDraft();
         try {
@@ -1183,13 +1217,67 @@
                 body: JSON.stringify({email})
             });
             const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(getApiError(data, "인증 메일을 보내지 못했습니다.", response.status));
-            setEmailVerificationState(data.message || "인증 메일을 보냈어요. 메일함에서 인증 버튼을 눌러주세요.", "pending");
+            if (!response.ok) throw new Error(getApiError(data, "인증번호를 보내지 못했습니다.", response.status));
+            setEmailVerificationState(data.message || "인증번호를 보냈어요. 메일에서 6자리 번호를 확인해주세요.", "pending");
+            emailVerificationCodeInput.focus();
         } catch (error) {
-            setEmailVerificationState(getNetworkError(error, "인증 메일 요청 중 연결이 끊겼어요."), "error");
+            verificationRequestedEmail = "";
+            emailVerificationCodePanel.hidden = true;
+            setEmailVerificationState(getNetworkError(error, "인증번호 요청 중 연결이 끊겼어요."), "error");
         } finally {
             requestEmailVerificationButton.disabled = false;
-            requestEmailVerificationButton.textContent = "인증 메일 보내기";
+            requestEmailVerificationButton.textContent = "인증번호 다시 받기";
+        }
+    });
+
+    confirmEmailVerificationButton.addEventListener("click", async () => {
+        const email = emailInput.value.trim().toLowerCase();
+        const code = emailVerificationCodeInput.value.trim();
+        if (email !== verificationRequestedEmail) {
+            setEmailVerificationState("이메일이 바뀌었어요. 변경한 주소로 인증번호를 다시 받아주세요.", "error");
+            emailInput.focus();
+            return;
+        }
+        if (!/^\d{6}$/.test(code)) {
+            emailVerificationCodeInput.classList.add("has-error");
+            emailVerificationCodeInput.setAttribute("aria-invalid", "true");
+            setEmailVerificationState("인증번호 6자리를 입력해주세요.", "error");
+            emailVerificationCodeInput.focus();
+            return;
+        }
+
+        confirmEmailVerificationButton.disabled = true;
+        confirmEmailVerificationButton.textContent = "확인 중";
+        try {
+            const response = await fetch("/api/users/email-verification/confirm", {
+                method: "POST",
+                headers: {"Content-Type": "application/json", Accept: "application/json"},
+                body: JSON.stringify({email, code})
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(getApiError(data, "인증번호가 맞지 않습니다.", response.status));
+            // The code is the one-time credential consumed by /subscribe.
+            emailVerificationToken = code;
+            emailVerificationTokenInput.value = code;
+            emailVerificationCodeInput.disabled = true;
+            emailVerificationCodeInput.classList.remove("has-error");
+            emailVerificationCodeInput.classList.add("has-success");
+            emailVerificationCodeInput.setAttribute("aria-invalid", "false");
+            confirmEmailVerificationButton.textContent = "인증 완료";
+            setEmailVerificationState(data.message || "이메일 인증이 완료됐어요. 이제 구독을 시작할 수 있어요.", "verified");
+            updateSubscriptionSubmitState();
+        } catch (error) {
+            const message = getNetworkError(error, "인증번호 확인 중 연결이 끊겼어요.");
+            const challengeClosed = /(횟수를 초과|모두 사용|만료|이미 구독에 사용)/.test(message);
+            confirmEmailVerificationButton.disabled = challengeClosed || emailVerificationCodeInput.value.length !== 6;
+            confirmEmailVerificationButton.textContent = challengeClosed ? "새 번호 받기" : "번호 확인";
+            if (challengeClosed) {
+                emailVerificationCodeInput.disabled = true;
+            }
+            emailVerificationCodeInput.classList.add("has-error");
+            emailVerificationCodeInput.setAttribute("aria-invalid", "true");
+            setEmailVerificationState(message, "error");
+            updateSubscriptionSubmitState();
         }
     });
 
@@ -1222,6 +1310,7 @@
         const payload = {
             name: document.getElementById("name").value.trim(),
             email: emailInput.value.trim().toLowerCase(),
+            verificationCode: emailVerificationCodeInput.value.trim() || null,
             verificationToken: emailVerificationTokenInput.value.trim(),
             locationName: locationContext(selectedLocation),
             latitude: selectedLocation.latitude,
@@ -1252,8 +1341,8 @@
             return;
         }
         if (!emailVerificationToken) {
-            showSubscriptionResult("이메일 인증이 아직 안 됐어요 · 받은 메일의 ‘이메일 인증하기’ 버튼을 먼저 눌러주세요.", false);
-            requestEmailVerificationButton.focus();
+            showSubscriptionResult("이메일 인증이 아직 안 됐어요 · 받은 메일의 6자리 인증번호를 입력하고 확인해주세요.", false);
+            emailVerificationCodeInput.focus();
             submitButton.disabled = false;
             updateSubscriptionSubmitState();
             return;
@@ -1273,6 +1362,13 @@
             setEmailVerificationState("이메일 인증이 확인됐어요. 이 주소로 날씨를 보내드릴게요.", "verified");
             emailVerificationToken = "";
             emailVerificationTokenInput.value = "";
+            verificationRequestedEmail = "";
+            emailVerificationCodeInput.value = "";
+            emailVerificationCodeInput.disabled = false;
+            emailVerificationCodeInput.classList.remove("has-success", "has-error");
+            confirmEmailVerificationButton.disabled = true;
+            confirmEmailVerificationButton.textContent = "번호 확인";
+            emailVerificationCodePanel.hidden = true;
             sessionStorage.removeItem(subscriptionDraftKey);
             if (managerControls) {
                 await loadCurrentSubscription();
@@ -1288,6 +1384,10 @@
         const verified = Boolean(emailVerificationTokenInput.value.trim());
         submitButton.disabled = !verified;
         submitButton.textContent = verified ? "구독 시작하기" : "이메일 인증 후 구독 가능";
+        if (!verified && emailVerificationCodeInput && verificationRequestedEmail === emailInput.value.trim().toLowerCase()) {
+            confirmEmailVerificationButton.disabled = emailVerificationCodeInput.disabled
+                || emailVerificationCodeInput.value.length !== 6;
+        }
     }
 
     function setEmailVerificationState(message, state = "error") {
@@ -1305,6 +1405,7 @@
         if (!token) return;
         emailVerificationToken = token;
         emailVerificationTokenInput.value = token;
+        emailVerificationCodePanel.hidden = true;
         setEmailVerificationState("이메일 인증이 끝났어요. 이제 구독을 시작할 수 있어요.", "verified");
         updateSubscriptionSubmitState();
         const cleanUrl = `${window.location.pathname}${window.location.hash || ""}`;
@@ -2530,7 +2631,7 @@
             if (!response.ok) throw new Error(getApiError(data, "구독 정보를 불러오지 못했습니다."));
             managerSummary.textContent = `${data.name} · ${data.email} · ${data.locationName}`;
             emailInput.value = data.email || "";
-            setEmailVerificationState("기존 구독 이메일이에요. 새 구독을 만들려면 다시 인증해주세요.", "pending");
+            setEmailVerificationState("기존 구독 이메일이에요. 새 구독을 만들려면 인증번호를 다시 받아주세요.", "pending");
             document.getElementById("manageMorning").checked = data.morningEnabled;
             document.getElementById("manageAfternoon").checked = data.afternoonEnabled;
             document.getElementById("manageEvening").checked = data.eveningEnabled;

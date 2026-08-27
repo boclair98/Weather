@@ -36,6 +36,21 @@ public class UserController {
         return ResponseEntity.accepted().body(response);
     }
 
+    @PostMapping("/email-verification/confirm")
+    public ResponseEntity<EmailVerificationService.VerificationResponse> confirmEmailVerificationCode(
+            @Valid @RequestBody UserDto.EmailVerificationConfirmRequest request,
+            @RequestHeader(value = "X-Coders-User", required = false) String codersUserId
+    ) {
+        EmailVerificationService.VerificationResponse response = emailVerificationService
+                .confirmCode(codersUserId, request.getEmail(), request.getCode());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Kept temporarily so links from an older email do not result in a blank
+     * page. New verification emails never contain a link; they use a code.
+     */
+    @Deprecated
     @GetMapping("/email-verification/confirm")
     public ResponseEntity<Void> confirmEmailVerification(@RequestParam String token) {
         emailVerificationService.confirm(token);
