@@ -469,10 +469,10 @@
                     <label for="email">받을 이메일</label>
                     <div class="email-verification-row">
                         <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" aria-describedby="emailVerificationStatus" placeholder="본인 이메일을 입력해주세요">
-                        <button class="secondary" type="button" id="requestEmailVerification">인증번호 받기</button>
+                        <button class="secondary" type="button" id="requestEmailVerification" aria-describedby="emailVerificationStatus">인증번호 받기</button>
                     </div>
                     <p class="meta" id="emailVerificationStatus" role="status" aria-live="polite">본인 이메일로 6자리 인증번호를 보내드려요.</p>
-                    <div class="email-code-panel" id="emailVerificationCodePanel" hidden>
+                    <div class="email-code-panel" id="emailVerificationCodePanel" aria-live="polite" hidden>
                         <label for="emailVerificationCode">이메일 인증번호</label>
                         <div class="email-code-row">
                             <input id="emailVerificationCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" aria-describedby="emailVerificationCodeHint" placeholder="6자리 숫자" aria-label="이메일 인증번호">
@@ -1162,7 +1162,12 @@
 
     let emailVerificationToken = "";
     let verificationRequestedEmail = "";
+    let verificationResendTimer = null;
+    let verificationResendUntil = 0;
+    let verificationRequestInFlight = false;
+    const verificationResendCooldownSeconds = 30;
     restoreEmailVerificationFromUrl();
+    updateVerificationRequestButton();
     updateSubscriptionSubmitState();
     emailInput.addEventListener("input", () => {
         if (!emailVerificationToken && !verificationRequestedEmail) return;
@@ -1176,6 +1181,7 @@
         confirmEmailVerificationButton.textContent = "번호 확인";
         emailVerificationCodePanel.hidden = true;
         setEmailVerificationState("이메일이 바뀌었어요. 변경한 주소로 인증번호를 다시 받아주세요.", "error");
+        updateVerificationRequestButton();
         updateSubscriptionSubmitState();
     });
 
@@ -1197,6 +1203,13 @@
             return;
         }
 
+        if (verificationResendUntil > Date.now()) {
+            updateVerificationRequestButton();
+            setEmailVerificationState("잠시만 기다려주세요. 보안을 위해 인증번호 재전송 간격을 두고 있어요.", "pending");
+            return;
+        }
+
+        verificationRequestInFlight = true;
         requestEmailVerificationButton.disabled = true;
         requestEmailVerificationButton.textContent = "인증번호 보내는 중";
         emailVerificationToken = "";
@@ -1217,16 +1230,25 @@
                 body: JSON.stringify({email})
             });
             const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(getApiError(data, "인증번호를 보내지 못했습니다.", response.status));
+            if (!response.ok) {
+                const error = new Error(getApiError(data, "인증번호를 보내지 못했습니다.", response.status));
+                error.status = response.status;
+                error.retryAfterSeconds = Number(response.headers.get("Retry-After") || 0);
+                throw error;
+            }
             setEmailVerificationState(data.message || "인증번호를 보냈어요. 메일에서 6자리 번호를 확인해주세요.", "pending");
+            startVerificationResendCooldown(verificationResendCooldownSeconds);
             emailVerificationCodeInput.focus();
         } catch (error) {
+            if (error?.status === 429 && Number.isFinite(error.retryAfterSeconds) && error.retryAfterSeconds > 0) {
+                startVerificationResendCooldown(Math.min(300, Math.max(1, error.retryAfterSeconds)));
+            }
             verificationRequestedEmail = "";
             emailVerificationCodePanel.hidden = true;
             setEmailVerificationState(getNetworkError(error, "인증번호 요청 중 연결이 끊겼어요."), "error");
         } finally {
-            requestEmailVerificationButton.disabled = false;
-            requestEmailVerificationButton.textContent = "인증번호 다시 받기";
+            verificationRequestInFlight = false;
+            updateVerificationRequestButton();
         }
     });
 
@@ -1388,6 +1410,35 @@
             confirmEmailVerificationButton.disabled = emailVerificationCodeInput.disabled
                 || emailVerificationCodeInput.value.length !== 6;
         }
+    }
+
+    function updateVerificationRequestButton() {
+        const remaining = Math.max(0, Math.ceil((verificationResendUntil - Date.now()) / 1000));
+        if (remaining > 0) {
+            requestEmailVerificationButton.disabled = true;
+            requestEmailVerificationButton.textContent = `${remaining}초 후 다시 받기`;
+            return;
+        }
+        if (verificationResendTimer) {
+            window.clearInterval(verificationResendTimer);
+            verificationResendTimer = null;
+        }
+        verificationResendUntil = 0;
+        if (!verificationRequestInFlight) {
+            requestEmailVerificationButton.disabled = false;
+            requestEmailVerificationButton.textContent = verificationRequestedEmail
+                ? "인증번호 다시 받기"
+                : "인증번호 받기";
+        }
+    }
+
+    function startVerificationResendCooldown(seconds) {
+        verificationResendUntil = Date.now() + (seconds * 1000);
+        if (verificationResendTimer) window.clearInterval(verificationResendTimer);
+        updateVerificationRequestButton();
+        verificationResendTimer = window.setInterval(() => {
+            updateVerificationRequestButton();
+        }, 1000);
     }
 
     function setEmailVerificationState(message, state = "error") {
@@ -2726,6 +2777,8 @@
             message = "요청이 잠시 많아요 · 1분 후 다시 시도해주세요.";
         } else if (code === "DATABASE_UNAVAILABLE") {
             message = "서버가 잠시 바빠요 · 잠시 후 다시 시도해주세요.";
+        } else if (code === "VERIFICATION_COOLDOWN") {
+            message = rawMessage || "인증번호를 너무 자주 요청했어요 · 잠시 후 다시 시도해주세요.";
         } else if (status === 401 || code === "UNAUTHORIZED") {
             message = "먼저 Google 로그인을 완료해주세요.";
         } else if (code === "ACCESS_DENIED" && !/(로그인|이메일|인증|계정)/.test(rawMessage)) {

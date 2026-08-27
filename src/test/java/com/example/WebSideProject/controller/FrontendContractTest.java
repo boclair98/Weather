@@ -57,6 +57,9 @@ class FrontendContractTest {
                 .contains("id=\"confirmEmailVerification\"")
                 .contains("/api/users/email-verification/confirm")
                 .contains("인증번호 6자리를 입력해주세요")
+                .contains("startVerificationResendCooldown")
+                .contains("초 후 다시 받기")
+                .contains("VERIFICATION_COOLDOWN")
                 .contains("TODAY'S CALL")
                 .contains("requestJson")
                 .contains("weather-last-snapshot-v2");

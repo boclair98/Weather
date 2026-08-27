@@ -1,6 +1,7 @@
 package com.example.WebSideProject.controller;
 
 import com.example.WebSideProject.config.RequestIdFilter;
+import com.example.WebSideProject.service.EmailVerificationCooldownException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
@@ -35,6 +36,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiErrorResponse> handleIllegalArgument(IllegalArgumentException e) {
         return error(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", e.getMessage(), e, false);
+    }
+
+    @ExceptionHandler(EmailVerificationCooldownException.class)
+    public ResponseEntity<ApiErrorResponse> handleEmailVerificationCooldown(EmailVerificationCooldownException e) {
+        ResponseEntity<ApiErrorResponse> response = error(
+                HttpStatus.TOO_MANY_REQUESTS,
+                "VERIFICATION_COOLDOWN",
+                e.getMessage(),
+                e,
+                false
+        );
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", String.valueOf(e.getRetryAfterSeconds()))
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(response.getBody());
     }
 
     @ExceptionHandler(SecurityException.class)

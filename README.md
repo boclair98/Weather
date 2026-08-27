@@ -245,7 +245,7 @@ flowchart TB
 
 - 운영 환경에서는 검증된 `X-Coders-User`가 없으면 구독·관리 API를 거부합니다.
 - 로그인한 UUID를 `ownerId`로 저장하고 소유권이 다른 계정의 변경을 차단합니다.
-- 구독 전 15분 유효 이메일 인증 챌린지를 발급하고, 메일로 보낸 6자리 번호를 입력해 일치할 때만 해당 `ownerId`에 일회성으로 연결합니다. 새 번호를 요청하면 이전 번호는 즉시 폐기되고, 5회 틀리면 해당 챌린지를 잠급니다.
+- 구독 전 15분 유효 이메일 인증 챌린지를 발급하고, 메일로 보낸 6자리 번호를 입력해 일치할 때만 해당 `ownerId`에 일회성으로 연결합니다. 새 번호를 요청하면 이전 번호는 즉시 폐기되고, 5회 틀리면 해당 챌린지를 잠급니다. 재전송은 30초 쿨다운과 API `429 Retry-After`로 남용을 막습니다.
 - 구독 요청의 이메일과 인증 챌린지의 이메일이 다르면 서버에서 거부하며, 인증번호는 SHA-256 해시로만 저장하고 구독에 사용한 즉시 폐기합니다.
 - 이메일로 구독을 해지하는 공개 UI는 제공하지 않습니다. 로그인 후 계정 관리 영역에서만 해지·삭제할 수 있습니다.
 - 개인정보 동의 버전과 동의시각, 구독 해지시각을 저장합니다.
@@ -289,7 +289,7 @@ flowchart TB
 | `PATCH` | `/api/users/me/notifications` | 알림 여부와 한국 시간 기준 분 단위 발송 시각 변경 |
 | `DELETE` | `/api/users/me/data` | 구독과 개인정보 완전 삭제 |
 
-`/api/users/subscribe`는 운영 환경에서 `X-Coders-User`와 이메일 인증번호(`verificationCode`)를 모두 요구하며, 인증된 이메일 하나만 받습니다. 이전 링크 인증 클라이언트의 `verificationToken`도 호환성을 위해 당분간 허용합니다. `/api/users/me/notifications`의 알림 시각 필드는 `HH:mm` 형식의 `morningTime`, `afternoonTime`, `eveningTime`입니다. 운영 스케줄러는 매분 해당 시각의 사용자만 조회하고, 한국 표준시(`Asia/Seoul`)로 발송합니다.
+`/api/users/subscribe`는 운영 환경에서 `X-Coders-User`와 이메일 인증번호(`verificationCode`)를 모두 요구하며, 인증된 이메일 하나만 받습니다. 이전 링크 인증 클라이언트의 `verificationToken`도 호환성을 위해 당분간 허용합니다. 인증번호 재전송을 30초 안에 다시 요청하면 `429 VERIFICATION_COOLDOWN`과 `Retry-After`가 반환됩니다. `/api/users/me/notifications`의 알림 시각 필드는 `HH:mm` 형식의 `morningTime`, `afternoonTime`, `eveningTime`입니다. 운영 스케줄러는 매분 해당 시각의 사용자만 조회하고, 한국 표준시(`Asia/Seoul`)로 발송합니다.
 오류 응답은 `application/problem+json`과 요청 추적 ID를 사용합니다. 상세 계약은 [API 계약](docs/API_CONTRACT.md)에서 확인할 수 있습니다.
 
 ## 프로젝트 구조

@@ -8,6 +8,7 @@ import org.mockito.ArgumentCaptor;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.lang.reflect.Field;
 import java.util.HexFormat;
 import java.util.Optional;
 
@@ -38,6 +39,31 @@ class EmailVerificationServiceTest {
         assertThat(codeCaptor.getValue()).matches("\\d{6}");
         assertThat(response.email()).isEqualTo("user@example.com");
         assertThat(response.message()).contains("6자리");
+    }
+
+    @Test
+    void requestIsThrottledForThirtySecondsPerOwner() throws Exception {
+        EmailVerificationChallengeRepository repository = mock(EmailVerificationChallengeRepository.class);
+        MailService mailService = mock(MailService.class);
+        EmailVerificationService service = new EmailVerificationService(repository, mailService);
+        EmailVerificationChallenge recent = EmailVerificationChallenge.issue(
+                "owner-123",
+                "first@example.com",
+                hash("042731"),
+                LocalDateTime.now().plusMinutes(15)
+        );
+        Field createdAt = EmailVerificationChallenge.class.getDeclaredField("createdAt");
+        createdAt.setAccessible(true);
+        createdAt.set(recent, LocalDateTime.now().minusSeconds(5));
+        when(repository.findFirstByOwnerIdOrderByCreatedAtDesc("owner-123"))
+                .thenReturn(Optional.of(recent));
+
+        assertThatThrownBy(() -> service.requestVerification("owner-123", "second@example.com"))
+                .isInstanceOf(EmailVerificationCooldownException.class)
+                .hasMessageContaining("초 후")
+                .hasMessageContaining("너무 자주");
+        verify(repository, org.mockito.Mockito.never()).deleteAllForOwner(any());
+        verify(mailService, org.mockito.Mockito.never()).sendEmailVerificationMail(any(), any());
     }
 
     @Test

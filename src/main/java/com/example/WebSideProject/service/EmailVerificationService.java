@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.Locale;
@@ -23,6 +24,7 @@ public class EmailVerificationService {
     private static final int TOKEN_TTL_MINUTES = 15;
     private static final int CODE_LENGTH = 6;
     private static final int MAX_CODE_ATTEMPTS = 5;
+    private static final int RESEND_COOLDOWN_SECONDS = 30;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final EmailVerificationChallengeRepository challengeRepository;
@@ -33,6 +35,8 @@ public class EmailVerificationService {
         String normalizedEmail = normalizeEmail(email);
         String normalizedOwnerId = resolveOwnerId(ownerId, normalizedEmail);
         LocalDateTime now = LocalDateTime.now();
+        challengeRepository.findFirstByOwnerIdOrderByCreatedAtDesc(normalizedOwnerId)
+                .ifPresent(latest -> enforceResendCooldown(latest, now));
         // A newly requested code always invalidates the previous one. This keeps
         // multiple tabs or repeated requests from leaving several valid codes.
         challengeRepository.deleteAllForOwner(normalizedOwnerId);
@@ -53,6 +57,21 @@ public class EmailVerificationService {
                 expiresAt,
                 "인증번호를 보냈습니다. 메일에서 6자리 번호를 확인해 15분 안에 입력해주세요."
         );
+    }
+
+    private void enforceResendCooldown(EmailVerificationChallenge latest, LocalDateTime now) {
+        LocalDateTime createdAt = latest.getCreatedAt();
+        if (createdAt == null) {
+            return;
+        }
+        long elapsedSeconds = Duration.between(createdAt, now).getSeconds();
+        if (elapsedSeconds < RESEND_COOLDOWN_SECONDS) {
+            long retryAfter = Math.max(1, RESEND_COOLDOWN_SECONDS - Math.max(0, elapsedSeconds));
+            throw new EmailVerificationCooldownException(
+                    "인증번호를 너무 자주 요청했어요. " + retryAfter + "초 후 다시 시도해주세요.",
+                    retryAfter
+            );
+        }
     }
 
     /**

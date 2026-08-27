@@ -18,6 +18,8 @@ public interface EmailVerificationChallengeRepository extends JpaRepository<Emai
             String email
     );
 
+    Optional<EmailVerificationChallenge> findFirstByOwnerIdOrderByCreatedAtDesc(String ownerId);
+
     @Modifying
     @Query("delete from EmailVerificationChallenge c where c.ownerId = :ownerId")
     int deleteAllForOwner(@Param("ownerId") String ownerId);
