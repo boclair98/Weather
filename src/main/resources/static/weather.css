@@ -161,6 +161,11 @@ a:focus-visible {
     font-size: 13px;
 }
 
+#mainContent .account-bar.signed-out {
+    color: var(--blue-ink);
+    background: var(--blue-soft);
+}
+
 #mainContent .account-link {
     flex: 0 0 auto;
     color: var(--blue-ink);
@@ -311,6 +316,47 @@ a:focus-visible {
     color: var(--blue-ink);
 }
 
+#mainContent .intent-picker {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+#mainContent .intent-picker-label {
+    margin-right: 2px;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+#mainContent .intent-chip {
+    min-height: 36px;
+    padding: 7px 13px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    background: var(--surface);
+    font-size: 12px;
+    font-weight: 800;
+    transition: color var(--ease), border-color var(--ease), background var(--ease), transform var(--ease);
+}
+
+#mainContent .intent-chip:hover,
+#mainContent .intent-chip.selected {
+    border-color: rgba(49, 130, 246, .35);
+    color: var(--blue-ink);
+    background: var(--blue-soft);
+    transform: translateY(-1px);
+}
+
+#mainContent .intent-helper {
+    margin: 8px 0 0;
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
 #mainContent .dashboard-search-card {
     margin-top: 44px;
     padding: 30px;
@@ -446,6 +492,8 @@ a:focus-visible {
 }
 
 #mainContent .location-option {
+    display: grid;
+    gap: 3px;
     width: 100%;
     min-height: 50px;
     padding: 12px 16px;
@@ -455,6 +503,24 @@ a:focus-visible {
     background: var(--surface);
     text-align: left;
     transition: color var(--ease), border-color var(--ease), background var(--ease);
+}
+
+#mainContent .location-option strong {
+    color: inherit;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+#mainContent .location-option span {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+#mainContent .location-option:hover span,
+#mainContent .location-option.selected span {
+    color: var(--blue-ink);
+    opacity: .8;
 }
 
 #mainContent .location-option:hover,
@@ -2083,6 +2149,30 @@ body[data-theme="dark"] #mainContent .share-weather {
 
     #mainContent .hero-badges {
         margin-top: 20px;
+    }
+
+    #mainContent .intent-picker {
+        flex-wrap: nowrap;
+        margin-right: -4px;
+        padding-bottom: 2px;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    #mainContent .intent-picker::-webkit-scrollbar {
+        display: none;
+    }
+
+    #mainContent .intent-picker-label {
+        flex: 0 0 auto;
+    }
+
+    #mainContent .intent-chip {
+        flex: 0 0 auto;
+    }
+
+    #mainContent .intent-helper {
+        font-size: 11px;
     }
 
     #mainContent .hero-badge,

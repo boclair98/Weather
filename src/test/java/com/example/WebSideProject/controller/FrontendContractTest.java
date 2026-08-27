@@ -16,7 +16,7 @@ class FrontendContractTest {
 
         assertThat(html)
                 .contains("/manifest.webmanifest")
-                .contains("/weather.css?v=20260827-window-v1")
+                .contains("/weather.css?v=20260827-product-v2")
                 .contains("data-day-offset=\"0\"")
                 .contains("data-day-offset=\"1\"")
                 .contains("data-day-offset=\"2\"")
@@ -37,6 +37,11 @@ class FrontendContractTest {
                 .contains("id=\"decisionExplanation\"")
                 .contains("id=\"riskFactorList\"")
                 .contains("renderRiskFactors")
+                .contains("id=\"intentHelper\"")
+                .contains("data-activity-type=\"COMMUTE\"")
+                .contains("const loginUrl")
+                .contains("if (locations.length === 1)")
+                .contains("정확한 위치를 선택해주세요")
                 .contains("id=\"refreshWeather\"")
                 .contains("id=\"unitToggle\"")
                 .contains("id=\"themeToggle\"")
@@ -62,6 +67,7 @@ class FrontendContractTest {
                 .contains("#mainContent .dashboard-search-card")
                 .contains("#mainContent .go-out-window")
                 .contains("@media (max-width: 760px)")
+                .contains(".intent-chip")
                 .contains("@media (prefers-reduced-motion: reduce)");
     }
 

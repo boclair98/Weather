@@ -4,19 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="오늘부터 모레까지 외출 점수, 시간대별 날씨, 코디와 이동 경로를 한 번에 결정하는 맞춤 날씨 서비스">
+    <meta name="robots" content="index,follow">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="날씨한편">
+    <meta property="og:title" content="날씨한편 | 오늘을 결정하는 날씨">
+    <meta property="og:description" content="내 동네 날씨를 행동 기준으로 정리하고, 필요한 시간에 이메일로 받아보세요.">
+    <meta property="og:url" content="https://weather.coders.kr/">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="날씨한편 | 오늘을 결정하는 날씨">
+    <meta name="twitter:description" content="외출 점수와 가장 좋은 시간창을 한눈에 확인하세요.">
+    <link rel="canonical" href="https://weather.coders.kr/">
     <meta name="theme-color" content="#f2f4f6">
     <title>날씨한편 | 내 위치 맞춤 날씨 알림</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/weather.css?v=20260827-window-v1">
+    <link rel="stylesheet" href="/weather.css?v=20260827-product-v2">
 </head>
 <body>
 <a class="skip-link" href="#weatherSearch">날씨 검색으로 건너뛰기</a>
 <div class="network-status" id="networkStatus" hidden role="status">오프라인 · 저장된 화면을 보여드려요</div>
 <main id="mainContent">
-    <div class="account-bar" th:if="${signedIn}">
-        <span>로그인 상태 · 이메일 인증이 완료된 주소로만 날씨를 보내드려요.</span>
+    <div class="account-bar" th:classappend="${signedIn} ? ' signed-in' : ' signed-out'">
+        <span th:if="${signedIn}">로그인 상태 · 이메일 인증이 완료된 주소로만 날씨를 보내드려요.</span>
+        <span th:if="${!signedIn}">로그인하면 본인 이메일로만 날씨를 안전하게 받을 수 있어요.</span>
         <a class="account-link" th:if="${signedIn}" th:href="${logoutUrl}">로그아웃</a>
+        <a class="account-link login-link" th:if="${!signedIn}" th:href="${loginUrl}">Google로 시작</a>
     </div>
     <header class="weather-app-header">
         <a class="weather-brand" href="/" aria-label="날씨한편 홈">
@@ -40,6 +52,14 @@
                 <span class="hero-badge">본인 이메일 인증</span>
                 <button class="hero-install" type="button" id="installApp" hidden>앱으로 설치</button>
             </div>
+            <div class="intent-picker" aria-label="빠른 맞춤 기준">
+                <span class="intent-picker-label">지금 필요한 기준</span>
+                <button type="button" class="intent-chip" data-activity-type="COMMUTE" aria-pressed="false">출근</button>
+                <button type="button" class="intent-chip" data-activity-type="OUTDOOR" aria-pressed="false">산책</button>
+                <button type="button" class="intent-chip" data-activity-type="FORMAL" aria-pressed="false">약속</button>
+                <button type="button" class="intent-chip" data-activity-type="DAILY" aria-pressed="false">일상</button>
+            </div>
+            <p class="intent-helper" id="intentHelper" role="status" aria-live="polite">기준을 고르면 외출 점수와 옷차림이 그 일정에 맞춰집니다.</p>
             <div class="dashboard-search-card" id="weatherSearch" tabindex="-1">
                 <div class="dashboard-search-copy">
                     <strong>먼저 지역을 알려주세요</strong>
@@ -59,10 +79,11 @@
             <div class="subscribe-quick-action" th:classappend="${signedIn} ? ' signed-in' : ''">
                 <div>
                     <strong>매일 다시 찾지 않아도 돼요</strong>
-                    <span>원하는 시간에 필요한 날씨만 이메일로 보내드려요.</span>
+                    <span th:if="${signedIn}">원하는 시간에 필요한 날씨만 이메일로 보내드려요.</span>
+                    <span th:if="${!signedIn}">Google 로그인 후 본인 이메일을 인증하면 시작할 수 있어요.</span>
                 </div>
                 <button class="primary" type="button" id="openSubscribeTop">
-                    <span>무료로 구독하기</span>
+                    <span th:text="${signedIn} ? '무료로 구독하기' : '로그인 후 시작하기'">무료로 구독하기</span>
                 </button>
             </div>
             <div class="weather-preview" id="weatherPreview" hidden>
@@ -434,8 +455,8 @@
                 <p class="panel-description">선택한 지역의 날씨를 원하는 시간에 간단히 보내드릴게요.</p>
                 <div class="auth-notice" th:classappend="${signedIn} ? ' signed-in' : ''">
                     <div>
-                        <strong>내 이메일인지 한 번만 확인해요</strong>
-                        <span>인증한 주소로만 날씨를 보내 안전하게 구독할 수 있어요.</span>
+                        <strong th:text="${signedIn} ? '내 이메일인지 한 번만 확인해요' : '로그인 후 이메일을 한 번만 확인해요'">내 이메일인지 한 번만 확인해요</strong>
+                        <span th:text="${signedIn} ? '인증한 주소로만 날씨를 보내 안전하게 구독할 수 있어요.' : 'Google 로그인과 이메일 인증을 거쳐야 날씨를 받을 수 있어요.'">인증한 주소로만 날씨를 보내 안전하게 구독할 수 있어요.</span>
                     </div>
                     <span class="verification-badge">안전한 구독</span>
                 </div>
@@ -589,6 +610,7 @@
 
 <script th:inline="javascript" th:attr="nonce=${cspNonce}">
     const signedIn = /*[[${signedIn}]]*/ false;
+    const loginUrl = /*[[${loginUrl}]]*/ "";
     const donationWidgetSelectors = [
         "[data-coders-donate]",
         "[data-coders-donation]",
@@ -743,6 +765,8 @@
     const routePlanner = document.getElementById("routePlanner");
     const installApp = document.getElementById("installApp");
     const networkStatus = document.getElementById("networkStatus");
+    const intentHelper = document.getElementById("intentHelper");
+    const intentButtons = [...document.querySelectorAll("[data-activity-type]")];
     let selectedLocation = null;
     let previewPeriod = "MORNING";
     let forecastDayOffset = 0;
@@ -773,6 +797,7 @@
     applyTheme();
     updateUnitToggle();
     migrateLegacyLocations();
+    syncIntentButtons();
 
     function readPreferences() {
         try {
@@ -802,6 +827,38 @@
             temperatureUnit,
             themeMode
         }));
+    }
+
+    function activityLabel(value) {
+        return {
+            DAILY: "일상",
+            COMMUTE: "출근·등교",
+            OUTDOOR: "산책·야외 활동",
+            FORMAL: "약속·격식 일정"
+        }[value] || "일상";
+    }
+
+    function syncIntentButtons() {
+        const currentActivity = document.getElementById("activityType")?.value || "DAILY";
+        intentButtons.forEach((button) => {
+            const selected = button.dataset.activityType === currentActivity;
+            button.classList.toggle("selected", selected);
+            button.setAttribute("aria-pressed", String(selected));
+        });
+        if (intentHelper) {
+            intentHelper.textContent = selectedLocation
+                ? `${activityLabel(currentActivity)} 기준으로 외출 점수와 옷차림을 다시 계산했어요.`
+                : `${activityLabel(currentActivity)} 기준을 고르면 외출 점수와 옷차림이 그 일정에 맞춰집니다.`;
+        }
+    }
+
+    function applyActivityIntent(activityType) {
+        const activitySelect = document.getElementById("activityType");
+        if (!activitySelect || !["DAILY", "COMMUTE", "OUTDOOR", "FORMAL"].includes(activityType)) return;
+        activitySelect.value = activityType;
+        savePreferences();
+        syncIntentButtons();
+        reloadPreviewIfReady();
     }
 
     function applyTheme() {
@@ -1023,6 +1080,9 @@
 
     searchButton.addEventListener("click", searchLocations);
     currentLocationButton.addEventListener("click", useCurrentLocation);
+    intentButtons.forEach((button) => {
+        button.addEventListener("click", () => applyActivityIntent(button.dataset.activityType));
+    });
     document.querySelectorAll(".day-tab").forEach((button) => {
         button.addEventListener("click", () => {
             forecastDayOffset = Number(button.dataset.dayOffset || 0);
@@ -1084,6 +1144,7 @@
     });
     document.getElementById("activityType").addEventListener("change", () => {
         savePreferences();
+        syncIntentButtons();
         reloadPreviewIfReady();
     });
     renderFavoriteLocations();
@@ -1354,7 +1415,12 @@
             }
 
             renderLocationResults(locations);
-            selectLocation(locations[0], 0);
+            if (locations.length === 1) {
+                selectLocation(locations[0], 0);
+            } else {
+                locationMeta.textContent = `${locations.length}곳을 찾았어요. 정확한 위치를 선택해주세요.`;
+                showResult("검색 결과에서 원하는 장소를 선택하면 날씨를 확인합니다.", true);
+            }
         } catch (error) {
             locationMeta.textContent = "지역을 검색한 뒤 결과를 선택해주세요.";
             showResult(getNetworkError(error, "지역 검색 서버에 연결할 수 없어요. 잠시 후 다시 시도해주세요."), false);
@@ -1405,7 +1471,12 @@
             button.type = "button";
             button.className = "location-option";
             button.setAttribute("aria-pressed", "false");
-            button.textContent = `${location.locationName} (격자 ${location.nx}, ${location.ny})`;
+            const name = document.createElement("strong");
+            name.textContent = location.locationName || "선택 위치";
+            const context = document.createElement("span");
+            context.textContent = location.regionName && location.regionName !== location.locationName
+                ? location.regionName : `기상청 격자 ${location.nx}, ${location.ny}`;
+            button.append(name, context);
             button.addEventListener("click", () => selectLocation(location, index));
             locationResults.appendChild(button);
         });
@@ -1570,6 +1641,10 @@
     function openSubscriptionPanel(options = {}) {
         const {focusForm = true, scroll = true} = options;
         if (!subscribeDrawer) return;
+        if (!signedIn) {
+            if (loginUrl) window.location.assign(loginUrl);
+            return;
+        }
         subscribeDrawer.open = true;
         const hasLocation = Boolean(selectedLocation);
         const target = hasLocation ? document.getElementById("name") : locationQuery;
