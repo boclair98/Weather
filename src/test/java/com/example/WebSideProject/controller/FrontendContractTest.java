@@ -27,6 +27,7 @@ class FrontendContractTest {
                 .contains("buildWeatherShareUrl")
                 .contains("restoreSharedWeather")
                 .contains("navigator.serviceWorker.register")
+                .contains("service-worker-v8.js")
                 .contains("href=\"#weatherSearch\"")
                 .contains("id=\"openSubscribeNav\"")
                 .contains("class=\"subscription-options\"")
