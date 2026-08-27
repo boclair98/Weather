@@ -84,6 +84,7 @@ class FrontendContractTest {
         String worker = classpathText("/static/service-worker.js");
 
         assertThat(worker)
+                .contains("weather-shell-v8")
                 .contains("url.pathname.startsWith(\"/api/\")")
                 .contains("fetch(request).catch")
                 .contains("OFFLINE")

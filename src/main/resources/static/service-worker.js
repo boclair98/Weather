@@ -1,4 +1,4 @@
-const CACHE_NAME = "weather-shell-v7";
+const CACHE_NAME = "weather-shell-v8";
 const APP_SHELL = ["/", "/weather.css?v=20260827-verify-code-v1", "/favicon.svg", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
