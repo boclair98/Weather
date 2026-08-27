@@ -1489,6 +1489,8 @@
             element.setAttribute("aria-pressed", String(elementIndex === index));
         });
         locationMeta.textContent = `선택 위치: ${location.locationName} (격자 ${location.nx}, ${location.ny})`;
+        showResult(`${location.locationName}을 선택했어요. 아래에서 오늘의 판단을 확인하세요.`, true);
+        syncIntentButtons();
         rememberLocation(location);
         updateFavoriteButton();
         loadWeatherPreview(location);

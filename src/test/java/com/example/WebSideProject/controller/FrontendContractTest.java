@@ -41,6 +41,7 @@ class FrontendContractTest {
                 .contains("data-activity-type=\"COMMUTE\"")
                 .contains("const loginUrl")
                 .contains("if (locations.length === 1)")
+                .contains("아래에서 오늘의 판단을 확인하세요")
                 .contains("정확한 위치를 선택해주세요")
                 .contains("id=\"refreshWeather\"")
                 .contains("id=\"unitToggle\"")
