@@ -18,7 +18,7 @@
     <title>날씨한편 | 내 위치 맞춤 날씨 알림</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/weather.css?v=20260830-weather-hero-v3">
+    <link rel="stylesheet" href="/weather.css?v=20260830-core-weather-v4">
 </head>
 <body>
 <a class="skip-link" href="#weatherSearch">날씨 검색으로 건너뛰기</a>
@@ -78,9 +78,15 @@
                     <div class="weather-now-metrics" aria-label="날씨 핵심 지표">
                         <span id="heroWeatherPrecipitation">강수 --%</span>
                         <span id="heroWeatherWind">바람 --m/s</span>
-                        <span>시간별 예보</span>
+                        <span>기상청 데이터</span>
                     </div>
-                    <a class="weather-now-action" href="#weatherSearch">내 동네 날씨 보기 <span aria-hidden="true">→</span></a>
+                    <div class="hero-hourly-strip" id="heroHourlyStrip" aria-label="가까운 시간별 예보">
+                        <span><small>지금</small><b aria-hidden="true">·</b><strong>--°</strong></span>
+                        <span><small>+1시간</small><b aria-hidden="true">·</b><strong>--°</strong></span>
+                        <span><small>+2시간</small><b aria-hidden="true">·</b><strong>--°</strong></span>
+                        <span><small>+3시간</small><b aria-hidden="true">·</b><strong>--°</strong></span>
+                    </div>
+                    <a class="weather-now-action" id="heroWeatherAction" href="#weatherSearch"><span id="heroWeatherActionLabel">내 동네 날씨 보기</span><span aria-hidden="true">→</span></a>
                 </section>
             </div>
             <div class="intent-picker" aria-label="빠른 맞춤 기준">
@@ -823,6 +829,9 @@
     const heroWeatherFeelsLike = document.getElementById("heroWeatherFeelsLike");
     const heroWeatherPrecipitation = document.getElementById("heroWeatherPrecipitation");
     const heroWeatherWind = document.getElementById("heroWeatherWind");
+    const heroHourlyStrip = document.getElementById("heroHourlyStrip");
+    const heroWeatherAction = document.getElementById("heroWeatherAction");
+    const heroWeatherActionLabel = document.getElementById("heroWeatherActionLabel");
     const intentHelper = document.getElementById("intentHelper");
     const intentButtons = [...document.querySelectorAll("[data-activity-type]")];
     let selectedLocation = null;
@@ -1905,6 +1914,9 @@
         heroWeatherFeelsLike.textContent = "기상청 실황·예보 연결 중";
         heroWeatherPrecipitation.textContent = "강수 확인 중";
         heroWeatherWind.textContent = "바람 확인 중";
+        heroWeatherAction.href = "#weatherPreview";
+        heroWeatherActionLabel.textContent = "상세 예보 보기";
+        renderHeroHourlyStrip([]);
         weatherDetail.textContent = "선택한 위치의 날씨를 분석하고 있어요.";
         outingScore.textContent = "-점";
         outingScoreLabel.textContent = "-";
@@ -2097,6 +2109,7 @@
         hourlyForecastHours = forecast.hours || [];
         hourlyForecastExpanded = false;
         renderHourlyForecastItems();
+        renderHeroHourlyStrip(hourlyForecastHours);
         renderGoOutWindow(forecast);
         const provenance = forecast.provenance || {};
         hourlySource.textContent = provenance.fallback
@@ -2132,6 +2145,34 @@
         toggleHourlyForecastButton.textContent = hourlyForecastExpanded
             ? "12시간만 보기"
             : `전체 ${hourlyForecastHours.length}시간 보기`;
+    }
+
+    function renderHeroHourlyStrip(hours) {
+        const upcoming = Array.isArray(hours) ? hours.slice(0, 4) : [];
+        const fragment = document.createDocumentFragment();
+        for (let index = 0; index < 4; index += 1) {
+            const hour = upcoming[index];
+            const item = document.createElement("span");
+            const time = document.createElement("small");
+            time.textContent = hour?.time || (index === 0 ? "지금" : `+${index}시간`);
+            const icon = document.createElement("b");
+            icon.setAttribute("aria-hidden", "true");
+            icon.textContent = hour ? heroHourlyIcon(hour) : "·";
+            const temperature = document.createElement("strong");
+            temperature.textContent = hour ? formatTemperature(hour.temperature) : "--°";
+            const rain = document.createElement("em");
+            rain.textContent = hour ? `${hour.precipitationProbability ?? 0}%` : "--%";
+            item.append(time, icon, temperature, rain);
+            fragment.appendChild(item);
+        }
+        heroHourlyStrip.replaceChildren(fragment);
+    }
+
+    function heroHourlyIcon(hour) {
+        const precipitation = String(hour.precipitation || "");
+        if (precipitation.includes("눈")) return "❄";
+        if (precipitation && precipitation !== "없음") return "☂";
+        return String(hour.sky || "").includes("맑") ? "☀" : "☁";
     }
 
     /**
@@ -2930,7 +2971,7 @@
     restoreSubscriptionDraft();
     restoreSharedWeather();
     if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker-v10.js"));
+        window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker-v11.js"));
     }
 
     async function deleteCurrentUserData() {
