@@ -16,7 +16,7 @@ class FrontendContractTest {
 
         assertThat(html)
                 .contains("/manifest.webmanifest")
-                .contains("/weather.css?v=20260827-verify-code-v1")
+                .contains("/weather.css?v=20260830-ui-performance-v2")
                 .contains("data-day-offset=\"0\"")
                 .contains("data-day-offset=\"1\"")
                 .contains("data-day-offset=\"2\"")
@@ -27,7 +27,11 @@ class FrontendContractTest {
                 .contains("buildWeatherShareUrl")
                 .contains("restoreSharedWeather")
                 .contains("navigator.serviceWorker.register")
-                .contains("service-worker-v8.js")
+                .contains("service-worker-v9.js")
+                .contains("id=\"mobileWeatherNav\"")
+                .contains("id=\"openSubscribeMobile\"")
+                .contains("id=\"toggleHourlyForecast\"")
+                .contains("renderHourlyForecastItems")
                 .contains("href=\"#weatherSearch\"")
                 .contains("id=\"openSubscribeNav\"")
                 .contains("class=\"subscription-options\"")
@@ -75,6 +79,8 @@ class FrontendContractTest {
                 .contains("--blue: #3182f6")
                 .contains("#mainContent .dashboard-search-card")
                 .contains("#mainContent .go-out-window")
+                .contains("#mainContent .mobile-weather-nav")
+                .contains("content-visibility: auto")
                 .contains("@media (max-width: 760px)")
                 .contains(".intent-chip")
                 .contains("@media (prefers-reduced-motion: reduce)");
@@ -82,14 +88,15 @@ class FrontendContractTest {
 
     @Test
     void serviceWorkerKeepsApiResponsesNetworkOnly() throws IOException {
-        String worker = classpathText("/static/service-worker.js");
+        String worker = classpathText("/static/service-worker-v9.js");
 
         assertThat(worker)
-                .contains("weather-shell-v8")
+                .contains("weather-shell-v9")
                 .contains("url.pathname.startsWith(\"/api/\")")
-                .contains("fetch(request).catch")
+                .contains("request.mode === \"navigate\"")
                 .contains("OFFLINE")
-                .containsOnlyOnce("cache.put(request, copy)");
+                .contains("caches.match(request)")
+                .contains("cache.put(request, response.clone())");
     }
 
     private String classpathText(String path) throws IOException {

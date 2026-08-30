@@ -161,6 +161,13 @@ a:focus-visible {
     font-size: 13px;
 }
 
+#mainContent .account-bar > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 #mainContent .account-bar.signed-out {
     color: var(--blue-ink);
     background: var(--blue-soft);
@@ -1354,6 +1361,38 @@ body[data-theme="dark"] #mainContent .share-weather {
     overflow-x: auto;
     overscroll-behavior-inline: contain;
     scrollbar-width: thin;
+    contain: layout paint;
+}
+
+#mainContent .hourly-toggle {
+    width: 100%;
+    min-height: 44px;
+    margin: 2px 0 12px;
+    border: 0;
+    border-radius: 12px;
+    color: var(--blue-ink);
+    background: var(--blue-soft);
+    font-weight: 800;
+    cursor: pointer;
+}
+
+#mainContent .hourly-toggle:hover {
+    filter: brightness(.98);
+}
+
+#mainContent .mobile-weather-nav {
+    display: none;
+}
+
+@supports (content-visibility: auto) {
+    #mainContent .secondary-insights,
+    #mainContent .advanced-tools,
+    #mainContent .subscribe-drawer,
+    #mainContent .manager-drawer,
+    #mainContent .site-footer {
+        content-visibility: auto;
+        contain-intrinsic-size: auto 620px;
+    }
 }
 
 #mainContent .hourly-item {
@@ -2131,13 +2170,67 @@ body[data-theme="dark"] #mainContent .share-weather {
 @media (max-width: 760px) {
     #mainContent {
         width: min(calc(100% - 24px), 640px);
-        padding-top: 8px;
+        padding: 8px 0 calc(112px + env(safe-area-inset-bottom));
     }
 
     #mainContent .account-bar {
-        align-items: flex-start;
+        align-items: center;
+        gap: 8px;
         padding: 10px 12px;
         font-size: 11px;
+    }
+
+    #mainContent .mobile-weather-nav {
+        position: fixed;
+        z-index: 170;
+        right: 12px;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        left: 12px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+        max-width: 420px;
+        margin: 0 auto;
+        padding: 7px;
+        border: 1px solid rgba(255, 255, 255, .7);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, .9);
+        box-shadow: 0 14px 36px rgba(15, 23, 42, .18);
+        -webkit-backdrop-filter: blur(18px);
+        backdrop-filter: blur(18px);
+    }
+
+    #mainContent .mobile-weather-nav a,
+    #mainContent .mobile-weather-nav button {
+        display: grid;
+        place-items: center;
+        gap: 2px;
+        min-height: 52px;
+        padding: 5px 8px;
+        border: 0;
+        border-radius: 16px;
+        color: var(--text-secondary);
+        background: transparent;
+        font: inherit;
+        font-size: 11px;
+        font-weight: 800;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    #mainContent .mobile-weather-nav span {
+        color: var(--blue);
+        font-size: 20px;
+        line-height: 1;
+    }
+
+    #mainContent .mobile-weather-nav button:last-child {
+        color: #fff;
+        background: var(--blue);
+    }
+
+    #mainContent .mobile-weather-nav button:last-child span {
+        color: #fff;
     }
 
     #mainContent .weather-app-header {
@@ -2556,7 +2649,8 @@ body[data-theme="dark"] #mainContent .share-weather {
     #mainContent .manager-drawer,
     #mainContent .advanced-tools,
     #mainContent .site-footer,
-    #mainContent .weather-tool-actions {
+    #mainContent .weather-tool-actions,
+    #mainContent .mobile-weather-nav {
         display: none !important;
     }
 

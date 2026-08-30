@@ -18,7 +18,7 @@
     <title>날씨한편 | 내 위치 맞춤 날씨 알림</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/weather.css?v=20260827-verify-code-v1">
+    <link rel="stylesheet" href="/weather.css?v=20260830-ui-performance-v2">
 </head>
 <body>
 <a class="skip-link" href="#weatherSearch">날씨 검색으로 건너뛰기</a>
@@ -174,6 +174,7 @@
                             <span class="hourly-rain-summary" id="hourlyRainSummary">강수 확인 중</span>
                         </div>
                         <div class="hourly-track" id="hourlyTrack"></div>
+                        <button class="hourly-toggle" type="button" id="toggleHourlyForecast" hidden aria-expanded="false">전체 시간 보기</button>
                         <span class="hourly-source" id="hourlySource">기상청 발표 시각 확인 중</span>
                         <p class="hourly-error" id="hourlyError" hidden></p>
                     </section>
@@ -614,6 +615,11 @@
     </details>
 
     <p class="site-footer">날씨한편 · 데이터 제공: 기상청 · 예보는 실제 관측과 다를 수 있습니다.</p>
+    <nav class="mobile-weather-nav" id="mobileWeatherNav" aria-label="모바일 빠른 메뉴">
+        <a href="#weatherSearch" aria-label="지역 검색으로 이동"><span aria-hidden="true">⌕</span>검색</a>
+        <button type="button" id="openWeatherMobile" aria-label="선택한 지역의 오늘 예보로 이동"><span aria-hidden="true">☀</span>오늘</button>
+        <button type="button" id="openSubscribeMobile" aria-label="날씨 이메일 구독 열기"><span aria-hidden="true">✉</span>구독</button>
+    </nav>
 </main>
 
 <script th:inline="javascript" th:attr="nonce=${cspNonce}">
@@ -746,8 +752,11 @@
     const hourlyHeadline = document.getElementById("hourlyHeadline");
     const hourlyRainSummary = document.getElementById("hourlyRainSummary");
     const hourlyTrack = document.getElementById("hourlyTrack");
+    const toggleHourlyForecastButton = document.getElementById("toggleHourlyForecast");
     const hourlySource = document.getElementById("hourlySource");
     const hourlyError = document.getElementById("hourlyError");
+    const openWeatherMobile = document.getElementById("openWeatherMobile");
+    const openSubscribeMobile = document.getElementById("openSubscribeMobile");
     const shareWeather = document.getElementById("shareWeather");
     const weatherPlanner = document.getElementById("weatherPlanner");
     const plannerHeadline = document.getElementById("plannerHeadline");
@@ -789,6 +798,9 @@
     let temperatureUnit = "C";
     let themeMode = "light";
     let weatherLoadVersion = 0;
+    let hourlyForecastHours = [];
+    let hourlyForecastExpanded = false;
+    const initialHourlyForecastCount = 12;
     const requestControllers = new Map();
     const apiCache = new Map();
     let installPrompt = null;
@@ -1141,6 +1153,19 @@
     openSubscribeNav.addEventListener("click", (event) => {
         event.preventDefault();
         openSubscriptionPanel();
+    });
+    openSubscribeMobile.addEventListener("click", openSubscriptionPanel);
+    openWeatherMobile.addEventListener("click", () => {
+        const target = selectedLocation && !weatherPreview.hidden
+            ? weatherPreview
+            : document.getElementById("weatherSearch");
+        target.scrollIntoView({behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start"});
+        if (target.id === "weatherSearch") locationQuery.focus({preventScroll: true});
+    });
+    toggleHourlyForecastButton.addEventListener("click", () => {
+        hourlyForecastExpanded = !hourlyForecastExpanded;
+        renderHourlyForecastItems();
+        if (!hourlyForecastExpanded) hourlyTrack.scrollLeft = 0;
     });
     locationQuery.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
@@ -1873,6 +1898,10 @@
         hourlyHeadline.textContent = "시간별 기온과 강수 흐름을 불러오고 있어요.";
         hourlyRainSummary.textContent = "강수 확인 중";
         hourlyTrack.innerHTML = "";
+        hourlyForecastHours = [];
+        hourlyForecastExpanded = false;
+        toggleHourlyForecastButton.hidden = true;
+        toggleHourlyForecastButton.setAttribute("aria-expanded", "false");
         hourlySource.textContent = "기상청 발표 시각 확인 중";
         hourlyError.hidden = true;
         currentWeather.hidden = forecastDayOffset !== 0;
@@ -2009,9 +2038,23 @@
     function renderHourlyForecast(forecast) {
         hourlyHeadline.textContent = forecast.headline;
         hourlyRainSummary.textContent = forecast.precipitationSummary;
-        hourlyTrack.innerHTML = "";
-        const hours = forecast.hours || [];
-        hours.forEach((hour) => {
+        hourlyForecastHours = forecast.hours || [];
+        hourlyForecastExpanded = false;
+        renderHourlyForecastItems();
+        renderGoOutWindow(forecast);
+        const provenance = forecast.provenance || {};
+        hourlySource.textContent = provenance.fallback
+            ? `기상청 마지막 정상자료 · ${formatIssuedAt(provenance.forecastIssuedAt)}`
+            : `기상청 단기예보 · 발표 ${formatIssuedAt(provenance.forecastIssuedAt)} · 완전성 ${provenance.completenessPercent ?? 0}%`;
+        hourlyError.hidden = true;
+    }
+
+    function renderHourlyForecastItems() {
+        const visibleHours = hourlyForecastExpanded
+            ? hourlyForecastHours
+            : hourlyForecastHours.slice(0, initialHourlyForecastCount);
+        const fragment = document.createDocumentFragment();
+        visibleHours.forEach((hour) => {
             const item = document.createElement("article");
             const rainRisk = hour.precipitation !== "없음" || hour.precipitationProbability >= 60;
             item.className = `hourly-item${rainRisk ? " rain-risk" : ""}`;
@@ -2024,14 +2067,15 @@
             const details = document.createElement("span");
             details.textContent = `습도 ${hour.humidity}% · 바람 ${hour.windSpeed}m/s`;
             item.append(time, temperature, sky, details);
-            hourlyTrack.appendChild(item);
+            fragment.appendChild(item);
         });
-        renderGoOutWindow(forecast);
-        const provenance = forecast.provenance || {};
-        hourlySource.textContent = provenance.fallback
-            ? `기상청 마지막 정상자료 · ${formatIssuedAt(provenance.forecastIssuedAt)}`
-            : `기상청 단기예보 · 발표 ${formatIssuedAt(provenance.forecastIssuedAt)} · 완전성 ${provenance.completenessPercent ?? 0}%`;
-        hourlyError.hidden = true;
+        hourlyTrack.replaceChildren(fragment);
+        const hasMore = hourlyForecastHours.length > initialHourlyForecastCount;
+        toggleHourlyForecastButton.hidden = !hasMore;
+        toggleHourlyForecastButton.setAttribute("aria-expanded", String(hourlyForecastExpanded));
+        toggleHourlyForecastButton.textContent = hourlyForecastExpanded
+            ? "12시간만 보기"
+            : `전체 ${hourlyForecastHours.length}시간 보기`;
     }
 
     /**
@@ -2820,7 +2864,7 @@
     restoreSubscriptionDraft();
     restoreSharedWeather();
     if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker-v8.js"));
+        window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker-v9.js"));
     }
 
     async function deleteCurrentUserData() {
