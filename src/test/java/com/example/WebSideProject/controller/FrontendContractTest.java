@@ -35,6 +35,8 @@ class FrontendContractTest {
                 .contains("id=\"heroHourlyStrip\"")
                 .contains("renderHeroHourlyStrip")
                 .contains("heroHourlyIcon")
+                .contains("koreaDateTimeParts")
+                .contains("timeZone: \"Asia/Seoul\"")
                 .contains("id=\"heroWeatherActionLabel\"")
                 .contains("id=\"mobileWeatherNav\"")
                 .contains("id=\"openSubscribeMobile\"")

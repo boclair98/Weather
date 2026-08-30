@@ -1916,7 +1916,7 @@
         heroWeatherWind.textContent = "바람 확인 중";
         heroWeatherAction.href = "#weatherPreview";
         heroWeatherActionLabel.textContent = "상세 예보 보기";
-        renderHeroHourlyStrip([]);
+        renderHeroHourlyStrip(null);
         weatherDetail.textContent = "선택한 위치의 날씨를 분석하고 있어요.";
         outingScore.textContent = "-점";
         outingScoreLabel.textContent = "-";
@@ -2109,7 +2109,7 @@
         hourlyForecastHours = forecast.hours || [];
         hourlyForecastExpanded = false;
         renderHourlyForecastItems();
-        renderHeroHourlyStrip(hourlyForecastHours);
+        renderHeroHourlyStrip(forecast);
         renderGoOutWindow(forecast);
         const provenance = forecast.provenance || {};
         hourlySource.textContent = provenance.fallback
@@ -2147,8 +2147,15 @@
             : `전체 ${hourlyForecastHours.length}시간 보기`;
     }
 
-    function renderHeroHourlyStrip(hours) {
-        const upcoming = Array.isArray(hours) ? hours.slice(0, 4) : [];
+    function renderHeroHourlyStrip(forecast) {
+        const allHours = Array.isArray(forecast?.hours) ? forecast.hours : [];
+        let relevantHours = allHours;
+        const koreaNow = koreaDateTimeParts(new Date());
+        if (forecastDayOffset === 0 && forecast?.forecastDate === koreaNow.date) {
+            relevantHours = allHours.filter((hour) => timeToMinutes(hour.time) >= koreaNow.minutes);
+            if (!relevantHours.length) relevantHours = allHours.slice(-4);
+        }
+        const upcoming = relevantHours.slice(0, 4);
         const fragment = document.createDocumentFragment();
         for (let index = 0; index < 4; index += 1) {
             const hour = upcoming[index];
@@ -2166,6 +2173,25 @@
             fragment.appendChild(item);
         }
         heroHourlyStrip.replaceChildren(fragment);
+    }
+
+    function koreaDateTimeParts(date) {
+        const parts = new Intl.DateTimeFormat("en-US", {
+            timeZone: "Asia/Seoul",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            hourCycle: "h23"
+        }).formatToParts(date).reduce((result, part) => {
+            if (part.type !== "literal") result[part.type] = part.value;
+            return result;
+        }, {});
+        return {
+            date: `${parts.year}-${parts.month}-${parts.day}`,
+            minutes: Number(parts.hour) * 60 + Number(parts.minute)
+        };
     }
 
     function heroHourlyIcon(hour) {
