@@ -18,7 +18,7 @@
     <title>날씨한편 | 내 위치 맞춤 날씨 알림</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/weather.css?v=20260830-ui-performance-v2">
+    <link rel="stylesheet" href="/weather.css?v=20260830-weather-hero-v3">
 </head>
 <body>
 <a class="skip-link" href="#weatherSearch">날씨 검색으로 건너뛰기</a>
@@ -45,12 +45,43 @@
     <div class="layout">
         <section>
             <p class="eyebrow">내 동네 맞춤 날씨</p>
-            <h1>오늘 날씨를 확인하고, <span class="hero-accent">필요한 시간에 받아보세요</span></h1>
-            <p class="intro">복잡한 정보는 줄이고, 지금 필요한 날씨와 준비물만 한눈에 알려드려요.</p>
-            <div class="hero-badges" aria-label="서비스 특징">
-                <span class="hero-badge">기상청 데이터 기준</span>
-                <span class="hero-badge">본인 이메일 인증</span>
-                <button class="hero-install" type="button" id="installApp" hidden>앱으로 설치</button>
+            <div class="weather-hero">
+                <div class="weather-hero-copy">
+                    <h1>지금 하늘부터, <span class="hero-accent">오늘의 일정까지</span></h1>
+                    <p class="intro">현재 날씨와 시간별 비 소식, 대기질과 준비물을 내 동네 기준으로 한눈에 확인하세요.</p>
+                    <div class="hero-badges" aria-label="서비스 특징">
+                        <span class="hero-badge">기상청 실황·예보</span>
+                        <span class="hero-badge">시간별 강수</span>
+                        <span class="hero-badge">대기질·옷차림</span>
+                        <button class="hero-install" type="button" id="installApp" hidden>앱으로 설치</button>
+                    </div>
+                </div>
+                <section class="weather-now-card" id="heroWeatherCard" data-state="waiting" aria-label="내 동네 현재 날씨" aria-live="polite">
+                    <div class="weather-sky-art" aria-hidden="true">
+                        <span class="weather-sun"></span>
+                        <span class="weather-cloud cloud-one"></span>
+                        <span class="weather-cloud cloud-two"></span>
+                        <span class="weather-rain-lines"></span>
+                    </div>
+                    <div class="weather-now-location">
+                        <span class="weather-location-pin" aria-hidden="true"></span>
+                        <strong id="heroWeatherLocation">내 동네 날씨</strong>
+                        <span class="weather-live-badge">LIVE</span>
+                    </div>
+                    <div class="weather-now-main">
+                        <strong class="weather-now-temperature" id="heroWeatherTemperature">--°</strong>
+                        <div>
+                            <strong id="heroWeatherCondition">지금 하늘을 확인해보세요</strong>
+                            <span id="heroWeatherFeelsLike">위치를 검색하면 실황이 표시돼요</span>
+                        </div>
+                    </div>
+                    <div class="weather-now-metrics" aria-label="날씨 핵심 지표">
+                        <span id="heroWeatherPrecipitation">강수 --%</span>
+                        <span id="heroWeatherWind">바람 --m/s</span>
+                        <span>시간별 예보</span>
+                    </div>
+                    <a class="weather-now-action" href="#weatherSearch">내 동네 날씨 보기 <span aria-hidden="true">→</span></a>
+                </section>
             </div>
             <div class="intent-picker" aria-label="빠른 맞춤 기준">
                 <span class="intent-picker-label">지금 필요한 기준</span>
@@ -785,6 +816,13 @@
     const routePlanner = document.getElementById("routePlanner");
     const installApp = document.getElementById("installApp");
     const networkStatus = document.getElementById("networkStatus");
+    const heroWeatherCard = document.getElementById("heroWeatherCard");
+    const heroWeatherLocation = document.getElementById("heroWeatherLocation");
+    const heroWeatherTemperature = document.getElementById("heroWeatherTemperature");
+    const heroWeatherCondition = document.getElementById("heroWeatherCondition");
+    const heroWeatherFeelsLike = document.getElementById("heroWeatherFeelsLike");
+    const heroWeatherPrecipitation = document.getElementById("heroWeatherPrecipitation");
+    const heroWeatherWind = document.getElementById("heroWeatherWind");
     const intentHelper = document.getElementById("intentHelper");
     const intentButtons = [...document.querySelectorAll("[data-activity-type]")];
     let selectedLocation = null;
@@ -1860,6 +1898,13 @@
         refreshWeatherButton.textContent = "↻ 확인 중";
         weatherPreviewTitle.textContent = `${location.locationName} 날씨 미리보기`;
         weatherPreviewMain.textContent = "날씨를 불러오는 중";
+        heroWeatherCard.dataset.state = "loading";
+        heroWeatherLocation.textContent = location.locationName || "선택한 위치";
+        heroWeatherTemperature.textContent = "···";
+        heroWeatherCondition.textContent = "최신 날씨를 확인하고 있어요";
+        heroWeatherFeelsLike.textContent = "기상청 실황·예보 연결 중";
+        heroWeatherPrecipitation.textContent = "강수 확인 중";
+        heroWeatherWind.textContent = "바람 확인 중";
         weatherDetail.textContent = "선택한 위치의 날씨를 분석하고 있어요.";
         outingScore.textContent = "-점";
         outingScoreLabel.textContent = "-";
@@ -1960,6 +2005,10 @@
                 weatherPreviewMain.textContent = "날씨 확인 실패";
                 const message = getNetworkError(error, "날씨 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
                 weatherDetail.textContent = message;
+                heroWeatherCard.dataset.state = "error";
+                heroWeatherTemperature.textContent = "--°";
+                heroWeatherCondition.textContent = "날씨를 불러오지 못했어요";
+                heroWeatherFeelsLike.textContent = "잠시 후 새로고침해주세요";
                 showResult(message, false);
             }
         } finally {
@@ -2006,6 +2055,13 @@
         currentHumidityWind.textContent = `${observation.humidity ?? "-"}% · ${observation.windSpeed ?? "-"}m/s`;
         currentPrecipitation.textContent = observation.precipitationType === "없음"
             ? "없음" : `${observation.precipitationType} · ${observation.oneHourPrecipitation}mm`;
+        heroWeatherCard.dataset.state = "ready";
+        heroWeatherTemperature.textContent = formatTemperature(observation.temperature);
+        heroWeatherCondition.textContent = observation.headline || "현재 관측";
+        heroWeatherFeelsLike.textContent = `체감 ${formatTemperature(observation.apparentTemperature)} · 습도 ${observation.humidity ?? "-"}%`;
+        heroWeatherPrecipitation.textContent = observation.precipitationType === "없음"
+            ? "강수 없음" : `${observation.precipitationType} ${observation.oneHourPrecipitation}mm`;
+        heroWeatherWind.textContent = `바람 ${observation.windSpeed ?? "-"}m/s`;
     }
 
     async function loadHourlyForecast(location, options = {}) {
@@ -2565,6 +2621,14 @@
     function renderWeatherPreview(location, weather) {
         const theme = weather.weatherTheme || "mild";
         document.body.dataset.weatherTheme = theme;
+        heroWeatherCard.dataset.state = "ready";
+        heroWeatherCard.dataset.weather = theme;
+        heroWeatherLocation.textContent = location.locationName || "선택한 위치";
+        heroWeatherTemperature.textContent = formatTemperature(weather.tmp);
+        heroWeatherCondition.textContent = `${weather.weatherMood || "오늘"} · ${weather.skyDescription || "날씨 정보"}`;
+        heroWeatherFeelsLike.textContent = weather.forecastLabel || "기상청 예보";
+        heroWeatherPrecipitation.textContent = `강수 ${weather.pop || "-"}%`;
+        heroWeatherWind.textContent = `바람 ${weather.wsd || "-"}m/s`;
         weatherPreview.className = `weather-preview weather-${theme}`;
         weatherPreviewTitle.textContent = `${location.locationName} · ${weather.forecastLabel || "날씨 예보"}`;
         weatherPreviewMain.textContent = `${weather.weatherMood || "오늘"} · ${weather.skyDescription || "날씨 정보"}`;
@@ -2864,7 +2928,7 @@
     restoreSubscriptionDraft();
     restoreSharedWeather();
     if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker-v9.js"));
+        window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker-v10.js"));
     }
 
     async function deleteCurrentUserData() {

@@ -16,7 +16,7 @@ class FrontendContractTest {
 
         assertThat(html)
                 .contains("/manifest.webmanifest")
-                .contains("/weather.css?v=20260830-ui-performance-v2")
+                .contains("/weather.css?v=20260830-weather-hero-v3")
                 .contains("data-day-offset=\"0\"")
                 .contains("data-day-offset=\"1\"")
                 .contains("data-day-offset=\"2\"")
@@ -27,7 +27,10 @@ class FrontendContractTest {
                 .contains("buildWeatherShareUrl")
                 .contains("restoreSharedWeather")
                 .contains("navigator.serviceWorker.register")
-                .contains("service-worker-v9.js")
+                .contains("service-worker-v10.js")
+                .contains("id=\"heroWeatherCard\"")
+                .contains("id=\"heroWeatherTemperature\"")
+                .contains("heroWeatherCard.dataset.weather")
                 .contains("id=\"mobileWeatherNav\"")
                 .contains("id=\"openSubscribeMobile\"")
                 .contains("id=\"toggleHourlyForecast\"")
@@ -80,6 +83,8 @@ class FrontendContractTest {
                 .contains("#mainContent .dashboard-search-card")
                 .contains("#mainContent .go-out-window")
                 .contains("#mainContent .mobile-weather-nav")
+                .contains("#mainContent .weather-now-card")
+                .contains("body[data-weather-theme=\"rain\"]")
                 .contains("content-visibility: auto")
                 .contains("@media (max-width: 760px)")
                 .contains(".intent-chip")
@@ -88,10 +93,10 @@ class FrontendContractTest {
 
     @Test
     void serviceWorkerKeepsApiResponsesNetworkOnly() throws IOException {
-        String worker = classpathText("/static/service-worker-v9.js");
+        String worker = classpathText("/static/service-worker-v10.js");
 
         assertThat(worker)
-                .contains("weather-shell-v9")
+                .contains("weather-shell-v10")
                 .contains("url.pathname.startsWith(\"/api/\")")
                 .contains("request.mode === \"navigate\"")
                 .contains("OFFLINE")
