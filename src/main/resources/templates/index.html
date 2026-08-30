@@ -2623,12 +2623,14 @@
         document.body.dataset.weatherTheme = theme;
         heroWeatherCard.dataset.state = "ready";
         heroWeatherCard.dataset.weather = theme;
-        heroWeatherLocation.textContent = location.locationName || "선택한 위치";
-        heroWeatherTemperature.textContent = formatTemperature(weather.tmp);
-        heroWeatherCondition.textContent = `${weather.weatherMood || "오늘"} · ${weather.skyDescription || "날씨 정보"}`;
-        heroWeatherFeelsLike.textContent = weather.forecastLabel || "기상청 예보";
-        heroWeatherPrecipitation.textContent = `강수 ${weather.pop || "-"}%`;
-        heroWeatherWind.textContent = `바람 ${weather.wsd || "-"}m/s`;
+        if (forecastDayOffset !== 0 || !currentObservation) {
+            heroWeatherLocation.textContent = location.locationName || "선택한 위치";
+            heroWeatherTemperature.textContent = formatTemperature(weather.tmp);
+            heroWeatherCondition.textContent = `${weather.weatherMood || "오늘"} · ${weather.skyDescription || "날씨 정보"}`;
+            heroWeatherFeelsLike.textContent = weather.forecastLabel || "기상청 예보";
+            heroWeatherPrecipitation.textContent = `강수 ${weather.pop || "-"}%`;
+            heroWeatherWind.textContent = `바람 ${weather.wsd || "-"}m/s`;
+        }
         weatherPreview.className = `weather-preview weather-${theme}`;
         weatherPreviewTitle.textContent = `${location.locationName} · ${weather.forecastLabel || "날씨 예보"}`;
         weatherPreviewMain.textContent = `${weather.weatherMood || "오늘"} · ${weather.skyDescription || "날씨 정보"}`;

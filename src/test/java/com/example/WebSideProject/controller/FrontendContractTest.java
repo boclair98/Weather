@@ -31,6 +31,7 @@ class FrontendContractTest {
                 .contains("id=\"heroWeatherCard\"")
                 .contains("id=\"heroWeatherTemperature\"")
                 .contains("heroWeatherCard.dataset.weather")
+                .contains("forecastDayOffset !== 0 || !currentObservation")
                 .contains("id=\"mobileWeatherNav\"")
                 .contains("id=\"openSubscribeMobile\"")
                 .contains("id=\"toggleHourlyForecast\"")
