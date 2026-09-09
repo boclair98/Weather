@@ -290,6 +290,8 @@ Pull Request와 `main` push에서 다음 검사를 자동 수행합니다.
 
 운영 상태는 liveness·readiness probe, Actuator, Prometheus 지표로 확인합니다. 상세 장애 대응과 롤백 절차는 [운영 런북](docs/OPERATIONS.md)에 기록했습니다.
 
+`/actuator/health`의 `weatherApi` 상태는 원천 날씨 API 키가 없으면 `DOWN`, 외부 연동 키가 일부 없거나 KMA 회로 차단기가 열리면 `DEGRADED`로 표시합니다. 상태 상세에는 누락된 환경변수 이름만 표시하며 키 값은 노출하지 않습니다.
+
 ## 로컬 실행
 
 ### 요구사항
