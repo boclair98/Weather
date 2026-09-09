@@ -44,13 +44,6 @@ public class MailService {
     @Async
     public void sendEmailVerificationMail(String email, String verificationUrl) {
         try {
-            HourlyWeatherDto hourlyWeather = null;
-            try {
-                hourlyWeather = weatherService.getHourlyWeather(user.getNx(), user.getNy(), user.getLocationName(), 0);
-            } catch (Exception e) {
-                log.warn("시간별 예보를 메일에 포함하지 못했습니다. 기존 브리핑만 발송합니다: userId={}", user.getId(), e);
-            }
-
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setTo(email);
@@ -78,6 +71,13 @@ public class MailService {
                     user.getTemperatureSensitivity(),
                     user.getActivityType()
             );
+            HourlyWeatherDto hourlyWeather = null;
+            try {
+                hourlyWeather = weatherService.getHourlyWeather(user.getNx(), user.getNy(), user.getLocationName(), 0);
+            } catch (Exception e) {
+                log.warn("시간별 예보를 메일에 포함하지 못했습니다. 기존 브리핑만 발송합니다: userId={}", user.getId(), e);
+            }
+
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
