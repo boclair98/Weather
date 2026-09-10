@@ -83,7 +83,7 @@ app:
 
 admin:
   api-key: ${ADMIN_API_KEY:}
-  require-key: ${ADMIN_REQUIRE_KEY:false}
+  require-key: ${ADMIN_REQUIRE_KEY:true}
 
 server:
   port: ${PORT:8080}
