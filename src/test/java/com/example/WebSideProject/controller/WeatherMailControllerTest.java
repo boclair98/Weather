@@ -45,4 +45,22 @@ class WeatherMailControllerTest {
         assertThat(user.getValue().getLocationName()).isEqualTo("을지로3가");
         assertThat(response.getBody()).containsEntry("locationName", "을지로3가");
     }
+
+
+    @Test
+    void rejectsAdminRequestWhenKeyIsRequiredAndHeaderIsMissing() {
+        WeatherMailController controller = new WeatherMailController(
+                mock(WeatherMailScheduler.class),
+                mock(WeatherMailHistoryService.class),
+                mock(WeatherService.class),
+                mock(MailService.class)
+        );
+        ReflectionTestUtils.setField(controller, "adminApiKey", "admin-secret");
+        ReflectionTestUtils.setField(controller, "adminRequireKey", true);
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                controller.sendAll(null)
+        ).isInstanceOf(SecurityException.class)
+                .hasMessageContaining("관리자 키");
+    }
 }
