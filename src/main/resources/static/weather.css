@@ -2680,7 +2680,7 @@ body[data-theme="dark"] #mainContent .share-weather {
 
     #mainContent .account-link,
     #mainContent .weather-brand,
-    #mainContent .weather-nav-cta,
+    #mainContent .weather-nav .weather-nav-cta,
     #mainContent .weather-now-action,
     #mainContent .favorite-location,
     #mainContent .day-tab,
