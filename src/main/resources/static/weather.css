@@ -2678,6 +2678,27 @@ body[data-theme="dark"] #mainContent .share-weather {
         min-height: 44px;
     }
 
+    #mainContent .account-link,
+    #mainContent .weather-brand,
+    #mainContent .weather-nav-cta,
+    #mainContent .weather-now-action,
+    #mainContent .favorite-location,
+    #mainContent .day-tab,
+    #mainContent .period-tab,
+    #mainContent .share-weather,
+    #mainContent .go-out-window-actions .secondary,
+    #mainContent .go-out-window-actions .window-subscribe,
+    #mainContent #plannerSource {
+        min-height: 44px;
+    }
+
+    #mainContent .account-link,
+    #mainContent .weather-brand,
+    #mainContent #plannerSource {
+        display: inline-flex;
+        align-items: center;
+    }
+
     #mainContent .dashboard-search-card {
         margin-top: 30px;
         padding: 20px;
