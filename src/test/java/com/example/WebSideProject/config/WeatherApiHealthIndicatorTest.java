@@ -12,16 +12,31 @@ class WeatherApiHealthIndicatorTest {
 
     @Test
     void reportsDownWhenRequiredWeatherKeyIsMissing() {
-        WeatherApiHealthIndicator indicator = new WeatherApiHealthIndicator(" ", mock(ExternalApiGuard.class));
+        WeatherApiHealthIndicator indicator = new WeatherApiHealthIndicator(
+                " ", "", "", "", "", "", "", mock(ExternalApiGuard.class)
+        );
 
         assertThat(indicator.health().getStatus()).isEqualTo(Status.DOWN);
         assertThat(indicator.health().getDetails()).containsKey("configuration");
     }
 
     @Test
-    void reportsUpWhenWeatherKeyIsConfigured() {
+    void reportsDegradedWhenOptionalIntegrationKeysAreMissing() {
         WeatherApiHealthIndicator indicator = new WeatherApiHealthIndicator(
-                "configured-key", mock(ExternalApiGuard.class)
+                "configured-key", "", "", "", "", "", "", mock(ExternalApiGuard.class)
+        );
+
+        assertThat(indicator.health().getStatus().getCode()).isEqualTo("DEGRADED");
+        assertThat(indicator.health().getDetails())
+                .containsEntry("configuration", "Optional integrations are not fully configured")
+                .containsKey("missingKeys");
+    }
+
+    @Test
+    void reportsUpWhenAllWeatherIntegrationKeysAreConfigured() {
+        WeatherApiHealthIndicator indicator = new WeatherApiHealthIndicator(
+                "configured-key", "configured-key", "configured-key", "configured-key",
+                "configured-key", "configured-key", "configured-key", mock(ExternalApiGuard.class)
         );
 
         assertThat(indicator.health().getStatus()).isEqualTo(Status.UP);
@@ -31,7 +46,10 @@ class WeatherApiHealthIndicatorTest {
     void reportsDegradedWhenForecastCircuitIsOpen() {
         ExternalApiGuard guard = mock(ExternalApiGuard.class);
         when(guard.isCircuitOpen("kma-forecast")).thenReturn(true);
-        WeatherApiHealthIndicator indicator = new WeatherApiHealthIndicator("configured-key", guard);
+        WeatherApiHealthIndicator indicator = new WeatherApiHealthIndicator(
+                "configured-key", "configured-key", "configured-key", "configured-key",
+                "configured-key", "configured-key", "configured-key", guard
+        );
 
         assertThat(indicator.health().getStatus().getCode()).isEqualTo("DEGRADED");
         assertThat(indicator.health().getDetails()).containsKey("fallback");

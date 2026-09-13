@@ -13,6 +13,8 @@
             .hero-temp { font-size: 48px !important; }
             .metric-cell { padding-right: 5px !important; padding-left: 5px !important; }
             .metric-value { font-size: 17px !important; }
+            .hourly-cell { padding-right: 5px !important; padding-left: 5px !important; }
+            .hourly-temp { font-size: 17px !important; }
             .look-value { font-size: 12px !important; }
         }
     </style>
@@ -119,6 +121,24 @@
                                     <div style="color:#2c76c7; font-size:10px; line-height:15px; font-weight:900;">외출 신호</div>
                                     <div class="metric-value" th:text="${weather.outingScoreLabel}" style="padding-top:4px; color:#1e5f9f; font-size:17px; line-height:25px; font-weight:900;">무난</div>
                                     <div th:text="|${weather.outingScore}점 · ${weather.outingScoreAdvice}|" style="padding-top:2px; color:#3f82c6; font-size:10px; line-height:15px; word-break:keep-all;">86점 · 외출하기 좋은 편이에요.</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Screenshot-inspired hourly forecast strip -->
+                <tr th:if="${hourlyWeather != null and hourlyWeather.hours != null and !hourlyWeather.hours.isEmpty()}">
+                    <td class="mail-pad" style="padding:20px 26px 0;">
+                        <div style="color:#172033; font-size:16px; line-height:23px; font-weight:900; letter-spacing:-.04em;">시간별 예보</div>
+                        <div th:text="${hourlyWeather.headline}" style="padding-top:4px; color:#7b8998; font-size:11px; line-height:17px; word-break:keep-all;">22°C ~ 29°C · 강수 가능성 낮음</div>
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; padding-top:10px; border-collapse:separate; border-spacing:5px 0; margin-left:-5px; table-layout:fixed;">
+                            <tr>
+                                <td class="hourly-cell" th:each="hour, stat : ${hourlyWeather.hours}" th:if="${stat.index < 4}" width="25%" valign="top" bgcolor="#f7fbff" style="padding:11px 6px; border:1px solid #dcecff; border-radius:14px; background:#f7fbff; text-align:center;">
+                                    <div th:text="${hour.time}" style="color:#6d7f91; font-size:10px; line-height:15px; font-weight:900;">지금</div>
+                                    <div th:text="${hour.sky}" style="padding-top:5px; color:#3182f6; font-size:11px; line-height:16px; font-weight:800; word-break:keep-all;">맑음</div>
+                                    <div class="hourly-temp" th:text="|${hour.temperature}°|" style="padding-top:3px; color:#172033; font-size:19px; line-height:26px; font-weight:900;">27°</div>
+                                    <div th:text="|${hour.precipitationProbability}%|" style="padding-top:2px; color:#6b8eb5; font-size:10px; line-height:15px;">10%</div>
                                 </td>
                             </tr>
                         </table>

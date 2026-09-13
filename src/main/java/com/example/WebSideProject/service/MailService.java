@@ -1,6 +1,7 @@
 package com.example.WebSideProject.service;
 
 import com.example.WebSideProject.dto.WeatherDto;
+import com.example.WebSideProject.dto.HourlyWeatherDto;
 import com.example.WebSideProject.entity.User;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -25,6 +26,7 @@ public class MailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
     private final WeatherMailHistoryService weatherMailHistoryService;
+    private final WeatherService weatherService;
 
     @Value("${app.base-url:http://localhost:8080}")
     private String appBaseUrl;
@@ -69,6 +71,13 @@ public class MailService {
                     user.getTemperatureSensitivity(),
                     user.getActivityType()
             );
+            HourlyWeatherDto hourlyWeather = null;
+            try {
+                hourlyWeather = weatherService.getHourlyWeather(user.getNx(), user.getNy(), user.getLocationName(), 0);
+            } catch (Exception e) {
+                log.warn("시간별 예보를 메일에 포함하지 못했습니다. 기존 브리핑만 발송합니다: userId={}", user.getId(), e);
+            }
+
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
@@ -82,6 +91,7 @@ public class MailService {
             context.setVariable("email", user.getEmail());
             context.setVariable("locationName", valueOrDash(user.getLocationName()));
             context.setVariable("weather", styledWeather);
+            context.setVariable("hourlyWeather", hourlyWeather);
             context.setVariable("ageGroup", user.getAgeGroup());
             context.setVariable("gender", user.getGender());
             context.setVariable("ageGroupLabel", user.getAgeGroup().getLabel());
