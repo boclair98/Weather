@@ -42,6 +42,9 @@ public class UserDto {
         @Pattern(regexp = "\\d{6}", message = "이메일 인증번호 6자리를 입력해주세요")
         private String verificationCode;
 
+        @Pattern(regexp = "direct|weather_window", message = "올바른 구독 경로가 아닙니다")
+        private String subscriptionSource = "direct";
+
         @Size(max = 10, message = "한 번에 최대 10개의 이메일을 등록할 수 있습니다")
         private List<@Email(message = "올바른 이메일 형식이 아닙니다") @Size(max = 254, message = "이메일은 254자 이하여야 합니다") String> emails;
 

@@ -2,6 +2,7 @@ package com.example.WebSideProject.controller;
 
 import com.example.WebSideProject.dto.UserDto;
 import com.example.WebSideProject.service.EmailVerificationService;
+import com.example.WebSideProject.service.ProductFunnelMetrics;
 import com.example.WebSideProject.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class UserController {
 
     private final UserService userService;
     private final EmailVerificationService emailVerificationService;
+    private final ProductFunnelMetrics productFunnelMetrics;
 
     @Value("${app.base-url:http://localhost:8080}")
     private String appBaseUrl;
@@ -33,6 +35,7 @@ public class UserController {
     ) {
         EmailVerificationService.VerificationResponse response = emailVerificationService
                 .requestVerification(codersUserId, request.getEmail());
+        productFunnelMetrics.record("verification_requested");
         return ResponseEntity.accepted().body(response);
     }
 
@@ -43,6 +46,7 @@ public class UserController {
     ) {
         EmailVerificationService.VerificationResponse response = emailVerificationService
                 .confirmCode(codersUserId, request.getEmail(), request.getCode());
+        productFunnelMetrics.record("verification_confirmed");
         return ResponseEntity.ok(response);
     }
 
@@ -72,6 +76,7 @@ public class UserController {
             @RequestHeader(value = "X-Coders-User", required = false) String codersUserId
     ) {
         List<UserDto.Response> responses = userService.registerAll(request, codersUserId);
+        productFunnelMetrics.record("subscription_completed", request.getSubscriptionSource());
         if (responses.size() == 1) {
             return ResponseEntity.created(URI.create("/api/users/me")).body(responses.get(0));
         }
@@ -165,7 +170,9 @@ public class UserController {
     public ResponseEntity<UserDto.Response> unsubscribeCurrent(
             @RequestHeader(value = "X-Coders-User", required = false) String codersUserId
     ) {
-        return ResponseEntity.ok(userService.unsubscribeCurrent(codersUserId));
+        UserDto.Response response = userService.unsubscribeCurrent(codersUserId);
+        productFunnelMetrics.record("subscription_cancelled");
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/me/data")

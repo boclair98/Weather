@@ -6,6 +6,8 @@ out/
 *.iml
 
 .env
+.env.*
+!.env.example
 *.local
 application-local.yml
 application-secret.yml
@@ -13,5 +15,14 @@ application-secret.yml
 
 *.log
 *.tmp
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.db
+*.sqlite
+*.sqlite3
+uploads/
 
 src/main/resources/application-secret.yml

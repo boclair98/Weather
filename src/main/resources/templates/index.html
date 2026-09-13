@@ -18,7 +18,7 @@
     <title>날씨한편 | 내 위치 맞춤 날씨 알림</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/weather.css?v=20260830-core-weather-v4">
+    <link rel="stylesheet" href="/weather.css?v=20260914-retention-loop-v6">
 </head>
 <body>
 <a class="skip-link" href="#weatherSearch">날씨 검색으로 건너뛰기</a>
@@ -197,7 +197,10 @@
                         <div class="go-out-window-track" id="goOutWindowTrack" aria-hidden="true"></div>
                         <p id="goOutWindowReason">지금부터 가장 부담이 적은 시간대를 찾고 있어요.</p>
                         <div class="go-out-window-actions">
-                            <button class="secondary" type="button" id="useGoOutWindow">이 시간으로 일정 찾기</button>
+                            <div class="go-out-window-buttons">
+                                <button class="secondary" type="button" id="useGoOutWindow">일정에 넣기</button>
+                                <button class="primary window-subscribe" type="button" id="subscribeGoOutWindow">30분 전에 매일 받기</button>
+                            </div>
                             <span id="goOutWindowPacking">준비물 계산 중</span>
                         </div>
                     </section>
@@ -784,6 +787,7 @@
     const goOutWindowReason = document.getElementById("goOutWindowReason");
     const goOutWindowPacking = document.getElementById("goOutWindowPacking");
     const useGoOutWindow = document.getElementById("useGoOutWindow");
+    const subscribeGoOutWindow = document.getElementById("subscribeGoOutWindow");
     const dailyPeriods = document.getElementById("dailyPeriods");
     const hourlyWeather = document.getElementById("hourlyWeather");
     const hourlyHeadline = document.getElementById("hourlyHeadline");
@@ -847,14 +851,19 @@
     let weatherLoadVersion = 0;
     let hourlyForecastHours = [];
     let hourlyForecastExpanded = false;
+    let subscriptionSource = "direct";
+    let currentSubscriptionActive = false;
     const initialHourlyForecastCount = 12;
     const requestControllers = new Map();
     const apiCache = new Map();
     let installPrompt = null;
 
-    // Keep the primary journey linear: location -> subscription -> weather details.
-    document.querySelector(".subscribe-quick-action")
-        ?.insertAdjacentElement("afterend", subscribeDrawer);
+    // Let people experience the weather value before asking them to subscribe.
+    const subscribeQuickAction = document.querySelector(".subscribe-quick-action");
+    if (subscribeQuickAction) {
+        weatherPreview.insertAdjacentElement("afterend", subscribeQuickAction);
+        subscribeQuickAction.insertAdjacentElement("afterend", subscribeDrawer);
+    }
 
     // Decision tools are useful, but the primary flow remains weather information.
     routePlanner.insertAdjacentElement("afterend", decisionWindow);
@@ -1178,6 +1187,7 @@
         });
     });
     useGoOutWindow.addEventListener("click", useRecommendedWindow);
+    subscribeGoOutWindow.addEventListener("click", prepareRecommendedAlert);
     shareWeather.addEventListener("click", shareCurrentWeather);
     addPlannerCalendar.addEventListener("click", downloadPlannerCalendar);
     loadDecisionWindowButton.addEventListener("click", loadWeatherDecision);
@@ -1424,6 +1434,7 @@
             temperatureAlertEnabled: document.getElementById("temperatureAlertEnabled").checked,
             airQualityAlertEnabled: document.getElementById("airQualityAlertEnabled").checked,
             windAlertEnabled: document.getElementById("windAlertEnabled").checked,
+            subscriptionSource,
             privacyConsent: document.getElementById("privacyConsent").checked
         };
 
@@ -1463,6 +1474,7 @@
             confirmEmailVerificationButton.disabled = true;
             confirmEmailVerificationButton.textContent = "번호 확인";
             emailVerificationCodePanel.hidden = true;
+            subscriptionSource = "direct";
             sessionStorage.removeItem(subscriptionDraftKey);
             if (managerControls) {
                 await loadCurrentSubscription();
@@ -1571,7 +1583,8 @@
             rainAlertEnabled: document.getElementById("rainAlertEnabled").checked,
             temperatureAlertEnabled: document.getElementById("temperatureAlertEnabled").checked,
             airQualityAlertEnabled: document.getElementById("airQualityAlertEnabled").checked,
-            windAlertEnabled: document.getElementById("windAlertEnabled").checked
+            windAlertEnabled: document.getElementById("windAlertEnabled").checked,
+            subscriptionSource
         };
         sessionStorage.setItem(subscriptionDraftKey, JSON.stringify(draft));
     }
@@ -1598,6 +1611,7 @@
             document.getElementById("temperatureAlertEnabled").checked = draft.temperatureAlertEnabled !== false;
             document.getElementById("airQualityAlertEnabled").checked = draft.airQualityAlertEnabled !== false;
             document.getElementById("windAlertEnabled").checked = draft.windAlertEnabled !== false;
+            subscriptionSource = draft.subscriptionSource === "weather_window" ? "weather_window" : "direct";
             locationQuery.value = draft.locationQuery || "";
             if (draft.selectedLocation) {
                 selectedLocation = draft.selectedLocation;
@@ -2327,6 +2341,49 @@
         showResult(`${goOutWindowData.start}–${goOutWindowData.end} 외출 창을 일정 찾기에 넣었어요.`, true);
     }
 
+    function prepareRecommendedAlert() {
+        if (!goOutWindowData) return;
+        const recommendedMinutes = timeToMinutes(goOutWindowData.start);
+        if (!Number.isFinite(recommendedMinutes)) {
+            showResult("추천 시간을 알림으로 바꾸지 못했어요 · 예보를 새로고침해주세요.", false);
+            return;
+        }
+
+        const notificationTime = minutesToTime(recommendedMinutes - 30);
+        const period = recommendedMinutes < 11 * 60
+            ? "Morning"
+            : recommendedMinutes < 17 * 60 ? "Afternoon" : "Evening";
+        const periodLabel = period === "Morning" ? "아침" : period === "Afternoon" ? "점심" : "저녁";
+        subscriptionSource = "weather_window";
+
+        if (currentSubscriptionActive && managerControls) {
+            document.getElementById(`manage${period}`).checked = true;
+            document.getElementById(`manage${period}Time`).value = notificationTime;
+            const managerDrawer = document.querySelector(".manager-drawer");
+            if (managerDrawer) managerDrawer.open = true;
+            showManagerResult(`${goOutWindowData.start} 외출 30분 전인 ${notificationTime} ${periodLabel} 알림을 준비했어요 · 저장을 눌러 적용해주세요.`, true);
+            managerDrawer?.scrollIntoView({
+                behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+                block: "center"
+            });
+            saveNotifications?.focus({preventScroll: true});
+            return;
+        }
+
+        ["Morning", "Afternoon", "Evening"].forEach((slot) => {
+            document.getElementById(`${slot.toLowerCase()}Enabled`).checked = slot === period;
+        });
+        document.getElementById(`${period.toLowerCase()}Time`).value = notificationTime;
+        saveSubscriptionDraft();
+
+        if (!signedIn) {
+            if (loginUrl) window.location.assign(loginUrl);
+            return;
+        }
+        openSubscriptionPanel({focusForm: false});
+        showSubscriptionResult(`${goOutWindowData.start} 외출 30분 전인 ${notificationTime} 알림을 준비했어요 · 이메일만 인증하면 매일 받아볼 수 있어요.`, true);
+    }
+
     async function loadWeatherPlanner(location, options = {}) {
         decisionWindow.hidden = false;
         weatherPlanner.hidden = false;
@@ -2853,6 +2910,7 @@
             const response = await fetch("/api/users/me");
             if (response.status === 404) {
                 managerSummary.textContent = "아직 이 계정에 연결된 구독이 없습니다. 위 양식에서 새로 등록해주세요.";
+                currentSubscriptionActive = false;
                 return;
             }
             const data = await response.json();
@@ -2872,6 +2930,7 @@
             document.getElementById("manageAirQualityAlert").checked = data.airQualityAlertEnabled;
             document.getElementById("manageWindAlert").checked = data.windAlertEnabled;
             managerControls.hidden = false;
+            currentSubscriptionActive = true;
             document.getElementById("temperatureSensitivity").value = data.temperatureSensitivity || "NONE";
             document.getElementById("activityType").value = data.activityType || "DAILY";
             if (!selectedLocation && data.nx && data.ny) {
@@ -2933,6 +2992,7 @@
             if (!response.ok) throw new Error(getApiError(data, "구독을 해지하지 못했습니다."));
             showManagerResult(data.message, true);
             managerControls.hidden = true;
+            currentSubscriptionActive = false;
         } catch (error) {
             showManagerResult(getNetworkError(error, "구독을 해지하지 못했어요. 잠시 후 다시 시도해주세요."), false);
             cancelSubscription.disabled = false;
@@ -3012,6 +3072,7 @@
             }
             showManagerResult("구독과 저장된 개인정보를 완전히 삭제했습니다.", true);
             managerControls.hidden = true;
+            currentSubscriptionActive = false;
         } catch (error) {
             showManagerResult(getNetworkError(error, "개인정보를 삭제하지 못했어요. 잠시 후 다시 시도해주세요."), false);
             deletePersonalData.disabled = false;

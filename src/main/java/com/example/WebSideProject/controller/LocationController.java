@@ -2,6 +2,7 @@ package com.example.WebSideProject.controller;
 
 import com.example.WebSideProject.dto.LocationDto;
 import com.example.WebSideProject.service.LocationService;
+import com.example.WebSideProject.service.ProductFunnelMetrics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
@@ -25,12 +26,15 @@ public class LocationController {
             .cachePublic();
 
     private final LocationService locationService;
+    private final ProductFunnelMetrics productFunnelMetrics;
 
     @GetMapping("/search")
     public ResponseEntity<List<LocationDto.Response>> search(@RequestParam String query) {
+        List<LocationDto.Response> results = locationService.search(query);
+        productFunnelMetrics.record("location_searched");
         return ResponseEntity.ok()
                 .cacheControl(LOCATION_CACHE)
-                .body(locationService.search(query));
+                .body(results);
     }
 
     @GetMapping("/coordinates")

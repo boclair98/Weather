@@ -6,6 +6,7 @@ import com.example.WebSideProject.Enum.GenderType;
 import com.example.WebSideProject.Enum.TemperatureSensitivity;
 import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.service.LocationService;
+import com.example.WebSideProject.service.ProductFunnelMetrics;
 import com.example.WebSideProject.service.RouteBriefingService;
 import com.example.WebSideProject.service.WeatherPlannerService;
 import com.example.WebSideProject.service.WeatherService;
@@ -50,7 +51,10 @@ class CachePolicyControllerTest {
 
     @Test
     void locationSearchUsesLongerStaleFallback() {
-        LocationController controller = new LocationController(mock(LocationService.class));
+        LocationController controller = new LocationController(
+                mock(LocationService.class),
+                mock(ProductFunnelMetrics.class)
+        );
 
         String cacheControl = controller.search("강남역").getHeaders().getCacheControl();
 
