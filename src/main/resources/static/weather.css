@@ -2681,11 +2681,38 @@ body[data-theme="dark"] #mainContent .share-weather {
     }
 
     #mainContent .weather-now-main {
-        margin-top: 34px;
+        margin-top: 68px;
     }
 
     #mainContent .weather-now-temperature {
         font-size: 66px;
+    }
+
+    #mainContent .weather-sun {
+        top: 18px;
+        right: 28px;
+        width: 64px;
+        height: 64px;
+    }
+
+    #mainContent .cloud-one {
+        top: 72px;
+        right: -28px;
+        width: 108px;
+    }
+
+    #mainContent .cloud-two {
+        top: 42px;
+        right: 92px;
+    }
+
+    #mainContent .weather-now-main > div strong {
+        font-size: 14px;
+        line-height: 1.35;
+        overflow: visible;
+        text-overflow: clip;
+        white-space: normal;
+        word-break: keep-all;
     }
 
     #mainContent .weather-now-location {

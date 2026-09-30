@@ -18,15 +18,15 @@
     <title>날씨한편 | 내 위치 맞춤 날씨 알림</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/weather.css?v=20260930-delivery-clarity-v1">
+    <link rel="stylesheet" href="/weather.css?v=20260930-delivery-clarity-v2">
 </head>
 <body>
 <a class="skip-link" href="#weatherSearch">날씨 검색으로 건너뛰기</a>
 <div class="network-status" id="networkStatus" hidden role="status">오프라인 · 저장된 화면을 보여드려요</div>
 <main id="mainContent">
     <div class="account-bar" th:classappend="${signedIn} ? ' signed-in' : ' signed-out'">
-        <span th:if="${signedIn}">로그인 상태 · 이메일 인증이 완료된 주소로만 날씨를 보내드려요.</span>
-        <span th:if="${!signedIn}">로그인하면 본인 이메일로만 날씨를 안전하게 받을 수 있어요.</span>
+        <span th:if="${signedIn}">인증한 이메일로 날씨를 보내드려요.</span>
+        <span th:if="${!signedIn}">로그인하면 내 이메일로 날씨를 받을 수 있어요.</span>
         <a class="account-link" th:if="${signedIn}" th:href="${logoutUrl}">로그아웃</a>
         <a class="account-link login-link" th:if="${!signedIn}" th:href="${loginUrl}">로그인하고 시작</a>
     </div>
