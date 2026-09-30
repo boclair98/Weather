@@ -18,7 +18,7 @@
     <title>날씨한편 | 내 위치 맞춤 날씨 알림</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/weather.css?v=20260914-retention-loop-v8">
+    <link rel="stylesheet" href="/weather.css?v=20260930-delivery-clarity-v1">
 </head>
 <body>
 <a class="skip-link" href="#weatherSearch">날씨 검색으로 건너뛰기</a>
@@ -28,7 +28,7 @@
         <span th:if="${signedIn}">로그인 상태 · 이메일 인증이 완료된 주소로만 날씨를 보내드려요.</span>
         <span th:if="${!signedIn}">로그인하면 본인 이메일로만 날씨를 안전하게 받을 수 있어요.</span>
         <a class="account-link" th:if="${signedIn}" th:href="${logoutUrl}">로그아웃</a>
-        <a class="account-link login-link" th:if="${!signedIn}" th:href="${loginUrl}">Google로 시작</a>
+        <a class="account-link login-link" th:if="${!signedIn}" th:href="${loginUrl}">로그인하고 시작</a>
     </div>
     <header class="weather-app-header">
         <a class="weather-brand" href="/" aria-label="날씨한편 홈">
@@ -117,7 +117,7 @@
                 <div>
                     <strong>매일 다시 찾지 않아도 돼요</strong>
                     <span th:if="${signedIn}">원하는 시간에 필요한 날씨만 이메일로 보내드려요.</span>
-                    <span th:if="${!signedIn}">Google 로그인 후 본인 이메일을 인증하면 시작할 수 있어요.</span>
+                    <span th:if="${!signedIn}">로그인 후 본인 이메일을 인증하면 시작할 수 있어요.</span>
                 </div>
                 <button class="primary" type="button" id="openSubscribeTop">
                     <span th:text="${signedIn} ? '무료로 구독하기' : '로그인 후 시작하기'">무료로 구독하기</span>
@@ -199,10 +199,11 @@
                         <div class="go-out-window-actions">
                             <div class="go-out-window-buttons">
                                 <button class="secondary" type="button" id="useGoOutWindow">일정에 넣기</button>
-                                <button class="primary window-subscribe" type="button" id="subscribeGoOutWindow">30분 전에 매일 받기</button>
+                                <button class="primary window-subscribe" type="button" id="subscribeGoOutWindow">이 시각 30분 전에 매일 받기</button>
                             </div>
                             <span id="goOutWindowPacking">준비물 계산 중</span>
                         </div>
+                        <p class="go-out-window-note">오늘 추천 시각으로 알림 시간을 설정해요. 이후 예보가 바뀌어도 발송 시각은 고정됩니다.</p>
                     </section>
                     <div class="daily-periods" id="dailyPeriods" hidden aria-label="시간대별 날씨"></div>
                     <section class="hourly-weather" id="hourlyWeather" hidden aria-label="시간별 상세 예보" aria-live="polite">
@@ -497,7 +498,7 @@
                 <div class="auth-notice" th:classappend="${signedIn} ? ' signed-in' : ''">
                     <div>
                         <strong th:text="${signedIn} ? '내 이메일인지 한 번만 확인해요' : '로그인 후 이메일을 한 번만 확인해요'">내 이메일인지 한 번만 확인해요</strong>
-                        <span th:text="${signedIn} ? '인증한 주소로만 날씨를 보내 안전하게 구독할 수 있어요.' : 'Google 로그인과 이메일 인증을 거쳐야 날씨를 받을 수 있어요.'">인증한 주소로만 날씨를 보내 안전하게 구독할 수 있어요.</span>
+                        <span th:text="${signedIn} ? '인증한 주소로만 날씨를 보내 안전하게 구독할 수 있어요.' : '로그인과 이메일 인증을 거쳐야 날씨를 받을 수 있어요.'">인증한 주소로만 날씨를 보내 안전하게 구독할 수 있어요.</span>
                     </div>
                     <span class="verification-badge">안전한 구독</span>
                 </div>
@@ -606,6 +607,17 @@
         <h2>내 날씨 알림 관리</h2>
         <p class="intro" id="managerSummary">현재 계정에 연결된 구독을 확인하고 알림 시각을 원하는 분 단위로 바꿀 수 있습니다.</p>
         <div id="managerControls" hidden>
+            <section class="delivery-overview" aria-label="내 메일 발송 현황">
+                <div>
+                    <span class="delivery-label">다음 날씨 메일</span>
+                    <strong id="nextDeliveryAt">확인 중이에요</strong>
+                </div>
+                <div>
+                    <span class="delivery-label">최근 발송</span>
+                    <ul id="recentDeliveryAttempts" aria-live="polite"><li>확인 중이에요</li></ul>
+                </div>
+                <p>표시된 시각은 한국 시간이에요. 발송 처리 후에도 받은편지함 도착은 메일 제공업체에 따라 달라질 수 있어요.</p>
+            </section>
             <div class="time-options">
                 <div class="time-option schedule-option">
                     <label class="schedule-toggle" for="manageMorning">
@@ -2361,7 +2373,7 @@
             document.getElementById(`manage${period}Time`).value = notificationTime;
             const managerDrawer = document.querySelector(".manager-drawer");
             if (managerDrawer) managerDrawer.open = true;
-            showManagerResult(`${goOutWindowData.start} 외출 30분 전인 ${notificationTime} ${periodLabel} 알림을 준비했어요 · 저장을 눌러 적용해주세요.`, true);
+            showManagerResult(`오늘 추천 시간 기준 ${notificationTime} ${periodLabel} 알림을 준비했어요 · 저장하면 매일 같은 시각에 발송돼요.`, true);
             managerDrawer?.scrollIntoView({
                 behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
                 block: "center"
@@ -2381,7 +2393,7 @@
             return;
         }
         openSubscriptionPanel({focusForm: false});
-        showSubscriptionResult(`${goOutWindowData.start} 외출 30분 전인 ${notificationTime} 알림을 준비했어요 · 이메일만 인증하면 매일 받아볼 수 있어요.`, true);
+        showSubscriptionResult(`오늘 추천 시간 기준 ${notificationTime} 알림을 준비했어요 · 이메일 인증 후 매일 같은 시각에 받아볼 수 있어요.`, true);
     }
 
     async function loadWeatherPlanner(location, options = {}) {
@@ -2931,6 +2943,7 @@
             document.getElementById("manageWindAlert").checked = data.windAlertEnabled;
             managerControls.hidden = false;
             currentSubscriptionActive = true;
+            loadDeliveryOverview();
             document.getElementById("temperatureSensitivity").value = data.temperatureSensitivity || "NONE";
             document.getElementById("activityType").value = data.activityType || "DAILY";
             if (!selectedLocation && data.nx && data.ny) {
@@ -2947,6 +2960,38 @@
             }
         } catch (error) {
             showManagerResult(getNetworkError(error, "구독 정보를 불러오지 못했어요. 로그인 상태를 확인해주세요."), false);
+        }
+    }
+
+    async function loadDeliveryOverview() {
+        const nextDelivery = document.getElementById("nextDeliveryAt");
+        const recentDelivery = document.getElementById("recentDeliveryAttempts");
+        try {
+            const response = await fetch("/api/users/me/delivery", {cache: "no-store"});
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(getApiError(data, "발송 현황을 불러오지 못했습니다.", response.status));
+            const formatKoreaTime = (value) => new Intl.DateTimeFormat("ko-KR", {
+                timeZone: "Asia/Seoul", month: "long", day: "numeric", weekday: "short",
+                hour: "numeric", minute: "2-digit", hour12: false
+            }).format(new Date(value));
+            nextDelivery.textContent = data.subscribed && data.nextScheduledAt
+                ? `${formatKoreaTime(data.nextScheduledAt)} 예정`
+                : "예약된 메일이 없어요";
+            recentDelivery.replaceChildren();
+            const attempts = Array.isArray(data.recentAttempts) ? data.recentAttempts : [];
+            if (!attempts.length) {
+                const empty = document.createElement("li");
+                empty.textContent = "아직 발송 기록이 없어요.";
+                recentDelivery.appendChild(empty);
+            }
+            attempts.forEach((attempt) => {
+                const item = document.createElement("li");
+                item.textContent = `${formatKoreaTime(attempt.sentAt)} · ${attempt.status === "SUCCESS" ? "발송 처리" : "발송 실패"} · ${attempt.locationName || "선택 위치"}`;
+                recentDelivery.appendChild(item);
+            });
+        } catch (error) {
+            nextDelivery.textContent = "지금은 발송 현황을 확인할 수 없어요";
+            recentDelivery.replaceChildren();
         }
     }
 
@@ -2974,6 +3019,7 @@
             document.getElementById("manageAfternoonTime").value = normalizeTimeInput(data.afternoonTime, "11:30");
             document.getElementById("manageEveningTime").value = normalizeTimeInput(data.eveningTime, "18:30");
             showManagerResult(data.message, true);
+            await loadDeliveryOverview();
         } catch (error) {
             showManagerResult(getNetworkError(error, "알림 시간을 저장하지 못했어요. 잠시 후 다시 시도해주세요."), false);
         } finally {
@@ -3017,7 +3063,7 @@
         } else if (code === "VERIFICATION_COOLDOWN") {
             message = rawMessage || "인증번호를 너무 자주 요청했어요 · 잠시 후 다시 시도해주세요.";
         } else if (status === 401 || code === "UNAUTHORIZED") {
-            message = "먼저 Google 로그인을 완료해주세요.";
+            message = "먼저 로그인을 완료해주세요.";
         } else if (code === "ACCESS_DENIED" && !/(로그인|이메일|인증|계정)/.test(rawMessage)) {
             message = "로그인 계정과 이메일 인증을 확인해주세요.";
         } else if (status >= 500 && !rawMessage) {

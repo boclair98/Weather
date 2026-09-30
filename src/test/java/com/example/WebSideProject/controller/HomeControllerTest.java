@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class HomeControllerTest {
 
     @Test
-    void anonymousVisitorGetsGoogleLoginUi() {
+    void anonymousVisitorGetsPlatformLoginUi() {
         HomeController controller = new HomeController("https://weather.coders.kr");
         ConcurrentModel model = new ConcurrentModel();
 
@@ -21,7 +21,7 @@ class HomeControllerTest {
         assertThat(model.getAttribute("codersPlatform")).isEqualTo(true);
         assertThat(model.getAttribute("cspNonce")).isEqualTo("test-nonce");
         assertThat(model.getAttribute("loginUrl").toString())
-                .startsWith("https://coders.kr/oauth/login/google")
+                .startsWith("https://mcp.coders.kr/sso/login")
                 .contains("return_to=https://weather.coders.kr/");
     }
 

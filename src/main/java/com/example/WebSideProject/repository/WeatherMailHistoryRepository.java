@@ -8,4 +8,5 @@ import java.util.List;
 public interface WeatherMailHistoryRepository extends JpaRepository<WeatherMailHistory, Long> {
     List<WeatherMailHistory> findTop50ByOrderBySentAtDesc();
     List<WeatherMailHistory> findTop50ByUserEmailOrderBySentAtDesc(String userEmail);
+    List<WeatherMailHistory> findTop5ByUserEmailOrderBySentAtDesc(String userEmail);
 }

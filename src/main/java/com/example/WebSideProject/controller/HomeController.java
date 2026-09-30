@@ -12,7 +12,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Controller
 public class HomeController {
 
-    private static final String GOOGLE_LOGIN_URL = "https://coders.kr/oauth/login/google";
+    private static final String LOGIN_URL = "https://mcp.coders.kr/sso/login";
     private static final String LOGOUT_URL = "https://mcp.coders.kr/sso/logout";
 
     private final String appBaseUrl;
@@ -31,7 +31,7 @@ public class HomeController {
         String returnUrl = appBaseUrl + "/";
         model.addAttribute("codersPlatform", true);
         model.addAttribute("signedIn", signedIn);
-        model.addAttribute("loginUrl", buildPlatformUrl(GOOGLE_LOGIN_URL, returnUrl));
+        model.addAttribute("loginUrl", buildPlatformUrl(LOGIN_URL, returnUrl));
         model.addAttribute("logoutUrl", buildPlatformUrl(LOGOUT_URL, returnUrl));
         model.addAttribute("cspNonce", request.getAttribute(SecurityHeadersFilter.CSP_NONCE_ATTRIBUTE));
         return "index";
