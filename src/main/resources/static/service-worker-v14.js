@@ -1,5 +1,5 @@
-const CACHE_NAME = "weather-shell-v20";
-const APP_SHELL = ["/", "/weather.css?v=20261009-weather-first-v3", "/favicon.svg", "/manifest.webmanifest"];
+const CACHE_NAME = "weather-shell-v21";
+const APP_SHELL = ["/", "/weather.css?v=20261009-weather-first-v4", "/favicon.svg", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));

@@ -4186,6 +4186,21 @@ body[data-theme="dark"] #mainContent .weather-now-card[data-state="error"] {
         margin-left: 19px;
     }
 
+    #mainContent .subscribe-drawer > summary,
+    #mainContent .advanced-tools > summary {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 3px;
+        padding-right: 56px;
+    }
+
+    #mainContent .subscribe-drawer > summary small,
+    #mainContent .advanced-tools > summary span {
+        margin-left: 0;
+    }
+
     #mainContent .mobile-weather-nav {
         bottom: 0;
         padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
