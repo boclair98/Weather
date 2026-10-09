@@ -20,7 +20,7 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-    <link rel="stylesheet" href="/weather.css?v=20261009-quiet-weather-v6">
+    <link rel="stylesheet" href="/weather.css?v=20261009-alimi-layout-v7">
 </head>
 <body>
 <a class="skip-link" href="#weatherSearch">날씨 검색으로 건너뛰기</a>
@@ -112,14 +112,13 @@
                     </div>
                 </div>
                 <div class="weather-preview-body">
-                    <div class="period-tabs" aria-label="예보 시간대">
-                        <button class="period-tab selected" type="button" data-period="MORNING" aria-pressed="true">아침</button>
-                        <button class="period-tab" type="button" data-period="AFTERNOON" aria-pressed="false">점심</button>
-                        <button class="period-tab" type="button" data-period="EVENING" aria-pressed="false">저녁</button>
+                    <div class="daily-periods-heading" id="dailyPeriodsHeadingWrap" hidden>
+                        <h2 id="dailyPeriodsHeading">시간대별 예보</h2>
+                        <span>아침 · 점심 · 저녁</span>
                     </div>
                     <div class="snapshot-note" id="snapshotNote" role="status"></div>
-                    <div class="daily-periods" id="dailyPeriods" hidden aria-label="시간대별 날씨"></div>
-                    <section class="hourly-weather" id="hourlyWeather" hidden aria-label="시간별 상세 예보" aria-live="polite">
+                    <div class="daily-periods" id="dailyPeriods" hidden aria-labelledby="dailyPeriodsHeading"></div>
+                    <section class="hourly-weather" id="hourlyWeather" hidden aria-label="시간별 예보" aria-live="polite">
                         <div class="hourly-weather-header">
                             <div>
                                 <strong>시간별 상세 예보</strong>
@@ -734,6 +733,8 @@
     const useGoOutWindow = document.getElementById("useGoOutWindow");
     const subscribeGoOutWindow = document.getElementById("subscribeGoOutWindow");
     const dailyPeriods = document.getElementById("dailyPeriods");
+    const dailyPeriodsHeading = document.getElementById("dailyPeriodsHeading");
+    const dailyPeriodsHeadingWrap = document.getElementById("dailyPeriodsHeadingWrap");
     const hourlyWeather = document.getElementById("hourlyWeather");
     const hourlyHeadline = document.getElementById("hourlyHeadline");
     const hourlyRainSummary = document.getElementById("hourlyRainSummary");
@@ -1949,6 +1950,7 @@
         goOutWindowData = null;
         goOutWindowTrack.replaceChildren();
         dailyPeriods.hidden = true;
+        dailyPeriodsHeadingWrap.hidden = true;
         hourlyWeather.hidden = false;
         hourlyHeadline.textContent = "시간별 기온과 강수 흐름을 불러오고 있어요.";
         hourlyRainSummary.textContent = "강수 확인 중";
@@ -2608,6 +2610,8 @@
     function renderDailyInsight() {
         dailyInsight.hidden = false;
         dailyPeriods.hidden = false;
+        dailyPeriodsHeadingWrap.hidden = false;
+        dailyPeriodsHeading.textContent = `${dailyForecast.dayLabel || "오늘"} 시간대별 예보`;
         dailyInsightLabel.textContent = `${dailyForecast.dayLabel || "오늘"} 예보 요약`;
         dailyHeadline.textContent = dailyForecast.headline || "시간대별 예보를 확인해보세요.";
         dailyTrend.textContent = formatTemperatureText(dailyForecast.temperatureTrend || "");
@@ -2626,12 +2630,21 @@
             button.dataset.period = code;
             button.setAttribute("aria-pressed", String(code === previewPeriod));
             const labelElement = document.createElement("span");
+            labelElement.className = "daily-period-label";
             labelElement.textContent = label;
+            const iconElement = document.createElement("span");
+            iconElement.className = "daily-period-icon";
+            iconElement.setAttribute("aria-hidden", "true");
+            setWeatherIcon(iconElement, weatherIconKind(weather));
             const summaryElement = document.createElement("strong");
+            summaryElement.className = "daily-period-temperature";
             summaryElement.textContent = formatTemperature(weather.tmp);
             const rainElement = document.createElement("small");
-            rainElement.textContent = `강수 ${weather.pop || "-"}%`;
-            button.append(labelElement, summaryElement, rainElement);
+            rainElement.className = "daily-period-summary";
+            const probability = weather.pop === null || weather.pop === undefined
+                || String(weather.pop).trim() === "-" ? "강수 자료 없음" : `강수 ${weather.pop}%`;
+            rainElement.textContent = `${cleanWeatherLabel(weather.skyDescription || weather.weatherMood, "날씨 정보 없음")} · ${probability}`;
+            button.append(labelElement, iconElement, summaryElement, rainElement);
             button.addEventListener("click", () => selectPreviewPeriod(code));
             dailyPeriods.appendChild(button);
         });
@@ -3114,7 +3127,7 @@
     restoreSubscriptionDraft();
     restoreSharedWeather();
     if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker-v16.js"));
+        window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker-v17.js"));
     }
 
     async function deleteCurrentUserData() {

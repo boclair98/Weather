@@ -1421,20 +1421,6 @@ body[data-weather-theme="rain"] #mainContent .weather-rain-lines {
     background: var(--blue-soft);
 }
 
-#mainContent #weatherPreview.weather-sunny .weather-preview-header {
-    background: var(--orange-soft);
-}
-
-#mainContent #weatherPreview.weather-rain .weather-preview-header,
-#mainContent #weatherPreview.weather-snow .weather-preview-header {
-    background: #eaf1f8;
-}
-
-body[data-theme="dark"] #mainContent #weatherPreview.weather-rain .weather-preview-header,
-body[data-theme="dark"] #mainContent #weatherPreview.weather-snow .weather-preview-header {
-    background: #203044;
-}
-
 #mainContent .weather-header-top,
 #mainContent .weather-toolbar,
 #mainContent .daily-insight-top,
@@ -3496,9 +3482,9 @@ body[data-weather-theme] #mainContent .weather-now-card {
 }
 
 #mainContent .weather-now-metrics {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 20px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 14px;
     min-width: 0;
     padding-top: 14px;
     border-top: 1px solid var(--line);
@@ -3521,6 +3507,10 @@ body[data-weather-theme] #mainContent .weather-now-card {
     color: var(--blue-ink);
     font-size: 14px;
     font-weight: 620;
+}
+
+#mainContent .weather-now-metrics span:last-child {
+    grid-column: 1 / -1;
 }
 
 #mainContent .weather-now-action:hover {
@@ -3551,7 +3541,7 @@ body[data-weather-theme] #mainContent .weather-now-card {
     padding: 22px 24px 18px;
     border-bottom: 1px solid var(--line);
     color: var(--text);
-    background: var(--surface);
+    background: var(--blue-soft);
 }
 
 #mainContent .weather-header-top {
@@ -3655,48 +3645,106 @@ body[data-weather-theme] #mainContent .weather-now-card {
 }
 
 #mainContent .daily-periods {
-    gap: 10px;
+    display: grid;
+    gap: 0;
     margin: 0;
 }
 
+#mainContent .daily-periods-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+#mainContent .daily-periods-heading[hidden] {
+    display: none;
+}
+
+#mainContent .daily-periods-heading h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 17px;
+    font-weight: 680;
+}
+
+#mainContent .daily-periods-heading span {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
 #mainContent .daily-period-card {
+    display: grid;
+    grid-template-columns: minmax(54px, .7fr) 38px minmax(58px, .7fr) minmax(100px, 1.8fr);
+    align-items: center;
+    gap: 10px;
     min-width: 0;
-    min-height: 88px;
-    padding: 13px 15px;
-    border: 1px solid var(--line);
-    border-radius: 14px;
+    min-height: 62px;
+    padding: 8px 10px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
     color: var(--text-secondary);
-    background: var(--surface);
+    background: transparent;
     text-align: left;
 }
 
 #mainContent .daily-period-card.selected {
-    border-color: #9dc5d8;
+    border-bottom-color: transparent;
+    border-radius: 11px;
     color: var(--text);
-    background: #f6fafc;
+    background: var(--blue-soft);
     box-shadow: none;
 }
 
-#mainContent .daily-period-card strong {
-    color: var(--text);
-    font-size: 19px;
-    font-weight: 630;
-    font-variant-numeric: tabular-nums;
+#mainContent .daily-period-label {
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 620;
 }
 
-#mainContent .daily-period-card small {
+#mainContent .daily-period-icon {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    color: var(--blue-ink);
+}
+
+#mainContent .daily-period-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+#mainContent .daily-period-temperature {
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+#mainContent .daily-period-summary {
+    min-width: 0;
+    overflow-wrap: anywhere;
     color: var(--text-tertiary);
-    font-size: 13px;
+    font-size: 12px;
+    line-height: 1.45;
 }
 
 #mainContent .hourly-weather {
     min-width: 0;
     margin: 0;
-    padding: 18px 0 4px;
+    padding: 18px;
     border: 0;
-    border-top: 1px solid var(--line);
-    border-radius: 0;
-    background: transparent;
+    border-radius: 16px;
+    background: var(--blue-soft);
 }
 
 #mainContent .hourly-weather-header {
@@ -3734,7 +3782,7 @@ body[data-weather-theme] #mainContent .weather-now-card {
 
 #mainContent .hourly-track {
     display: grid;
-    grid-auto-columns: minmax(110px, 1fr);
+    grid-auto-columns: minmax(98px, 1fr);
     grid-auto-flow: column;
     gap: 8px;
     min-width: 0;
@@ -3751,17 +3799,22 @@ body[data-weather-theme] #mainContent .weather-now-card {
     justify-items: center;
     gap: 7px;
     min-width: 0;
-    min-height: 154px;
-    padding: 12px 10px;
-    border: 1px solid var(--line);
-    border-radius: 13px;
-    background: var(--surface);
+    min-height: 146px;
+    padding: 10px 8px;
+    border: 0;
+    border-right: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
     scroll-snap-align: start;
 }
 
+#mainContent .hourly-item:last-child {
+    border-right: 0;
+}
+
 #mainContent .hourly-item.rain-risk {
-    border-color: #c8dce7;
-    background: #f6fafc;
+    border-right-color: var(--blue-ink);
+    background: transparent;
 }
 
 #mainContent .hourly-item time {
@@ -4149,17 +4202,24 @@ body[data-theme="dark"] #mainContent .weather-now-card[data-state="error"] {
     }
 
     #mainContent .daily-periods {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 6px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
     }
 
     #mainContent .daily-period-card {
-        min-height: 80px;
-        padding: 10px 8px;
+        grid-template-columns: minmax(48px, .7fr) 34px minmax(54px, .7fr) minmax(98px, 1.8fr);
+        gap: 8px;
+        min-height: 58px;
+        padding: 8px 6px;
     }
 
-    #mainContent .daily-period-card strong {
-        font-size: 17px;
+    #mainContent .daily-periods-heading {
+        align-items: flex-start;
+    }
+
+    #mainContent .daily-periods-heading span {
+        white-space: normal;
+        text-align: right;
     }
 
     #mainContent .hourly-weather {
@@ -4428,7 +4488,7 @@ body[data-theme="dark"] #mainContent .weather-now-card[data-state="error"] {
 body[data-weather-theme] #mainContent .weather-now-card {
     border-color: #dce8f1;
     border-radius: 20px;
-    background: linear-gradient(145deg, #ffffff 0%, #f4f9fd 100%);
+    background: #eaf4fa;
     box-shadow: 0 12px 32px rgba(35, 76, 109, .075);
 }
 
@@ -4466,7 +4526,7 @@ body[data-weather-theme] #mainContent .weather-now-card {
 body[data-theme="dark"] #mainContent .weather-now-card,
 body[data-theme="dark"][data-weather-theme] #mainContent .weather-now-card {
     border-color: var(--line);
-    background: linear-gradient(145deg, #172129 0%, #1c2b36 100%);
+    background: #1d2d37;
 }
 
 @media (max-width: 960px) {
@@ -4571,4 +4631,41 @@ body[data-theme="dark"][data-weather-theme] #mainContent .weather-now-card {
 #mainContent .weather-condition-icon[data-kind="unknown"],
 #mainContent .weather-icon[data-kind="unknown"] {
     color: var(--text-tertiary);
+}
+
+@media (min-width: 1024px) {
+    #mainContent.has-weather-location .weather-workspace {
+        display: grid;
+        grid-template-columns: minmax(280px, .72fr) minmax(0, 1.55fr);
+        align-items: start;
+        gap: 16px;
+    }
+
+    #mainContent.has-weather-location .weather-workspace > .advanced-tools {
+        grid-column: 1 / -1;
+    }
+
+    #mainContent.has-weather-location .weather-now-main {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 3px 8px;
+    }
+
+    #mainContent.has-weather-location .weather-now-temperature {
+        grid-column: 1;
+        grid-row: 1;
+        font-size: clamp(54px, 5.2vw, 72px);
+    }
+
+    #mainContent.has-weather-location .weather-condition-icon {
+        grid-column: 2;
+        grid-row: 1;
+        width: 48px;
+        height: 48px;
+    }
+
+    #mainContent.has-weather-location .weather-now-main > div {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
 }
