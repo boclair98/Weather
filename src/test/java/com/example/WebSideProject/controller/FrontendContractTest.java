@@ -26,7 +26,7 @@ class FrontendContractTest {
                 .contains("buildWeatherShareUrl")
                 .contains("restoreSharedWeather")
                 .contains("navigator.serviceWorker.register")
-                .contains("service-worker-v15.js")
+                .contains("service-worker-v16.js")
                 .contains("<dialog class=\"location-search-dialog\" id=\"weatherSearch\"")
                 .contains("data-inline=\"true\"")
                 .contains("function openLocationSearch()")
@@ -113,7 +113,7 @@ class FrontendContractTest {
 
     @Test
     void serviceWorkerKeepsApiResponsesNetworkOnly() throws IOException {
-        String worker = classpathText("/static/service-worker-v15.js");
+        String worker = classpathText("/static/service-worker-v16.js");
 
         assertThat(worker)
                 .contains("weather-shell-v23")
