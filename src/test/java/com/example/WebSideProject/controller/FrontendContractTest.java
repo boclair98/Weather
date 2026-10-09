@@ -16,7 +16,7 @@ class FrontendContractTest {
 
         assertThat(html)
                 .contains("/manifest.webmanifest")
-                .contains("/weather.css?v=20261009-weather-first-v4")
+                .contains("/weather.css?v=20261009-quiet-weather-v5")
                 .contains("data-day-offset=\"0\"")
                 .contains("data-day-offset=\"1\"")
                 .contains("data-day-offset=\"2\"")
@@ -26,7 +26,13 @@ class FrontendContractTest {
                 .contains("buildWeatherShareUrl")
                 .contains("restoreSharedWeather")
                 .contains("navigator.serviceWorker.register")
-                .contains("service-worker-v14.js")
+                .contains("service-worker-v15.js")
+                .contains("<dialog class=\"location-search-dialog\" id=\"weatherSearch\"")
+                .contains("data-inline=\"true\"")
+                .contains("function openLocationSearch()")
+                .contains("locationSearchDialog.showModal()")
+                .contains("has-weather-location")
+                .contains("id=\"closeLocationSearch\"")
                 .contains("id=\"heroWeatherCard\"")
                 .contains("id=\"heroWeatherTemperature\"")
                 .contains("heroWeatherCard.dataset.weather")
@@ -104,10 +110,11 @@ class FrontendContractTest {
 
     @Test
     void serviceWorkerKeepsApiResponsesNetworkOnly() throws IOException {
-        String worker = classpathText("/static/service-worker-v14.js");
+        String worker = classpathText("/static/service-worker-v15.js");
 
         assertThat(worker)
-                .contains("weather-shell-v21")
+                .contains("weather-shell-v22")
+                .contains("weather.css?v=20261009-quiet-weather-v5")
                 .contains("url.pathname.startsWith(\"/api/\")")
                 .contains("request.mode === \"navigate\"")
                 .contains("OFFLINE")

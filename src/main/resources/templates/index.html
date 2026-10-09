@@ -20,7 +20,7 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-    <link rel="stylesheet" href="/weather.css?v=20261009-weather-first-v4">
+    <link rel="stylesheet" href="/weather.css?v=20261009-quiet-weather-v5">
 </head>
 <body>
 <a class="skip-link" href="#weatherSearch">날씨 검색으로 건너뛰기</a>
@@ -36,32 +36,37 @@
             <span>날씨한편</span>
         </a>
         <nav class="weather-nav" aria-label="서비스 메뉴">
-            <a href="#weatherSearch">지역 찾기</a>
+            <a href="#weatherSearch" id="openLocationSearch">지역 바꾸기</a>
             <a class="weather-nav-cta" id="openSubscribeNav" href="#subscribeForm">이메일 구독</a>
             <button class="weather-nav-install" type="button" id="installApp" hidden>앱 설치</button>
         </nav>
     </header>
     <div class="layout">
         <section class="weather-workspace" aria-label="지역별 날씨">
-            <div class="dashboard-search-card" id="weatherSearch" tabindex="-1">
-                <div class="dashboard-search-copy">
-                    <span class="search-eyebrow">지역 날씨</span>
-                    <strong>어디의 날씨가 궁금하세요?</strong>
-                    <span>동네, 역, 건물 이름으로 찾아볼 수 있어요.</span>
+            <dialog class="location-search-dialog" id="weatherSearch" open data-inline="true" aria-labelledby="locationSearchHeading" aria-describedby="locationSearchIntro">
+                <div class="dashboard-search-card">
+                    <div class="search-dialog-heading">
+                        <div class="dashboard-search-copy">
+                            <span class="search-eyebrow">지역 날씨</span>
+                            <strong id="locationSearchHeading">지역을 선택해 주세요</strong>
+                            <span id="locationSearchIntro">동네·역·건물 이름으로 현재 날씨와 시간별 예보를 확인할 수 있어요.</span>
+                        </div>
+                        <button class="search-dialog-close" type="button" id="closeLocationSearch" aria-label="지역 검색 닫기">닫기</button>
+                    </div>
+                    <div class="location-search">
+                        <label class="visually-hidden" for="locationQuery">날씨를 볼 지역</label>
+                        <input id="locationQuery" name="locationQuery" aria-label="날씨를 볼 지역" aria-describedby="locationMeta" autocomplete="off" placeholder="예: 대전 유성구, 강남역">
+                        <button class="secondary clear-location" type="button" id="clearLocationQuery" aria-label="지역 검색어 지우기" title="검색어 지우기">지우기</button>
+                        <button class="secondary" type="button" id="searchLocation">검색</button>
+                        <button class="secondary" type="button" id="currentLocation">현재 위치</button>
+                    </div>
+                    <div class="location-results" id="locationResults" aria-label="위치 검색 결과"></div>
+                    <p class="meta" id="locationMeta" aria-live="polite">지역을 검색하거나 현재 위치를 선택해주세요.</p>
+                    <div class="result" id="searchResult" role="status" aria-live="polite"></div>
+                    <span class="location-section-label">최근·저장한 장소 · 이 기기에 보관</span>
+                    <div class="favorite-locations" id="favoriteLocations" aria-label="저장한 장소와 최근 본 장소"></div>
                 </div>
-                <div class="location-search">
-                    <label class="visually-hidden" for="locationQuery">날씨를 볼 지역</label>
-                    <input id="locationQuery" name="locationQuery" aria-label="날씨를 볼 지역" aria-describedby="locationMeta" autocomplete="off" placeholder="예: 대전 유성구, 강남역">
-                    <button class="secondary clear-location" type="button" id="clearLocationQuery" aria-label="지역 검색어 지우기" title="검색어 지우기">지우기</button>
-                    <button class="secondary" type="button" id="searchLocation">검색</button>
-                    <button class="secondary" type="button" id="currentLocation">현재 위치</button>
-                </div>
-                <div class="location-results" id="locationResults" aria-label="위치 검색 결과"></div>
-                <p class="meta" id="locationMeta" aria-live="polite">지역을 검색하거나 현재 위치를 선택해주세요.</p>
-                <div class="result" id="searchResult" role="status" aria-live="polite"></div>
-                <span class="location-section-label">최근·저장한 장소 · 이 기기에 보관</span>
-                <div class="favorite-locations" id="favoriteLocations" aria-label="저장한 장소와 최근 본 장소"></div>
-            </div>
+            </dialog>
             <section class="weather-now-card" id="heroWeatherCard" data-state="waiting" aria-label="선택한 지역의 날씨" aria-live="polite" hidden>
                 <div class="weather-now-location">
                     <span class="weather-location-pin" aria-hidden="true"></span>
@@ -629,6 +634,11 @@
     const legacyLocationsKey = "weather-favorite-locations";
     const preferencesKey = "weather-preferences";
     const snapshotKey = "weather-last-snapshot-v2";
+    const mainContent = document.getElementById("mainContent");
+    const locationSearchDialog = document.getElementById("weatherSearch");
+    const closeLocationSearchButton = document.getElementById("closeLocationSearch");
+    const locationSearchHeading = document.getElementById("locationSearchHeading");
+    const locationSearchIntro = document.getElementById("locationSearchIntro");
     const locationQuery = document.getElementById("locationQuery");
     const locationResults = document.getElementById("locationResults");
     const locationMeta = document.getElementById("locationMeta");
@@ -1055,6 +1065,18 @@
 
     searchButton.addEventListener("click", searchLocations);
     currentLocationButton.addEventListener("click", useCurrentLocation);
+    closeLocationSearchButton.addEventListener("click", () => locationSearchDialog.close());
+    locationSearchDialog.addEventListener("click", (event) => {
+        if (event.target === locationSearchDialog && !locationSearchDialog.hasAttribute("data-inline")) {
+            locationSearchDialog.close();
+        }
+    });
+    document.querySelectorAll('a[href="#weatherSearch"]').forEach((link) => {
+        link.addEventListener("click", (event) => {
+            event.preventDefault();
+            openLocationSearch();
+        });
+    });
     document.querySelectorAll(".day-tab").forEach((button) => {
         button.addEventListener("click", () => {
             forecastDayOffset = Number(button.dataset.dayOffset || 0);
@@ -1105,11 +1127,11 @@
     });
     openSubscribeMobile.addEventListener("click", openSubscriptionPanel);
     openWeatherMobile.addEventListener("click", () => {
-        const target = selectedLocation && !weatherPreview.hidden
-            ? weatherPreview
-            : document.getElementById("weatherSearch");
-        target.scrollIntoView({behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start"});
-        if (target.id === "weatherSearch") locationQuery.focus({preventScroll: true});
+        if (selectedLocation && !weatherPreview.hidden) {
+            weatherPreview.scrollIntoView({behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start"});
+        } else {
+            openLocationSearch();
+        }
     });
     toggleHourlyForecastButton.addEventListener("click", () => {
         hourlyForecastExpanded = !hourlyForecastExpanded;
@@ -1117,17 +1139,22 @@
         if (!hourlyForecastExpanded) hourlyTrack.scrollLeft = 0;
     });
     clearLocationQueryButton.addEventListener("click", () => {
-        weatherLoadVersion += 1;
         locationSearchVersion += 1;
-        requestControllers.forEach((controller) => controller.abort());
+        requestControllers.get("locations")?.abort();
         locationQuery.value = "";
         locationResults.replaceChildren();
-        locationMeta.textContent = "지역을 검색하거나 현재 위치를 직접 선택해주세요.";
+        locationMeta.textContent = selectedLocation
+            ? `현재 선택한 지역: ${selectedLocation.locationName}`
+            : "지역을 검색하거나 현재 위치를 직접 선택해주세요.";
         searchResult.textContent = "";
         searchResult.className = "result";
-        heroWeatherCard.hidden = true;
-        weatherPreview.hidden = true;
-        selectedLocation = null;
+        if (!selectedLocation) {
+            heroWeatherCard.hidden = true;
+            weatherPreview.hidden = true;
+            mainContent.classList.remove("has-weather-location");
+            locationSearchDialog.setAttribute("data-inline", "true");
+            if (!locationSearchDialog.open) locationSearchDialog.show();
+        }
         searchButton.disabled = false;
         searchButton.textContent = "검색";
         clearLocationQueryButton.disabled = true;
@@ -1144,6 +1171,34 @@
         clearLocationQueryButton.disabled = !locationQuery.value;
     });
     clearLocationQueryButton.disabled = !locationQuery.value;
+
+    function openLocationSearch() {
+        if (selectedLocation) {
+            locationQuery.value = "";
+            locationResults.replaceChildren();
+            locationMeta.textContent = `현재 선택한 지역 · ${selectedLocation.locationName}`;
+            searchResult.textContent = "";
+            searchResult.className = "result";
+            clearLocationQueryButton.disabled = true;
+            locationSearchHeading.textContent = "다른 지역 찾기";
+            locationSearchIntro.textContent = `${selectedLocation.locationName} 날씨는 유지돼요. 새 장소를 선택하면 바뀝니다.`;
+            locationSearchDialog.removeAttribute("data-inline");
+            if (!locationSearchDialog.open) locationSearchDialog.showModal();
+        } else {
+            locationSearchHeading.textContent = "지역을 선택해 주세요";
+            locationSearchIntro.textContent = "동네·역·건물 이름으로 현재 날씨와 시간별 예보를 확인할 수 있어요.";
+            locationSearchDialog.setAttribute("data-inline", "true");
+            if (!locationSearchDialog.open) locationSearchDialog.show();
+        }
+        if (!selectedLocation) {
+            locationSearchDialog.scrollIntoView({
+                behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+                block: "center"
+            });
+        }
+        window.requestAnimationFrame(() => locationQuery.focus({preventScroll: true}));
+    }
+
     document.getElementById("temperatureSensitivity").addEventListener("change", () => {
         savePreferences();
         reloadPreviewIfReady();
@@ -1549,10 +1604,7 @@
         }
         const searchVersion = ++locationSearchVersion;
 
-        selectedLocation = null;
         locationResults.innerHTML = "";
-        heroWeatherCard.hidden = true;
-        weatherPreview.hidden = true;
         locationMeta.textContent = `“${query}” 지역을 찾고 있어요.`;
         searchButton.disabled = true;
         searchButton.textContent = "검색 중";
@@ -1835,6 +1887,9 @@
     }
 
     async function loadWeatherPreview(location, options = {}) {
+        mainContent.classList.add("has-weather-location");
+        locationSearchDialog.removeAttribute("data-inline");
+        if (locationSearchDialog.open) locationSearchDialog.close();
         const loadVersion = ++weatherLoadVersion;
         requestControllers.get("current")?.abort();
         weatherDecisionData = null;
@@ -3057,7 +3112,7 @@
     restoreSubscriptionDraft();
     restoreSharedWeather();
     if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker-v14.js"));
+        window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker-v15.js"));
     }
 
     async function deleteCurrentUserData() {
