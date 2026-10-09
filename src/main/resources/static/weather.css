@@ -264,7 +264,7 @@ a:focus-visible {
     display: inline-flex;
     align-items: center;
     min-height: 32px;
-    margin: 76px 0 0;
+    margin: 52px 0 0;
     padding: 6px 12px;
     border-radius: 999px;
     color: var(--blue-ink);
@@ -288,8 +288,8 @@ a:focus-visible {
     display: grid;
     grid-template-columns: minmax(0, 1.08fr) minmax(320px, .92fr);
     align-items: center;
-    gap: 38px;
-    margin-top: 18px;
+    gap: 32px;
+    margin-top: 16px;
 }
 
 #mainContent .weather-hero h1 {
@@ -300,14 +300,15 @@ a:focus-visible {
 #mainContent .weather-now-card {
     position: relative;
     isolation: isolate;
-    min-height: 410px;
+    min-height: 390px;
     overflow: hidden;
     padding: 26px;
     border: 1px solid rgba(255, 255, 255, .44);
-    border-radius: 32px;
+    border-radius: 30px;
     color: #fff;
-    background: linear-gradient(145deg, #74baff 0%, #3989ef 56%, #1f6dd2 100%);
-    box-shadow: 0 26px 60px rgba(39, 116, 212, .26);
+    background: radial-gradient(circle at 92% 9%, rgba(255, 255, 255, .18), transparent 25%),
+        linear-gradient(145deg, #70b4f5 0%, #3985e5 56%, #2166c5 100%);
+    box-shadow: 0 20px 50px rgba(39, 116, 212, .22);
     transition: background 420ms ease, transform var(--ease), box-shadow var(--ease);
 }
 
@@ -333,15 +334,16 @@ a:focus-visible {
 }
 
 #mainContent .weather-sky-art {
-    z-index: -1;
+    z-index: 0;
     inset: 0;
+    opacity: .28;
 }
 
 #mainContent .weather-sun {
-    top: 34px;
-    right: 32px;
-    width: 84px;
-    height: 84px;
+    top: 27px;
+    right: 27px;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     background: radial-gradient(circle at 38% 38%, #fff8cb 0 16%, #ffe46c 54%, #ffcb3d 100%);
     box-shadow: 0 0 0 18px rgba(255, 240, 148, .12), 0 0 54px rgba(255, 223, 96, .44);
@@ -376,17 +378,17 @@ a:focus-visible {
 }
 
 #mainContent .cloud-one {
-    top: 104px;
-    right: -18px;
-    width: 130px;
-    opacity: .75;
+    top: 82px;
+    right: -24px;
+    width: 112px;
+    opacity: .62;
 }
 
 #mainContent .cloud-two {
-    top: 68px;
-    right: 104px;
-    width: 86px;
-    opacity: .28;
+    top: 52px;
+    right: 92px;
+    width: 78px;
+    opacity: .38;
     transform: scale(.7);
 }
 
@@ -487,12 +489,12 @@ a:focus-visible {
     display: flex;
     align-items: flex-end;
     gap: 16px;
-    margin-top: 42px;
+    margin-top: 36px;
 }
 
 #mainContent .weather-now-temperature {
     flex: 0 0 auto;
-    font-size: clamp(58px, 8vw, 76px);
+    font-size: clamp(56px, 7vw, 72px);
     font-weight: 300;
     line-height: .9;
     letter-spacing: -5px;
@@ -609,7 +611,7 @@ body[data-weather-theme="rain"] #mainContent .weather-rain-lines {
 
 #mainContent .intro {
     max-width: 660px;
-    margin: 22px 0 0;
+    margin: 18px 0 0;
     color: var(--text-secondary);
     font-size: 18px;
     line-height: 1.65;
@@ -620,7 +622,7 @@ body[data-weather-theme="rain"] #mainContent .weather-rain-lines {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 24px;
+    margin-top: 20px;
 }
 
 #mainContent .hero-badge,
@@ -2654,7 +2656,7 @@ body[data-theme="dark"] #mainContent .share-weather {
     }
 
     #mainContent .eyebrow {
-        margin-top: 34px;
+        margin-top: 24px;
     }
 
     #mainContent h1 {
@@ -2665,15 +2667,15 @@ body[data-theme="dark"] #mainContent .share-weather {
 
     #mainContent .weather-hero {
         grid-template-columns: 1fr;
-        gap: 28px;
-        margin-top: 14px;
+        gap: 22px;
+        margin-top: 12px;
     }
 
     #mainContent .weather-now-card {
         order: -1;
-        min-height: 390px;
-        padding: 23px;
-        border-radius: 26px;
+        min-height: 360px;
+        padding: 20px;
+        border-radius: 24px;
     }
 
     #mainContent .weather-hero h1 {
@@ -2681,29 +2683,29 @@ body[data-theme="dark"] #mainContent .share-weather {
     }
 
     #mainContent .weather-now-main {
-        margin-top: 68px;
+        margin-top: 44px;
     }
 
     #mainContent .weather-now-temperature {
-        font-size: 66px;
+        font-size: 60px;
     }
 
     #mainContent .weather-sun {
-        top: 18px;
-        right: 28px;
-        width: 64px;
-        height: 64px;
+        top: 17px;
+        right: 22px;
+        width: 58px;
+        height: 58px;
     }
 
     #mainContent .cloud-one {
-        top: 72px;
-        right: -28px;
-        width: 108px;
+        top: 63px;
+        right: -30px;
+        width: 100px;
     }
 
     #mainContent .cloud-two {
-        top: 42px;
-        right: 92px;
+        top: 39px;
+        right: 84px;
     }
 
     #mainContent .weather-now-main > div strong {
