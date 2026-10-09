@@ -4541,3 +4541,34 @@ body[data-theme="dark"][data-weather-theme] #mainContent .weather-now-card {
         transition: none;
     }
 }
+
+/* Keep supporting readings quiet, and distinguish an unavailable condition from a warning. */
+#mainContent .weather-now-metrics {
+    margin: 0;
+    padding: 14px 0 0;
+    overflow: visible;
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+#mainContent .weather-now-metrics span {
+    padding: 0;
+    overflow: visible;
+    text-align: left;
+    text-overflow: clip;
+    white-space: normal;
+    font-variant-numeric: tabular-nums;
+}
+
+#mainContent .weather-now-metrics span + span {
+    border-left: 0;
+}
+
+#mainContent .weather-condition-icon[data-kind="unknown"],
+#mainContent .weather-icon[data-kind="unknown"] {
+    color: var(--text-tertiary);
+}

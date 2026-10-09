@@ -16,7 +16,7 @@ class FrontendContractTest {
 
         assertThat(html)
                 .contains("/manifest.webmanifest")
-                .contains("/weather.css?v=20261009-quiet-weather-v5")
+                .contains("/weather.css?v=20261009-quiet-weather-v6")
                 .contains("data-day-offset=\"0\"")
                 .contains("data-day-offset=\"1\"")
                 .contains("data-day-offset=\"2\"")
@@ -41,6 +41,7 @@ class FrontendContractTest {
                 .contains("id=\"weatherAirStation\"")
                 .contains("class=\"secondary-insights\"")
                 .contains("function weatherIconKind")
+                .contains("container.dataset.kind = resolvedKind")
                 .contains("function koreaDateTimeParts")
                 .contains("id=\"clearLocationQuery\"")
                 .contains("koreaDateTimeParts")
@@ -100,6 +101,8 @@ class FrontendContractTest {
                 .contains("#mainContent .go-out-window")
                 .contains("#mainContent .mobile-weather-nav")
                 .contains("#mainContent .weather-now-card")
+                .contains("#mainContent .weather-now-metrics span + span")
+                .contains(".weather-icon[data-kind=\"unknown\"]")
                 .contains("body[data-weather-theme=\"rain\"]")
                 .contains("#mainContent .hourly-track")
                 .contains("#mainContent .air-quality-summary")
@@ -113,8 +116,8 @@ class FrontendContractTest {
         String worker = classpathText("/static/service-worker-v15.js");
 
         assertThat(worker)
-                .contains("weather-shell-v22")
-                .contains("weather.css?v=20261009-quiet-weather-v5")
+                .contains("weather-shell-v23")
+                .contains("weather.css?v=20261009-quiet-weather-v6")
                 .contains("url.pathname.startsWith(\"/api/\")")
                 .contains("request.mode === \"navigate\"")
                 .contains("OFFLINE")
