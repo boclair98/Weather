@@ -66,7 +66,8 @@ class WeatherMailTemplateTest {
 
         assertThat(html)
                 .contains("30초 브리핑")
-                .contains("TODAY'S CALL")
+                .contains("외출 참고")
+                .contains("옷차림 참고")
                 .contains("오늘은 안전을 먼저 챙겨요")
                 .contains("자료 원천자료 확인")
                 .contains("강남역")
@@ -76,6 +77,8 @@ class WeatherMailTemplateTest {
                 .doesNotContain("display:grid")
                 .doesNotContain("display:flex")
                 .doesNotContain("linear-gradient")
+                .doesNotContain("TODAY'S CALL")
+                .doesNotContain("TODAY'S LOOK")
                 .doesNotContain("<script");
     }
 }

@@ -43,9 +43,9 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
         }
         response.setHeader(
                 "Content-Security-Policy",
-                "default-src 'self'; style-src 'self' 'nonce-" + nonce + "'; " +
+                "default-src 'self'; style-src 'self' 'nonce-" + nonce + "' https://cdn.jsdelivr.net; " +
                         "script-src 'self' 'nonce-" + nonce + "'; connect-src 'self'; " +
-                        "img-src 'self' data:; font-src 'self'"
+                        "img-src 'self' data:; font-src 'self' https://cdn.jsdelivr.net"
         );
         filterChain.doFilter(request, response);
     }
