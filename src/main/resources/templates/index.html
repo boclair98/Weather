@@ -2098,7 +2098,7 @@
         heroWeatherCondition.textContent = observation.headline || "현재 관측";
         heroWeatherFeelsLike.textContent = `체감 ${formatTemperature(observation.apparentTemperature)} · 습도 ${observation.humidity ?? "-"}%`;
         heroWeatherPrecipitation.textContent = observation.precipitationType === "없음"
-            ? "강수 없음" : `${observation.precipitationType} ${observation.oneHourPrecipitation}mm`;
+            ? "강수량 0mm" : `강수량 ${observation.oneHourPrecipitation}mm`;
         heroWeatherWind.textContent = `바람 ${observation.windSpeed ?? "-"}m/s`;
     }
 

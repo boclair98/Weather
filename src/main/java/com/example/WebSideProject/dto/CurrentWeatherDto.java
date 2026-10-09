@@ -31,8 +31,8 @@ public record CurrentWeatherDto(
         int apparentTemperature = calculateApparentTemperature(temperature, humidity, windSpeed);
         boolean precipitation = !"없음".equals(precipitationType);
         String headline = precipitation
-                ? "지금 " + precipitationType + " · 체감 " + apparentTemperature + "°C"
-                : "지금 " + formatTemperature(temperature) + "°C · 체감 " + apparentTemperature + "°C";
+                ? precipitationType + " 관측 중"
+                : "강수 현상 없음";
         String advice = buildAdvice(apparentTemperature, humidity, windSpeed, precipitationType);
         return new CurrentWeatherDto(
                 locationName == null || locationName.isBlank() ? "선택 위치" : locationName,
@@ -92,7 +92,4 @@ public record CurrentWeatherDto(
         return "현재 관측상 큰 불편 신호는 없어요. 아래 시간별 예보도 함께 확인하세요.";
     }
 
-    private static String formatTemperature(double value) {
-        return value == Math.rint(value) ? Integer.toString((int) value) : Double.toString(value);
-    }
 }

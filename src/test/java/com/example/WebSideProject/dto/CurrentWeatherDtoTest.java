@@ -12,10 +12,20 @@ class CurrentWeatherDtoTest {
                 "강남역", "2026-08-13T14:00+09:00", 30.0, 80, 2.0, "1.2", "비"
         );
 
-        assertThat(weather.headline()).contains("지금 비").contains("체감");
+        assertThat(weather.headline()).isEqualTo("비 관측 중").doesNotContain("30", "체감");
         assertThat(weather.advice()).contains("우산");
         assertThat(weather.sourceName()).isEqualTo("기상청 초단기실황");
         assertThat(weather.fallback()).isFalse();
+    }
+
+    @Test
+    void keepsTheCurrentWeatherHeadlineSeparateFromTemperatureAndFeelsLike() {
+        CurrentWeatherDto weather = CurrentWeatherDto.of(
+                "을지로3가역", "2026-08-13T14:00+09:00", 22.8, 33, 1.3, "0", "없음"
+        );
+
+        assertThat(weather.headline()).isEqualTo("강수 현상 없음");
+        assertThat(weather.headline()).doesNotContain("22.8", "체감", "°C");
     }
 
     @Test
