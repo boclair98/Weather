@@ -16,7 +16,7 @@ class FrontendContractTest {
 
         assertThat(html)
                 .contains("/manifest.webmanifest")
-                .contains("/weather.css?v=20261009-alimi-layout-v7")
+                .contains("/weather.css?v=20261010-alimi-layout-v8")
                 .contains("data-day-offset=\"0\"")
                 .contains("data-day-offset=\"1\"")
                 .contains("data-day-offset=\"2\"")
@@ -116,8 +116,8 @@ class FrontendContractTest {
         String worker = classpathText("/static/service-worker-v17.js");
 
         assertThat(worker)
-                .contains("weather-shell-v24")
-                .contains("weather.css?v=20261009-alimi-layout-v7")
+                .contains("weather-shell-v25")
+                .contains("weather.css?v=20261010-alimi-layout-v8")
                 .contains("url.pathname.startsWith(\"/api/\")")
                 .contains("request.mode === \"navigate\"")
                 .contains("OFFLINE")
