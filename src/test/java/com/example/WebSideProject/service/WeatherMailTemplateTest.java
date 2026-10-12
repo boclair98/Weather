@@ -65,10 +65,11 @@ class WeatherMailTemplateTest {
         Files.writeString(preview, html, StandardCharsets.UTF_8);
 
         assertThat(html)
-                .contains("오늘 날씨 한눈에")
-                .contains("강남역의 오늘 날씨")
-                .contains("맑음")
-                .contains("원천자료 확인")
+                .contains("30초 브리핑")
+                .contains("외출 참고")
+                .contains("옷차림 참고")
+                .contains("오늘은 안전을 먼저 챙겨요")
+                .contains("자료 원천자료 확인")
                 .contains("강남역")
                 .contains("폭염경보")
                 .contains("10 · 매우 높음")
@@ -78,9 +79,6 @@ class WeatherMailTemplateTest {
                 .doesNotContain("linear-gradient")
                 .doesNotContain("TODAY'S CALL")
                 .doesNotContain("TODAY'S LOOK")
-                .doesNotContain("외출 참고")
-                .doesNotContain("옷차림 참고")
-                .doesNotContain("외출 86점")
                 .doesNotContain("<script");
     }
 }

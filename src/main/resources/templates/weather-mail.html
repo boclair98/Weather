@@ -67,9 +67,31 @@
 
                 <tr>
                     <td class="mail-pad" style="padding:24px 26px 0;">
-                        <div style="color:#3182f6; font-size:11px; line-height:17px; font-weight:800; letter-spacing:.4px;">오늘 날씨 한눈에</div>
-                        <div th:text="|${locationName}의 오늘 날씨|" style="padding-top:5px; color:#172033; font-size:21px; line-height:29px; font-weight:900; letter-spacing:-.055em; word-break:keep-all;">오늘 날씨</div>
-                        <div th:text="|${weather.skyDescription} · ${weather.forecastLabel}|" style="padding-top:8px; color:#647386; font-size:14px; line-height:22px; word-break:keep-all;">맑음 · 오늘 아침 예보</div>
+                        <div style="color:#3182f6; font-size:11px; line-height:17px; font-weight:800; letter-spacing:.4px;">30초 브리핑 · 오늘 한눈에</div>
+                        <div th:text="|${name}님, 오늘은 이렇게 준비하세요.|" style="padding-top:5px; color:#172033; font-size:21px; line-height:29px; font-weight:900; letter-spacing:-.055em; word-break:keep-all;">오늘은 이렇게 준비하세요.</div>
+                        <div th:text="${weather.detailedWeatherMessage}" style="padding-top:8px; color:#647386; font-size:14px; line-height:22px; word-break:keep-all;">화창한 날씨예요. 가벼운 외출에 잘 어울립니다.</div>
+                    </td>
+                </tr>
+
+                <!-- One shared decision card: the same action-first language as the web UI -->
+                <tr>
+                    <td class="mail-pad" style="padding:16px 26px 0;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#f2f7ff" style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid #d7e8ff; border-radius:17px; background:#f2f7ff;">
+                            <tr>
+                                <td style="padding:15px 16px 6px;">
+                                    <div style="color:#2c76c7; font-size:10px; line-height:15px; font-weight:900; letter-spacing:.2px;">외출 참고</div>
+                                    <div th:text="${weather.decisionHeadline}" style="padding-top:3px; color:#173f68; font-size:17px; line-height:24px; font-weight:900; word-break:keep-all;">지금 움직이기 좋은 날이에요</div>
+                                    <div th:text="${weather.decisionDetail}" style="padding-top:4px; color:#52779d; font-size:11px; line-height:18px; word-break:keep-all;">기본 준비만 해도 충분해 보여요.</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:8px 16px 14px; border-top:1px solid #d7e8ff; color:#52779d; font-size:10px; line-height:16px;">
+                                    <span th:text="|외출 ${weather.outingScore}점 · ${weather.outingScoreLabel}|">외출 86점 · 좋음</span>
+                                    <span style="padding:0 5px; color:#9bb9d6;">·</span>
+                                    <span th:text="|자료 ${weather.dataQualityLabel}|">자료 원천자료 확인</span>
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
 
@@ -172,6 +194,32 @@
                                     <div style="color:#25804c; font-size:10px; line-height:15px; font-weight:900;">대기질</div>
                                     <div th:text="${weather.airQualitySummary}" style="padding-top:4px; color:#1e6a42; font-size:14px; line-height:23px; font-weight:900; word-break:keep-all;">미세먼지 보통</div>
                                     <div th:text="${weather.airQualityAdvice}" style="padding-top:4px; color:#4b8364; font-size:10px; line-height:17px; word-break:keep-all;">가벼운 외출에 무리 없어요.</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Dynamic outfit card -->
+                <tr>
+                    <td class="mail-pad" style="padding:20px 26px 0;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#fff8ef" style="width:100%; border-collapse:separate; border-radius:18px; border:1px solid #feddb5; background:#fff8ef;">
+                            <tr>
+                                <td style="padding:17px 16px 12px;">
+                                    <div style="color:#e46b1a; font-size:10px; line-height:16px; font-weight:900; letter-spacing:.2px;">옷차림 참고</div>
+                                    <div th:text="${weather.styleHeadline}" style="padding-top:4px; color:#7c2d12; font-size:17px; line-height:25px; font-weight:900; word-break:keep-all;">오늘은 밝은 포인트가 잘 어울려요.</div>
+                                    <div th:text="|${temperatureSensitivityLabel} · ${activityTypeLabel}|" style="padding-top:3px; color:#c2410c; font-size:10px; line-height:16px;">보통 · 편안한 일상</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0 16px 15px;">
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; border-collapse:collapse;">
+                                        <tr><td width="52" class="look-label" style="padding:8px 0; border-top:1px solid #feddb5; color:#a24e1b; font-size:10px; line-height:17px; font-weight:900;">상의</td><td class="look-value" th:text="${weather.topAdvice}" style="padding:8px 0; border-top:1px solid #feddb5; color:#7c2d12; font-size:12px; line-height:19px; word-break:keep-all;">얇은 셔츠</td></tr>
+                                        <tr><td width="52" class="look-label" style="padding:8px 0; border-top:1px solid #feddb5; color:#a24e1b; font-size:10px; line-height:17px; font-weight:900;">하의</td><td class="look-value" th:text="${weather.bottomAdvice}" style="padding:8px 0; border-top:1px solid #feddb5; color:#7c2d12; font-size:12px; line-height:19px; word-break:keep-all;">데님</td></tr>
+                                        <tr><td width="52" class="look-label" style="padding:8px 0; border-top:1px solid #feddb5; color:#a24e1b; font-size:10px; line-height:17px; font-weight:900;">겉옷</td><td class="look-value" th:text="${weather.outerAdvice}" style="padding:8px 0; border-top:1px solid #feddb5; color:#7c2d12; font-size:12px; line-height:19px; word-break:keep-all;">가벼운 셔츠</td></tr>
+                                        <tr><td width="52" class="look-label" style="padding:8px 0; border-top:1px solid #feddb5; color:#a24e1b; font-size:10px; line-height:17px; font-weight:900;">신발</td><td class="look-value" th:text="${weather.footwearAdvice}" style="padding:8px 0; border-top:1px solid #feddb5; color:#7c2d12; font-size:12px; line-height:19px; word-break:keep-all;">스니커즈</td></tr>
+                                    </table>
+                                    <div th:text="|추천 색상 · ${weather.colorPalette} · ${weather.styleCaution}|" style="padding-top:9px; border-top:1px solid #feddb5; color:#9a3412; font-size:10px; line-height:17px; word-break:keep-all;">추천 색상 · 크림, 민트 · 오래 걷는 일정이면 신발 착화감을 우선하세요.</div>
                                 </td>
                             </tr>
                         </table>

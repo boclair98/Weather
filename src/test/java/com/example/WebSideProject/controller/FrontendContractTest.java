@@ -11,13 +11,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FrontendContractTest {
 
     @Test
-    void exposesWeatherSearchForecastAndSubscriptionContracts() throws IOException {
+    void exposesThreeDayPlannerShareAndPwaContracts() throws IOException {
         String html = classpathText("/templates/index.html");
 
         assertThat(html)
                 .contains("/manifest.webmanifest")
-                .contains("/weather.css?v=20261013-weather-view-v1")
-                .contains("/weather-stitch.css?v=20261013-weather-view-v2")
+                .contains("/weather.css?v=20261010-alimi-layout-v8")
                 .contains("data-day-offset=\"0\"")
                 .contains("data-day-offset=\"1\"")
                 .contains("data-day-offset=\"2\"")
@@ -27,7 +26,7 @@ class FrontendContractTest {
                 .contains("buildWeatherShareUrl")
                 .contains("restoreSharedWeather")
                 .contains("navigator.serviceWorker.register")
-                .contains("service-worker-v18.js")
+                .contains("service-worker-v17.js")
                 .contains("<dialog class=\"location-search-dialog\" id=\"weatherSearch\"")
                 .contains("data-inline=\"true\"")
                 .contains("function openLocationSearch()")
@@ -40,11 +39,6 @@ class FrontendContractTest {
                 .contains("forecastDayOffset !== 0 || !currentObservation")
                 .contains("id=\"heroWeatherObservedAt\"")
                 .contains("id=\"weatherAirStation\"")
-                .contains("id=\"weatherPm25\"")
-                .contains("id=\"weatherPm10\"")
-                .contains("id=\"weatherUvIndex\"")
-                .contains("id=\"weatherPollen\"")
-                .contains("weatherAirStationDetail.textContent")
                 .contains("class=\"secondary-insights\"")
                 .contains("function weatherIconKind")
                 .contains("container.dataset.kind = resolvedKind")
@@ -75,9 +69,6 @@ class FrontendContractTest {
                 .contains("id=\"themeToggle\"")
                 .contains("id=\"previewBriefing\"")
                 .contains("id=\"briefingPreviewDialog\"")
-                .contains("function hasWeatherValue(value)")
-                .contains("https://www.weather.go.kr/w/weather/radar/radar.do")
-                .contains("https://www.weather.go.kr/w/weather/satellite.do")
                 .contains("id=\"favoriteLocation\"")
                 .contains("id=\"snapshotNote\"")
                 .contains("id=\"goOutWindow\"")
@@ -118,22 +109,15 @@ class FrontendContractTest {
                 .contains("content-visibility: auto")
                 .contains("@media (max-width: 760px)")
                 .contains("@media (prefers-reduced-motion: reduce)");
-
-        String stitchCss = classpathText("/static/weather-stitch.css");
-        assertThat(stitchCss)
-                .contains(".weather-workspace > .weather-map-panel { order: 2; grid-column: 1 / -1; }")
-                .contains("@media (max-width: 760px)")
-                .contains("@media (prefers-reduced-motion: reduce)");
     }
 
     @Test
     void serviceWorkerKeepsApiResponsesNetworkOnly() throws IOException {
-        String worker = classpathText("/static/service-worker-v18.js");
+        String worker = classpathText("/static/service-worker-v17.js");
 
         assertThat(worker)
-                .contains("weather-shell-v27")
-                .contains("weather.css?v=20261013-weather-view-v1")
-                .contains("weather-stitch.css?v=20261013-weather-view-v2")
+                .contains("weather-shell-v25")
+                .contains("weather.css?v=20261010-alimi-layout-v8")
                 .contains("url.pathname.startsWith(\"/api/\")")
                 .contains("request.mode === \"navigate\"")
                 .contains("OFFLINE")

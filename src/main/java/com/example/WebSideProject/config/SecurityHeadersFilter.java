@@ -38,7 +38,7 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
         if (request.isSecure()) {
             response.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
         }
-        if (request.getRequestURI().matches("/service-worker(?:-v\\d+)?\\.js")) {
+        if ("/service-worker.js".equals(request.getRequestURI())) {
             response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         }
         response.setHeader(
