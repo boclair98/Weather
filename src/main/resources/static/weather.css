@@ -4694,3 +4694,9 @@ body[data-theme="dark"][data-weather-theme] #mainContent .weather-now-card {
         grid-row: 2;
     }
 }
+
+@media (min-width: 761px) and (max-width: 1023px) {
+    #mainContent.has-weather-location .daily-periods {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

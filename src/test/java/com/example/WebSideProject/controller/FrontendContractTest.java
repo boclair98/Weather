@@ -16,7 +16,7 @@ class FrontendContractTest {
 
         assertThat(html)
                 .contains("/manifest.webmanifest")
-                .contains("/weather.css?v=20261010-alimi-layout-v8")
+                .contains("/weather.css?v=20261013-rollback-tablet-v1")
                 .contains("data-day-offset=\"0\"")
                 .contains("data-day-offset=\"1\"")
                 .contains("data-day-offset=\"2\"")
@@ -107,6 +107,8 @@ class FrontendContractTest {
                 .contains("#mainContent .hourly-track")
                 .contains("#mainContent .air-quality-summary")
                 .contains("content-visibility: auto")
+                .contains("@media (min-width: 761px) and (max-width: 1023px)")
+                .contains("#mainContent.has-weather-location .daily-periods")
                 .contains("@media (max-width: 760px)")
                 .contains("@media (prefers-reduced-motion: reduce)");
     }
@@ -116,8 +118,8 @@ class FrontendContractTest {
         String worker = classpathText("/static/service-worker-v17.js");
 
         assertThat(worker)
-                .contains("weather-shell-v25")
-                .contains("weather.css?v=20261010-alimi-layout-v8")
+                .contains("weather-shell-v26")
+                .contains("weather.css?v=20261013-rollback-tablet-v1")
                 .contains("url.pathname.startsWith(\"/api/\")")
                 .contains("request.mode === \"navigate\"")
                 .contains("OFFLINE")
