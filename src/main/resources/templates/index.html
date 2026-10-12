@@ -20,7 +20,8 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-    <link rel="stylesheet" href="/weather.css?v=20261010-alimi-layout-v8">
+    <link rel="stylesheet" href="/weather.css?v=20261013-weather-view-v1">
+    <link rel="stylesheet" href="/weather-stitch.css?v=20261013-weather-view-v2">
 </head>
 <body>
 <a class="skip-link" href="#weatherSearch">날씨 검색으로 건너뛰기</a>
@@ -36,7 +37,10 @@
             <span>날씨한편</span>
         </a>
         <nav class="weather-nav" aria-label="서비스 메뉴">
-            <a href="#weatherSearch" id="openLocationSearch">지역 바꾸기</a>
+            <a href="#weatherSearch" id="openLocationSearch">지역 검색</a>
+            <a href="#hourlyWeather">시간별</a>
+            <a href="#dailyPeriods">3일 예보</a>
+            <a href="#weatherRadar">레이더·위성</a>
             <a class="weather-nav-cta" id="openSubscribeNav" href="#subscribeForm">이메일 구독</a>
             <button class="weather-nav-install" type="button" id="installApp" hidden>앱 설치</button>
         </nav>
@@ -131,13 +135,40 @@
                         <span class="hourly-source" id="hourlySource">기상청 발표 시각 확인 중</span>
                         <p class="hourly-error" id="hourlyError" hidden></p>
                     </section>
-                    <div class="air-quality-summary" aria-label="대기질 정보">
-                        <span class="air-quality-dot" aria-hidden="true"></span>
-                        <span>대기질</span>
-                        <strong id="weatherAir">정보 확인 중</strong>
-                        <small id="weatherAirStation">에어코리아 자료</small>
-                    </div>
-                    <details class="secondary-insights">
+                    <section class="air-quality-panel" id="airQualityPanel" aria-labelledby="airQualityHeading">
+                        <div class="section-heading air-quality-heading">
+                            <div>
+                                <span class="section-kicker">AIR KOREA</span>
+                                <h2 id="airQualityHeading">대기질과 환경</h2>
+                            </div>
+                            <div class="air-quality-status">
+                                <span class="air-quality-dot" aria-hidden="true"></span>
+                                <strong id="weatherAir">정보 확인 중</strong>
+                                <small id="weatherAirStation">에어코리아 자료</small>
+                            </div>
+                        </div>
+                        <div class="air-quality-metrics">
+                            <article class="air-quality-metric">
+                                <span>초미세먼지 PM2.5</span>
+                                <strong id="weatherPm25">자료 없음</strong>
+                            </article>
+                            <article class="air-quality-metric">
+                                <span>미세먼지 PM10</span>
+                                <strong id="weatherPm10">자료 없음</strong>
+                            </article>
+                            <article class="air-quality-metric">
+                                <span>자외선 지수</span>
+                                <strong id="weatherUvIndex">자료 없음</strong>
+                            </article>
+                            <article class="air-quality-metric">
+                                <span>꽃가루</span>
+                                <strong id="weatherPollen">자료 없음</strong>
+                            </article>
+                        </div>
+                        <p class="air-quality-source">측정값이 없으면 ‘자료 없음’으로 표시합니다. 측정소: <span id="weatherAirStationDetail">확인 중</span></p>
+                        <div class="warning-banner" id="warningBanner" hidden role="status" aria-live="polite"></div>
+                    </section>
+                    <details class="secondary-insights" hidden>
                         <summary>외출 준비와 생활기상 정보</summary>
                     <div class="daily-insight" id="dailyInsight" hidden>
                         <div class="daily-insight-top">
@@ -197,7 +228,6 @@
                             <strong>생활안전 브리핑</strong>
                             <span>기상청 공식 데이터</span>
                         </div>
-                        <div class="warning-banner" id="warningBanner" hidden role="status" aria-live="polite"></div>
                         <div class="safety-grid">
                             <div class="safety-item">
                                 <span>자외선</span>
@@ -289,16 +319,9 @@
                         <h2 class="mail-preview-title" id="briefingPreviewTitle">선택 위치의 브리핑</h2>
                         <p class="mail-preview-date" id="briefingPreviewDate">기상청 원천자료를 정리한 화면입니다.</p>
                         <div class="mail-preview-call">
-                            <span>외출 참고</span>
+                            <span>선택한 시간대의 예보</span>
                             <strong id="briefingPreviewDecision">날씨 정보를 불러오는 중입니다.</strong>
-                            <p id="briefingPreviewDecisionDetail">날씨를 선택하면 행동 중심으로 정리됩니다.</p>
-                        </div>
-                        <div class="mail-preview-score">
-                            <div>
-                                <span>외출 참고 점수</span>
-                                <strong id="briefingPreviewScore">-점</strong>
-                            </div>
-                            <em id="briefingPreviewScoreLabel">분석 중</em>
+                            <p id="briefingPreviewDecisionDetail">기상청 발표 예보를 보여드립니다.</p>
                         </div>
                         <div class="mail-preview-grid">
                             <div class="mail-preview-metric"><span>기온</span><strong id="briefingPreviewTemp">-</strong></div>
@@ -306,22 +329,41 @@
                             <div class="mail-preview-metric"><span>대기질</span><strong id="briefingPreviewAir">-</strong></div>
                         </div>
                         <div class="mail-preview-section">
-                            <h3>오늘 한 줄 판단</h3>
+                            <h3>예보 정보</h3>
                             <p id="briefingPreviewHeadline">날씨를 선택하면 맞춤 브리핑이 표시됩니다.</p>
                         </div>
                         <div class="mail-preview-section">
-                            <h3>오늘의 옷차림</h3>
-                            <p id="briefingPreviewStyle">체감 성향과 활동 목적에 맞춘 코디를 준비합니다.</p>
-                        </div>
-                        <div class="mail-preview-section">
-                            <h3>챙길 것</h3>
-                            <p id="briefingPreviewAction">우산·마스크·야외 활동 정보를 분석합니다.</p>
+                            <h3>자료 출처</h3>
+                            <p id="briefingPreviewStyle">기상청 단기예보</p>
                         </div>
                     </div>
                     <div class="mail-preview-footer">메일형 브리핑 미리보기입니다. 구독한 수신처에는 같은 내용이 선택한 시간에 발송됩니다.</div>
                 </div>
             </dialog>
-            <details class="advanced-tools">
+            <section class="weather-map-panel" id="weatherRadar" aria-labelledby="weatherMapHeading">
+                <div class="section-heading weather-map-heading">
+                    <div>
+                        <span class="section-kicker">KMA WEATHER MAP</span>
+                        <h2 id="weatherMapHeading">레이더·위성 영상</h2>
+                        <p>기상청 날씨누리의 실시간 영상입니다. 지도와 재생 시각은 기상청 원본을 따릅니다.</p>
+                    </div>
+                    <a class="weather-map-source" href="https://www.weather.go.kr/w/weather/radar/radar.do" target="_blank" rel="noopener noreferrer">기상청에서 크게 보기 ↗</a>
+                </div>
+                <div class="weather-map-links">
+                    <a class="weather-map-link" href="https://www.weather.go.kr/w/weather/radar/radar.do" target="_blank" rel="noopener noreferrer">
+                        <span class="weather-map-symbol radar-symbol" aria-hidden="true"><span></span><span></span><span></span></span>
+                        <span><strong>강수 레이더</strong><small>실시간 강수 영역과 이동 확인</small></span>
+                        <span class="weather-map-arrow" aria-hidden="true">↗</span>
+                    </a>
+                    <a class="weather-map-link" href="https://www.weather.go.kr/w/weather/satellite.do" target="_blank" rel="noopener noreferrer">
+                        <span class="weather-map-symbol satellite-symbol" aria-hidden="true"><span></span></span>
+                        <span><strong>천리안 위성</strong><small>구름의 분포와 흐름 확인</small></span>
+                        <span class="weather-map-arrow" aria-hidden="true">↗</span>
+                    </a>
+                </div>
+                <p class="weather-map-fallback">영상은 기상청 날씨누리에서 제공하며, 새 창에서 최신 자료를 확인할 수 있어요.</p>
+            </section>
+            <details class="advanced-tools" hidden>
                 <summary>더 많은 날씨 도구 <span>일정·경로까지 맞춤 분석</span></summary>
             <section class="decision-window" id="decisionWindow" hidden aria-label="비를 피하는 외출 시간 추천" aria-live="polite">
                 <div class="decision-window-header">
@@ -600,11 +642,13 @@
     </section>
     </details>
 
-    <p class="site-footer">날씨한편 · 데이터 제공: 기상청 · 예보는 실제 관측과 다를 수 있습니다.</p>
+    <p class="site-footer">날씨한편 · 날씨: 기상청 · 대기질: 에어코리아 · 예보는 실제 관측과 다를 수 있습니다.</p>
     <nav class="mobile-weather-nav" id="mobileWeatherNav" aria-label="모바일 빠른 메뉴">
-        <a href="#weatherSearch" aria-label="지역 검색으로 이동"><span aria-hidden="true">⌕</span>검색</a>
-        <button type="button" id="openWeatherMobile" aria-label="선택한 지역의 오늘 예보로 이동"><span aria-hidden="true">☀</span>오늘</button>
-        <button type="button" id="openSubscribeMobile" aria-label="날씨 이메일 구독 열기"><span aria-hidden="true">✉</span>구독</button>
+        <button type="button" id="openWeatherMobile" aria-label="현재 날씨"><span aria-hidden="true">⌖</span>현재</button>
+        <a href="#hourlyWeather" aria-label="시간별 예보"><span aria-hidden="true">◷</span>시간별</a>
+        <a href="#dailyPeriods" aria-label="3일 예보"><span aria-hidden="true">▦</span>3일 예보</a>
+        <a href="#weatherRadar" aria-label="레이더와 위성"><span aria-hidden="true">◎</span>지도</a>
+        <button type="button" id="openSubscribeMobile" aria-label="날씨 알림 설정"><span aria-hidden="true">⋯</span>알림</button>
     </nav>
 </main>
 
@@ -674,14 +718,11 @@
     const briefingPreviewDate = document.getElementById("briefingPreviewDate");
     const briefingPreviewDecision = document.getElementById("briefingPreviewDecision");
     const briefingPreviewDecisionDetail = document.getElementById("briefingPreviewDecisionDetail");
-    const briefingPreviewScore = document.getElementById("briefingPreviewScore");
-    const briefingPreviewScoreLabel = document.getElementById("briefingPreviewScoreLabel");
     const briefingPreviewTemp = document.getElementById("briefingPreviewTemp");
     const briefingPreviewRain = document.getElementById("briefingPreviewRain");
     const briefingPreviewAir = document.getElementById("briefingPreviewAir");
     const briefingPreviewHeadline = document.getElementById("briefingPreviewHeadline");
     const briefingPreviewStyle = document.getElementById("briefingPreviewStyle");
-    const briefingPreviewAction = document.getElementById("briefingPreviewAction");
     const outingScore = document.getElementById("outingScore");
     const outingScoreLabel = document.getElementById("outingScoreLabel");
     const weatherDecisionHeadline = document.getElementById("weatherDecisionHeadline");
@@ -692,6 +733,11 @@
     const riskFactorList = document.getElementById("riskFactorList");
     const weatherAir = document.getElementById("weatherAir");
     const weatherAirStation = document.getElementById("weatherAirStation");
+    const weatherAirStationDetail = document.getElementById("weatherAirStationDetail");
+    const weatherPm25 = document.getElementById("weatherPm25");
+    const weatherPm10 = document.getElementById("weatherPm10");
+    const weatherUvIndex = document.getElementById("weatherUvIndex");
+    const weatherPollen = document.getElementById("weatherPollen");
     const warningBanner = document.getElementById("warningBanner");
     const uvDisplay = document.getElementById("uvDisplay");
     const uvAdvice = document.getElementById("uvAdvice");
@@ -908,22 +954,19 @@
         briefingPreviewTitle.textContent = `${selectedLocation.locationName} ${dailyForecast.dayLabel || "오늘"} 브리핑`;
         briefingPreviewDate.textContent = `${weather.forecastLabel || "생활 날씨"} · ${
             weather.dataFetchedAt ? `자료 불러온 시각 ${formatIssuedAt(weather.dataFetchedAt)}` : "자료 시각 확인 필요"}`;
-        briefingPreviewDecision.textContent = weather.decisionHeadline || "외출 참고 정보";
-        briefingPreviewDecisionDetail.textContent = weather.decisionDetail || weather.outingScoreAdvice || "날씨를 확인해보세요.";
-        briefingPreviewScore.textContent = `${weather.outingScore || "-"}점`;
-        briefingPreviewScoreLabel.textContent = weather.outingScoreLabel || "분석 중";
+        briefingPreviewDecision.textContent = cleanWeatherLabel(weather.skyDescription || weather.weatherMood, "날씨 상태 정보 없음");
+        briefingPreviewDecisionDetail.textContent = hasWeatherValue(weather.forecastIssuedAt)
+            ? `기상청 발표 ${formatIssuedAt(weather.forecastIssuedAt)}` : "기상청 발표 시각 정보 없음";
         briefingPreviewTemp.textContent = formatTemperature(weather.tmp);
-        briefingPreviewRain.textContent = `강수 ${weather.pop || "-"}%`;
-        briefingPreviewAir.textContent = weather.airQualitySummary || "확인 필요";
-        briefingPreviewHeadline.textContent = weather.detailedWeatherMessage
-            || weather.summaryMessage || dailyForecast.headline || "오늘 날씨를 확인해보세요.";
-        briefingPreviewStyle.textContent = weather.styleRecommendation
-            || weather.materialAdvice || "기온과 강수 정보를 기준으로 정리한 옷차림 참고입니다.";
-        briefingPreviewAction.textContent = [
-            weather.umbrellaAdvice,
-            weather.maskAdvice,
-            weather.outdoorAdvice
-        ].filter(Boolean).join(" · ") || "기본 외출 준비";
+        briefingPreviewRain.textContent = hasWeatherValue(weather.pop) ? `강수 확률 ${weather.pop}%` : "자료 없음";
+        briefingPreviewAir.textContent = hasWeatherValue(weather.airQualitySummary)
+            ? weather.airQualitySummary : "자료 없음";
+        briefingPreviewHeadline.textContent = `${weather.forecastLabel || "예보"} · 최고 ${formatTemperature(weather.tmx)} · 최저 ${formatTemperature(weather.tmn)}`;
+        briefingPreviewStyle.textContent = weather.dataSourceName || "기상청 단기예보";
+    }
+
+    function hasWeatherValue(value) {
+        return value !== null && value !== undefined && String(value).trim() !== "" && String(value).trim() !== "-";
     }
 
     function formatTemperature(value, withUnit = true) {
@@ -1927,6 +1970,11 @@
         riskFactorList.replaceChildren();
         weatherAir.textContent = "정보 확인 중";
         weatherAirStation.textContent = "에어코리아 자료";
+        weatherAirStationDetail.textContent = "확인 중";
+        weatherPm25.textContent = "자료 없음";
+        weatherPm10.textContent = "자료 없음";
+        weatherUvIndex.textContent = "자료 없음";
+        weatherPollen.textContent = "자료 없음";
         warningBanner.hidden = true;
         warningBanner.textContent = "";
         uvDisplay.textContent = "확인 중";
@@ -1973,10 +2021,6 @@
                 nx: location.nx,
                 ny: location.ny,
                 locationName: locationContext(location),
-                ageGroup: "NONE",
-                gender: "NONE",
-                temperatureSensitivity: document.getElementById("temperatureSensitivity").value,
-                activityType: document.getElementById("activityType").value,
                 dayOffset: forecastDayOffset
             });
             if (options.forceRefresh) params.set("refresh", Date.now().toString());
@@ -1994,9 +2038,6 @@
             renderDailyInsight();
             renderSelectedPeriod(location);
             loadHourlyForecast(location, {...options, loadVersion});
-            if (options.forceRefresh || !weatherPlannerData || forecastDayOffset === 0) {
-                loadWeatherPlanner(location, options);
-            }
         } catch (error) {
             if (error.name === "AbortError" || loadVersion !== weatherLoadVersion) return;
             const cached = readWeatherSnapshot(location, forecastDayOffset);
@@ -2012,6 +2053,13 @@
                 weatherPreviewMain.textContent = "날씨 확인 실패";
                 const message = getNetworkError(error, "날씨 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
                 weatherDetail.textContent = message;
+                weatherAir.textContent = "대기질 자료를 불러오지 못했어요";
+                weatherAirStation.textContent = "다시 시도해 주세요";
+                weatherAirStationDetail.textContent = "측정소 정보 없음";
+                weatherPm25.textContent = "자료 없음";
+                weatherPm10.textContent = "자료 없음";
+                weatherUv.textContent = "자료 없음";
+                weatherPollen.textContent = "자료 없음";
                 heroWeatherCard.dataset.state = "error";
                 heroWeatherTemperature.textContent = "--°";
                 heroWeatherCondition.textContent = "날씨를 불러오지 못했어요";
@@ -2803,9 +2851,18 @@
         personalizationSummary.textContent = weather.personalizationSummary || "기본 외출 기준으로 분석했습니다.";
         decisionExplanation.textContent = weather.decisionExplanation || "현재 날씨 판단 근거를 확인하세요.";
         renderRiskFactors(weather.riskFactors || []);
-        weatherAir.textContent = cleanWeatherLabel(weather.airQualitySummary, "측정 자료 없음");
+        weatherAir.textContent = hasWeatherValue(weather.airQualitySummary)
+            ? cleanWeatherLabel(weather.airQualitySummary, "측정 자료 없음") : "측정 자료 없음";
         weatherAirStation.textContent = weather.airQualityStation && weather.airQualityStation !== "-"
             ? `측정소 ${weather.airQualityStation}` : "에어코리아 · 측정소 정보 없음";
+        weatherAirStationDetail.textContent = weather.airQualityStation && weather.airQualityStation !== "-"
+            ? weather.airQualityStation : "정보 없음";
+        weatherPm25.textContent = hasWeatherValue(weather.pm25Display) ? weather.pm25Display : "자료 없음";
+        weatherPm10.textContent = hasWeatherValue(weather.pm10Display) ? weather.pm10Display : "자료 없음";
+        weatherUvIndex.textContent = Number(weather.uvIndex) >= 0 && hasWeatherValue(weather.uvDisplay)
+            ? weather.uvDisplay : "자료 없음";
+        weatherPollen.textContent = Number(weather.pollenRiskLevel) >= 0 && hasWeatherValue(weather.pollenDisplay)
+            ? weather.pollenDisplay : "자료 없음";
         uvDisplay.textContent = weather.uvDisplay || "-";
         uvAdvice.textContent = weather.uvAdvice || "자외선 정보를 확인해주세요.";
         pollenDisplay.textContent = weather.pollenDisplay || "-";
@@ -3127,7 +3184,7 @@
     restoreSubscriptionDraft();
     restoreSharedWeather();
     if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker-v17.js"));
+        window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker-v18.js"));
     }
 
     async function deleteCurrentUserData() {
