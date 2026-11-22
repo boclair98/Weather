@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk-alpine AS build
+FROM docker.io/library/eclipse-temurin:17-jdk-alpine AS build
 
 WORKDIR /workspace
 COPY gradle gradle
@@ -9,7 +9,7 @@ COPY src src
 RUN ./gradlew bootJar --no-daemon && \
     cp "$(find build/libs -name '*.jar' ! -name '*-plain.jar' | head -n 1)" /workspace/app.jar
 
-FROM eclipse-temurin:17-jre-alpine
+FROM docker.io/library/eclipse-temurin:17-jre-alpine
 
 LABEL org.opencontainers.image.title="Weather Decision Service" \
       org.opencontainers.image.source="https://github.com/boclair98/Weather" \
