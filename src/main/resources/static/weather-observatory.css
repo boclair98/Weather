@@ -315,7 +315,25 @@ body[data-theme="dark"] #mainContent { --blue: #76bce9; --blue-hover: #a0d3f4; -
 @media (max-width: 640px) and (max-height: 620px) {
     /* A reduced visual viewport is common while the mobile keyboard is open. */
     #mainContent .mobile-weather-nav { display: none !important; }
+    #mainContent .weather-app-header { min-height: 68px; margin-bottom: 12px; gap: 8px; }
+    #mainContent .weather-nav { display: flex; flex: 0 0 auto; width: auto; margin-left: auto; }
+    #mainContent .weather-nav a[href="#weatherSearch"] {
+        display: inline-flex !important;
+        flex: 0 0 auto;
+        min-height: 44px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        color: var(--blue-ink);
+        background: var(--blue-soft);
+        font-size: 13px;
+    }
+    #mainContent .weather-nav a[href="#weatherSearch"] .nav-search-icon { display: inline-block; }
+    #mainContent .weather-nav .weather-nav-cta { display: none !important; }
 }
+
+/* Semantic status colors are paired for readable text in both themes. */
+#mainContent .result.ok { color: var(--green); }
+
 @media (prefers-reduced-motion:reduce) {
     #mainContent *,#mainContent *::before,#mainContent *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
 }

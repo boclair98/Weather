@@ -3147,11 +3147,11 @@ body[data-theme="dark"] #mainContent .share-weather {
     --blue-hover: #1e6288;
     --blue-soft: #eaf4f9;
     --blue-ink: #235f80;
-    --green: #25836b;
+    --green: #087a59;
     --green-soft: #eaf6f1;
-    --red: #c6474e;
+    --red: #b23b42;
     --red-soft: #fcf0f0;
-    --orange: #aa6a16;
+    --orange: #80530d;
     --orange-soft: #fff6e8;
     --shadow: 0 4px 16px rgba(26, 49, 66, .045);
     --shadow-large: 0 12px 32px rgba(26, 49, 66, .09);
@@ -4034,8 +4034,11 @@ body[data-theme="dark"] {
     --blue-hover: #8bc9e2;
     --blue-soft: #1d3541;
     --blue-ink: #a2d9ee;
+    --green: #6ed9ae;
     --green-soft: #19372f;
+    --red: #ff9da3;
     --red-soft: #3a2729;
+    --orange: #ffcf85;
     --orange-soft: #3b3020;
 }
 

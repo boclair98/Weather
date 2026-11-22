@@ -37,7 +37,7 @@ class FrontendContractTest {
 
         assertThat(html)
                 .contains("/manifest.webmanifest")
-                .contains("/weather.css?v=20261013-rollback-tablet-v1")
+                .contains("/weather.css?v=20261122-status-contrast-v1")
                 .contains("data-day-offset=\"0\"")
                 .contains("data-day-offset=\"1\"")
                 .contains("data-day-offset=\"2\"")
@@ -143,6 +143,10 @@ class FrontendContractTest {
         String observatoryCss = classpathText("/static/weather-observatory.css");
         assertThat(observatoryCss)
                 .contains("weather-search-modal-open .mobile-weather-nav")
+                .contains("@media (max-width: 640px) and (max-height: 620px)")
+                .contains("weather-nav a[href=\"#weatherSearch\"]")
+                .contains("#mainContent .result.ok { color: var(--green); }")
+                .contains("min-height: 44px")
                 .contains("height: 100dvh")
                 .contains(".location-search-content")
                 .contains("overflow-y: auto")
@@ -155,9 +159,9 @@ class FrontendContractTest {
         String worker = classpathText("/static/service-worker-v17.js");
 
         assertThat(worker)
-                .contains("weather-shell-v38")
-                .contains("weather.css?v=20261013-rollback-tablet-v1")
-                .contains("weather-observatory.css?v=20261122-first-use-v4")
+                .contains("weather-shell-v40")
+                .contains("weather.css?v=20261122-status-contrast-v1")
+                .contains("weather-observatory.css?v=20261122-first-use-v5")
                 .contains("url.pathname.startsWith(\"/api/\")")
                 .contains("request.mode === \"navigate\"")
                 .contains("OFFLINE")

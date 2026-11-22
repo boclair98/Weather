@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const source = fs.readFileSync(path.join(__dirname, '../src/main/resources/static/service-worker-v17.js'), 'utf8');
 const currentCache = source.match(/const CACHE_NAME = "([^"]+)"/)[1];
 const origin = 'https://weather.example.test';
-const asset = '/weather.css?v=20261013-rollback-tablet-v1';
+const asset = '/weather.css?v=20261122-status-contrast-v1';
 const tick = () => new Promise(setImmediate);
 function deferred() {
     let resolve, reject;

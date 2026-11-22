@@ -1,5 +1,5 @@
-const CACHE_NAME = "weather-shell-v38";
-const APP_SHELL = ["/offline.html", "/weather.css?v=20261013-rollback-tablet-v1", "/weather-letter.css?v=20261023-observatory-v1", "/weather-observatory.css?v=20261122-first-use-v4", "/weather-letter.js?v=20261122-friendly-copy-v1", "/weather-chart.js?v=20261023-observatory-v1", "/weather-workspace.js?v=20261025-v1", "/weather-compare.js?v=20261025-v1", "/favicon.svg", "/manifest.webmanifest"];
+const CACHE_NAME = "weather-shell-v40";
+const APP_SHELL = ["/offline.html", "/weather.css?v=20261122-status-contrast-v1", "/weather-letter.css?v=20261023-observatory-v1", "/weather-observatory.css?v=20261122-first-use-v5", "/weather-letter.js?v=20261122-friendly-copy-v1", "/weather-chart.js?v=20261023-observatory-v1", "/weather-workspace.js?v=20261025-v1", "/weather-compare.js?v=20261025-v1", "/favicon.svg", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).catch(() => undefined));
