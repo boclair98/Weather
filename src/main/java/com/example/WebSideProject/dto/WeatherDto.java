@@ -17,6 +17,8 @@ import java.util.List;
 @Jacksonized
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WeatherDto {
+    private static final String INCOMPLETE_WEATHER_NOTICE = "일부 예보가 없어 날씨를 판단하기 어려워요. 외출 전 최신 예보를 확인해 주세요.";
+    private static final String MISSING_TEMPERATURE_NOTICE = "기온 자료가 없어 옷차림 안내를 준비하지 못했어요. 최신 기온을 확인해 주세요.";
     private String date;
     private String time;
     private String periodLabel;
@@ -33,6 +35,8 @@ public class WeatherDto {
     private String pm25Value;
     private String pm25Grade;
     private String airQualityStation;
+    private String airQualityObservedAt;
+    private String airQualityStationBasis;
     private Integer uvIndex;
     private String pollenType;
     private Integer pollenRiskLevel;
@@ -62,7 +66,7 @@ public class WeatherDto {
     }
 
     public String getTmp() {
-        return valueOrDash(tmp);
+        return hasTemperatureData() ? tmp : "-";
     }
 
     public String getTmn() {
@@ -74,15 +78,16 @@ public class WeatherDto {
     }
 
     public String getPop() {
-        return valueOrDash(pop);
+        return hasPercentage(pop) ? pop : "-";
     }
 
     public String getReh() {
-        return valueOrDash(reh);
+        return hasPercentage(reh) ? reh : "-";
     }
 
     public String getWsd() {
-        return valueOrDash(wsd);
+        double value = parseDouble(wsd, Double.NaN);
+        return Double.isFinite(value) && value >= 0 ? wsd : "-";
     }
 
     public String getPm10Value() {
@@ -95,6 +100,14 @@ public class WeatherDto {
 
     public String getAirQualityStation() {
         return valueOrDash(airQualityStation);
+    }
+
+    public String getAirQualityObservedAt() {
+        return valueOrDash(airQualityObservedAt);
+    }
+
+    public String getAirQualityStationBasis() {
+        return airQualityStationBasis == null ? "UNAVAILABLE" : airQualityStationBasis;
     }
 
     public int getUvIndex() {
@@ -167,10 +180,13 @@ public class WeatherDto {
     }
 
     public String getWeatherConditionLine() {
-        return "강수 " + getPtyDescription() + " / 강수확률 " + getPop() + "% / 습도 " + getReh() + "%";
+        return "강수 " + getPtyDescription() + " / 강수확률 "
+                + (hasPercentage(pop) ? getPop() + "%" : "자료 없음")
+                + " / 습도 " + (hasPercentage(reh) ? getReh() + "%" : "자료 없음");
     }
 
     public int getOutingScore() {
+        if (!hasCoreWeatherData()) return -1;
         int penalty = getRiskFactors().stream()
                 .mapToInt(WeatherRiskFactorDto::scoreImpact)
                 .sum();
@@ -204,13 +220,13 @@ public class WeatherDto {
         }
 
         int perceivedTemperature = getStyledTemperature();
-        if (perceivedTemperature >= 32 || perceivedTemperature <= -5) {
+        if (hasTemperatureData() && (perceivedTemperature >= 32 || perceivedTemperature <= -5)) {
             factors.add(risk("TEMPERATURE", perceivedTemperature >= 32 ? "폭염 체감" : "한파 체감", "HIGH",
                     18 + activityBoost("TEMPERATURE"), getTemperatureEvidence(perceivedTemperature),
                     perceivedTemperature >= 32
                             ? "한낮 야외 활동을 줄이고 물을 자주 마시세요."
                             : "보온 레이어와 장갑·목도리를 준비하세요."));
-        } else if (perceivedTemperature >= 28 || perceivedTemperature <= 5) {
+        } else if (hasTemperatureData() && (perceivedTemperature >= 28 || perceivedTemperature <= 5)) {
             factors.add(risk("TEMPERATURE", perceivedTemperature >= 28 ? "더운 체감" : "쌀쌀한 체감", "MEDIUM",
                     10 + activityBoost("TEMPERATURE"), getTemperatureEvidence(perceivedTemperature),
                     perceivedTemperature >= 28
@@ -257,6 +273,7 @@ public class WeatherDto {
     }
 
     public String getDecisionExplanation() {
+        if (!hasCoreWeatherData()) return INCOMPLETE_WEATHER_NOTICE;
         List<WeatherRiskFactorDto> factors = getRiskFactors();
         if (factors.isEmpty()) {
             return "현재 선택 기준에서 큰 위험 신호가 없습니다. 기온 변화만 확인하고 편하게 준비하세요.";
@@ -269,11 +286,12 @@ public class WeatherDto {
                 + "도 함께 점수에 반영했습니다.";
     }
 
-    public int getPersonalizedFeelsLikeTemperature() {
-        return getStyledTemperature();
+    public Integer getPersonalizedFeelsLikeTemperature() {
+        return hasTemperatureData() ? getStyledTemperature() : null;
     }
 
     public String getOutingScoreLabel() {
+        if (!hasCoreWeatherData()) return "자료 부족";
         int score = getOutingScore();
         if (score >= 85) return "좋음";
         if (score >= 70) return "무난";
@@ -282,6 +300,7 @@ public class WeatherDto {
     }
 
     public String getOutingScoreAdvice() {
+        if (!hasCoreWeatherData()) return INCOMPLETE_WEATHER_NOTICE;
         int score = getOutingScore();
         if (score >= 85) {
             return "외출하기 좋은 편이에요. 기본 준비만 해도 충분해 보여요.";
@@ -371,7 +390,7 @@ public class WeatherDto {
         if ("4".equals(sky)) {
             return "흐림";
         }
-        return "구름";
+        return "3".equals(sky) ? "구름" : "자료 없음";
     }
 
     public String getWeatherTheme() {
@@ -400,6 +419,7 @@ public class WeatherDto {
         if (getPopValue() >= 60) {
             return "비가 올 가능성이 높아요. 지금 맑아 보여도 작은 우산을 가방에 넣어두면 하루 일정이 훨씬 편해집니다.";
         }
+        if (!hasCoreWeatherData()) return INCOMPLETE_WEATHER_NOTICE;
         if ("1".equals(sky)) {
             if (getTmpValue() >= 28) {
                 return "하늘은 화창하지만 기온이 높아요. 햇빛을 피할 모자나 선크림, 통풍 좋은 옷차림을 추천해요.";
@@ -416,12 +436,9 @@ public class WeatherDto {
     }
 
     public String getForecastLabel() {
-        if (date == null || date.length() != 8 || time == null || time.length() != 4) {
-            return "아침 예보";
-        }
-
-        String label = periodLabel == null || periodLabel.isBlank() ? "아침" : periodLabel;
-        return date.substring(4, 6) + "월 " + date.substring(6, 8) + "일 " + label + " 예보";
+        String label = periodLabel == null || periodLabel.isBlank() ? "" : periodLabel.trim() + " ";
+        if (date == null || !date.matches("[0-9]{8}")) return label + "예보";
+        return date.substring(4, 6) + "월 " + date.substring(6, 8) + "일 " + label + "예보";
     }
 
     public String getSkyDescription() {
@@ -429,7 +446,7 @@ public class WeatherDto {
             case "1" -> "맑음 ☀️";
             case "3" -> "구름많음 ⛅";
             case "4" -> "흐림 ☁️";
-            default  -> "알 수 없음";
+            default  -> "자료 없음";
         };
     }
 
@@ -440,7 +457,7 @@ public class WeatherDto {
             case "2" -> "비/눈 🌨️";
             case "3" -> "눈 ❄️";
             case "4" -> "소나기 🌦️";
-            default  -> "알 수 없음";
+            default  -> "자료 없음";
         };
     }
 
@@ -454,6 +471,7 @@ public class WeatherDto {
         if (getPopValue() >= 60) {
             return "강수확률이 높은 편이에요. 갑작스러운 비에 대비해 작은 우산을 챙겨보세요.";
         }
+        if (!hasCoreWeatherData()) return INCOMPLETE_WEATHER_NOTICE;
         if (getTmpValue() >= 28) {
             return "기온이 높아요. 물을 자주 마시고 한낮 야외 활동은 가볍게 조절해보세요.";
         }
@@ -470,7 +488,7 @@ public class WeatherDto {
     }
 
     public String getAirQualitySummary() {
-        if (!hasAirQuality()) {
+        if (!validAirGrade(pm10Grade) && !validAirGrade(pm25Grade)) {
             return "대기질 정보 -";
         }
 
@@ -478,11 +496,11 @@ public class WeatherDto {
     }
 
     public String getAirQualityAdvice() {
-        if (!hasAirQuality()) {
-            return "대기질 데이터가 없을 때는 민감군이라면 외출 전 한 번 더 확인해보세요.";
-        }
         if (isBadAirQuality()) {
             return "대기질이 좋지 않아요. 장시간 야외 활동은 줄이고 KF 마스크를 챙기는 편이 좋아요.";
+        }
+        if (!hasAirQuality()) {
+            return "대기질 데이터가 일부 없을 때는 민감군이라면 외출 전 한 번 더 확인해보세요.";
         }
         if (isModerateAirQuality()) {
             return "대기질은 보통 수준이에요. 민감군은 장시간 외출 시 마스크를 준비해보세요.";
@@ -504,6 +522,7 @@ public class WeatherDto {
     }
 
     public String getClothingAdvice() {
+        if (!hasTemperatureData()) return MISSING_TEMPERATURE_NOTICE;
         int temperature = getStyledTemperature();
         if (temperature >= 28) {
             return "반팔, 얇은 셔츠, 통풍이 좋은 옷";
@@ -527,6 +546,7 @@ public class WeatherDto {
         if (getPopValue() >= 30) {
             return "작은 우산이 있으면 안심돼요";
         }
+        if (!hasPrecipitationData()) return "강수 자료가 부족해요. 외출 전 비 예보를 다시 확인해 주세요";
         return "필수는 아니에요";
     }
 
@@ -540,6 +560,7 @@ public class WeatherDto {
             TemperatureSensitivity sensitivity,
             ActivityType activity
     ) {
+        if (!hasTemperatureData()) return MISSING_TEMPERATURE_NOTICE;
         AgeGroup selectedAgeGroup = ageGroup == null ? AgeGroup.NONE : ageGroup;
         GenderType selectedGender = gender == null ? GenderType.NONE : gender;
         WeatherDto personalized = toBuilder()
@@ -589,6 +610,7 @@ public class WeatherDto {
             TemperatureSensitivity sensitivity,
             ActivityType activity
     ) {
+        if (!hasTemperatureData()) return "기온 자료 확인이 필요해요";
         TemperatureSensitivity selectedSensitivity = sensitivity == null
                 ? TemperatureSensitivity.NONE : sensitivity;
         ActivityType selectedActivity = activity == null ? ActivityType.DAILY : activity;
@@ -616,6 +638,7 @@ public class WeatherDto {
     }
 
     public String getTopAdvice() {
+        if (!hasTemperatureData()) return MISSING_TEMPERATURE_NOTICE;
         int temperature = getStyledTemperature();
         if (getActivityType() == ActivityType.FORMAL && temperature >= 18) {
             return "통기성 좋은 셔츠나 블라우스, 가벼운 재킷";
@@ -642,6 +665,7 @@ public class WeatherDto {
     }
 
     public String getBottomAdvice() {
+        if (!hasTemperatureData()) return MISSING_TEMPERATURE_NOTICE;
         int temperature = getStyledTemperature();
         if (isRainy() || isSnowy()) {
             return "물 튐이 덜 보이는 어두운 팬츠나 발목이 편한 하의";
@@ -662,6 +686,7 @@ public class WeatherDto {
     }
 
     public String getOuterAdvice() {
+        if (!hasTemperatureData()) return MISSING_TEMPERATURE_NOTICE;
         int temperature = getStyledTemperature();
         if (temperature >= 26) {
             return "실내 냉방 대비 얇은 셔츠 하나면 충분해요.";
@@ -688,6 +713,7 @@ public class WeatherDto {
         if (getWsdValue() >= 8.0) {
             return "발을 안정적으로 잡아주는 스니커즈나 로퍼";
         }
+        if (!hasCoreWeatherData()) return "날씨 자료가 부족해요. 이동 전 강수와 기온을 확인해 주세요";
         if (getActivityType() == ActivityType.OUTDOOR) {
             return "쿠션과 접지력이 좋은 워킹화 또는 트레킹화";
         }
@@ -723,22 +749,25 @@ public class WeatherDto {
     }
 
     public String getMaterialAdvice() {
+        if (!hasTemperatureData()) return MISSING_TEMPERATURE_NOTICE;
         if (isSnowy()) {
             return "겉감은 물기를 털기 쉬운 소재, 안쪽은 플리스나 울처럼 열을 잡는 소재가 안정적이에요.";
         }
         if (isRainy() || getPopValue() >= 60) {
             return "나일론, 코팅 코튼, 폴리 혼방처럼 젖어도 빨리 마르는 소재를 추천해요.";
         }
-        if (getStyledTemperature() >= 28 || getRehValue() >= 80) {
-            return "린넨, 얇은 코튼, 기능성 드라이 소재처럼 몸에 달라붙지 않는 소재가 좋아요.";
-        }
-        if (getStyledTemperature() <= 5) {
+        int temperature = getStyledTemperature();
+        if (temperature <= 5) {
             return "울, 플리스, 기모 소재처럼 공기층을 만드는 소재가 체감 온도를 올려줘요.";
+        }
+        if (temperature >= 28 || (temperature >= 24 && getRehValue() >= 80)) {
+            return "린넨, 얇은 코튼, 기능성 드라이 소재처럼 몸에 달라붙지 않는 소재가 좋아요.";
         }
         return "코튼, 니트, 가벼운 울 혼방처럼 구김이 적고 움직이기 편한 소재가 좋아요.";
     }
 
     public String getLayeringAdvice() {
+        if (!hasTemperatureData()) return MISSING_TEMPERATURE_NOTICE;
         int temperature = getStyledTemperature();
         if (temperature >= 28) {
             return "상의는 짧고 가볍게, 실내 냉방용 얇은 겉옷만 더하세요.";
@@ -765,6 +794,7 @@ public class WeatherDto {
         if (getWsdValue() >= 8.0) {
             return "가벼운 모자나 날리는 스카프는 고정감 있게 매치하세요.";
         }
+        if (!hasCoreWeatherData()) return INCOMPLETE_WEATHER_NOTICE;
         if (getActivityType() == ActivityType.OUTDOOR) {
             return "장시간 활동이면 여벌 양말과 가벼운 수분 보충 용품도 챙겨주세요.";
         }
@@ -812,6 +842,7 @@ public class WeatherDto {
         if (isRainy() || isSnowy()) {
             return "야외 일정은 이동 동선을 짧게 잡아보세요.";
         }
+        if (!hasCoreWeatherData()) return INCOMPLETE_WEATHER_NOTICE;
         if (windSpeed >= 8.0) {
             return "바람이 강한 편이라 가벼운 물건은 잘 고정해주세요.";
         }
@@ -829,7 +860,7 @@ public class WeatherDto {
     }
 
     public boolean isTemperatureRisk() {
-        return getTmpValue() >= 30 || getTmpValue() <= 5;
+        return hasTemperatureData() && (getTmpValue() >= 30 || getTmpValue() <= 5);
     }
 
     public boolean isAirQualityRisk() {
@@ -861,7 +892,8 @@ public class WeatherDto {
         if (isUvRisk()) alerts.add("자외선");
         if (isPollenRisk()) alerts.add("꽃가루");
         if (isOfficialWarningRisk()) alerts.add(getWeatherWarningTitle());
-        return alerts.isEmpty() ? "특별한 위험 신호 없음" : String.join(" · ", alerts) + " 주의";
+        return alerts.isEmpty() ? (hasCoreWeatherData() ? "특별한 위험 신호 없음" : "예보 자료 확인 필요")
+                : String.join(" · ", alerts) + " 주의";
     }
 
     /**
@@ -882,6 +914,7 @@ public class WeatherDto {
         if (isBadAirQuality()) {
             return "공기가 탁해 야외 시간을 줄여요";
         }
+        if (!hasCoreWeatherData()) return "일부 날씨 정보를 확인하고 있어요";
         if (getOutingScore() >= 85) {
             return "지금 움직이기 좋은 날이에요";
         }
@@ -902,6 +935,7 @@ public class WeatherDto {
         if (isBadAirQuality()) {
             return getAirQualityAdvice();
         }
+        if (!hasCoreWeatherData()) return INCOMPLETE_WEATHER_NOTICE;
         return getOutingScoreAdvice();
     }
 
@@ -915,6 +949,7 @@ public class WeatherDto {
             return "마지막 정상자료";
         }
         int fields = getSourceFieldCount();
+        if (fields < 0 && !hasCoreWeatherData()) return "자료 확인 필요";
         if (fields < 0 || fields >= 6) {
             return "원천자료 확인";
         }
@@ -973,8 +1008,11 @@ public class WeatherDto {
     }
 
     private boolean hasAirQuality() {
-        return pm10Grade != null && !pm10Grade.isBlank()
-                && pm25Grade != null && !pm25Grade.isBlank();
+        return validAirGrade(pm10Grade) && validAirGrade(pm25Grade);
+    }
+
+    private boolean validAirGrade(String grade) {
+        return grade != null && grade.matches("[1-4]");
     }
 
     private boolean isBadAirQuality() {
@@ -1015,6 +1053,31 @@ public class WeatherDto {
         return "2".equals(pty) || "3".equals(pty);
     }
 
+    public boolean hasTemperatureData() {
+        try {
+            int value = Integer.parseInt(tmp);
+            return value >= -100 && value <= 100;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    public boolean hasPrecipitationData() {
+        return hasPercentage(pop) && List.of("0", "1", "2", "3", "4").contains(valueOrDash(pty));
+    }
+
+    public boolean hasCoreWeatherData() {
+        double wind = parseDouble(wsd, Double.NaN);
+        return hasTemperatureData() && hasPrecipitationData() && hasPercentage(reh)
+                && Double.isFinite(wind) && wind >= 0
+                && List.of("1", "3", "4").contains(valueOrDash(sky));
+    }
+
+    private boolean hasPercentage(String value) {
+        int parsed = parseInt(value, -1);
+        return parsed >= 0 && parsed <= 100;
+    }
+
     private int getTmpValue() {
         return parseInt(tmp, 20);
     }
@@ -1028,15 +1091,16 @@ public class WeatherDto {
     }
 
     private int getPopValue() {
-        return parseInt(pop, 0);
+        return hasPercentage(pop) ? parseInt(pop, 0) : 0;
     }
 
     private int getRehValue() {
-        return parseInt(reh, 0);
+        return hasPercentage(reh) ? parseInt(reh, 0) : 0;
     }
 
     private double getWsdValue() {
-        return parseDouble(wsd, 0.0);
+        double value = parseDouble(wsd, Double.NaN);
+        return Double.isFinite(value) && value >= 0 ? value : 0.0;
     }
 
     private int parseInt(String value, int defaultValue) {

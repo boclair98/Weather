@@ -1,6 +1,8 @@
 package com.example.WebSideProject.service;
 
 import com.example.WebSideProject.dto.HourlyWeatherDto;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -44,6 +46,96 @@ class HourlyWeatherServiceTest {
                 .hasMessageContaining("0부터 2");
     }
 
+    @Test
+    void missingMeasurementsRemainMissingInsteadOfBecomingDryCalmAndSunny() {
+        JSONArray items = new JSONArray();
+        addField(items, "0900", "TMP", "18");
+
+        HourlyWeatherDto hourly = service(response(items)).getHourlyWeather(60, 127, "서울시청", 0);
+
+        assertThat(hourly.hours()).singleElement().satisfies(hour -> {
+            assertThat(hour.temperature()).isEqualTo(18);
+            assertThat(hour.precipitationProbability()).isNull();
+            assertThat(hour.humidity()).isNull();
+            assertThat(hour.windSpeed()).isNull();
+            assertThat(hour.precipitation()).isEqualTo("자료 없음");
+            assertThat(hour.sky()).isEqualTo("자료 없음");
+        });
+        assertThat(hourly.maximumPrecipitationProbability()).isNull();
+        assertThat(hourly.precipitationSummary()).isEqualTo("강수 정보 없음");
+        assertThat(hourly.provenance().completenessPercent()).isEqualTo(17);
+        assertThat(hourly.provenance().qualityStatus()).isEqualTo("DEGRADED");
+        JsonNode json = new ObjectMapper().valueToTree(hourly);
+        assertThat(json.path("maximumPrecipitationProbability").isNull()).isTrue();
+        assertThat(json.path("hours").get(0).path("precipitationProbability").isNull()).isTrue();
+        assertThat(json.path("hours").get(0).path("windSpeed").isNull()).isTrue();
+    }
+
+    @Test
+    void malformedAndOutOfRangeMeasurementsAreNotCountedAsValidSourceFields() {
+        JSONArray items = new JSONArray();
+        String date = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
+        addHour(items, date, "0900", "-999", "-1", "9", "101", "NaN", "9");
+
+        HourlyWeatherDto hourly = service(response(items)).getHourlyWeather(60, 127, "서울시청", 0);
+
+        assertThat(hourly.hours()).singleElement().satisfies(hour -> {
+            assertThat(hour.temperature()).isNull();
+            assertThat(hour.precipitationProbability()).isNull();
+            assertThat(hour.humidity()).isNull();
+            assertThat(hour.windSpeed()).isNull();
+            assertThat(hour.sky()).isEqualTo("자료 없음");
+            assertThat(hour.precipitation()).isEqualTo("자료 없음");
+        });
+        assertThat(hourly.minimumTemperature()).isNull();
+        assertThat(hourly.maximumTemperature()).isNull();
+        assertThat(hourly.maximumPrecipitationProbability()).isNull();
+        assertThat(hourly.headline()).isEqualTo("기온 자료 없음 · 강수 정보 없음");
+        assertThat(hourly.provenance().completenessPercent()).isZero();
+    }
+
+    @Test
+    void actualZeroMeasurementsRemainValidAndDistinctFromMissingValues() {
+        JSONArray items = new JSONArray();
+        String date = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
+        addHour(items, date, "0900", "0", "0", "0", "0", "0.0", "1");
+
+        HourlyWeatherDto hourly = service(response(items)).getHourlyWeather(60, 127, "서울시청", 0);
+
+        assertThat(hourly.hours()).singleElement().satisfies(hour -> {
+            assertThat(hour.temperature()).isZero();
+            assertThat(hour.precipitationProbability()).isZero();
+            assertThat(hour.humidity()).isZero();
+            assertThat(hour.windSpeed()).isZero();
+            assertThat(hour.precipitation()).isEqualTo("없음");
+            assertThat(hour.sky()).isEqualTo("맑음");
+        });
+        assertThat(hourly.minimumTemperature()).isZero();
+        assertThat(hourly.maximumPrecipitationProbability()).isZero();
+        assertThat(hourly.provenance().completenessPercent()).isEqualTo(100);
+        assertThat(hourly.precipitationSummary()).isEqualTo("뚜렷한 강수 시간대 없음");
+    }
+
+    @Test
+    void incompletePrecipitationDataDoesNotProduceADryWeatherSummary() {
+        JSONArray items = new JSONArray();
+        addField(items, "0900", "TMP", "18");
+        addField(items, "0900", "POP", "0");
+
+        HourlyWeatherDto hourly = service(response(items)).getHourlyWeather(60, 127, "서울시청", 0);
+
+        assertThat(hourly.precipitationSummary()).isEqualTo("강수 정보 일부 없음");
+        assertThat(hourly.hours().get(0).precipitation()).isEqualTo("자료 없음");
+    }
+
+    private void addField(JSONArray items, String time, String category, String value) {
+        items.put(new JSONObject()
+                .put("fcstDate", LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE))
+                .put("fcstTime", time)
+                .put("category", category)
+                .put("fcstValue", value));
+    }
+
     private WeatherService service(String response) {
         WeatherService service = new WeatherService(
                 new StubRestTemplate(response),
@@ -63,6 +155,10 @@ class HourlyWeatherServiceTest {
         addHour(items, date, "0900", "18", "20", "0", "55", "1.2", "1");
         addHour(items, date, "1000", "19", "80", "1", "82", "3.4", "4");
         addHour(items, date, "1100", "21", "70", "0", "76", "2.0", "3");
+        return response(items);
+    }
+
+    private String response(JSONArray items) {
         return new JSONObject()
                 .put("response", new JSONObject()
                         .put("header", new JSONObject().put("resultCode", "00"))

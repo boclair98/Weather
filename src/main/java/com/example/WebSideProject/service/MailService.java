@@ -2,6 +2,7 @@ package com.example.WebSideProject.service;
 
 import com.example.WebSideProject.dto.WeatherDto;
 import com.example.WebSideProject.dto.HourlyWeatherDto;
+import com.example.WebSideProject.dto.WeatherMailBriefingDto;
 import com.example.WebSideProject.entity.User;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -17,6 +18,7 @@ import org.thymeleaf.context.Context;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 
 @Slf4j
 @Service
@@ -30,6 +32,8 @@ public class MailService {
 
     @Value("${app.base-url:http://localhost:8080}")
     private String appBaseUrl;
+
+    private Clock clock = Clock.systemUTC();
 
     @Async
     public void sendWeatherMail(User user, WeatherDto weather) {
@@ -73,7 +77,10 @@ public class MailService {
             );
             HourlyWeatherDto hourlyWeather = null;
             try {
-                hourlyWeather = weatherService.getHourlyWeather(user.getNx(), user.getNy(), user.getLocationName(), 0);
+                int dayOffset = WeatherMailBriefingDto.hourlyDayOffset(styledWeather, clock);
+                if (dayOffset >= 0) {
+                    hourlyWeather = weatherService.getHourlyWeather(user.getNx(), user.getNy(), user.getLocationName(), dayOffset);
+                }
             } catch (Exception e) {
                 log.warn("시간별 예보를 메일에 포함하지 못했습니다. 기존 브리핑만 발송합니다: userId={}", user.getId(), e);
             }
@@ -82,8 +89,9 @@ public class MailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(user.getEmail());
+            WeatherMailBriefingDto briefing = WeatherMailBriefingDto.from(styledWeather, hourlyWeather, clock);
             helper.setSubject(subject == null
-                    ? styledWeather.getForecastLabel() + " 날씨 알림"
+                    ? "[날씨한편] " + valueOrDash(user.getLocationName()) + " · " + briefing.dateLabel()
                     : subject + " · " + valueOrDash(user.getLocationName()));
 
             Context context = new Context();
@@ -91,20 +99,14 @@ public class MailService {
             context.setVariable("email", user.getEmail());
             context.setVariable("locationName", valueOrDash(user.getLocationName()));
             context.setVariable("weather", styledWeather);
-            context.setVariable("hourlyWeather", hourlyWeather);
-            context.setVariable("ageGroup", user.getAgeGroup());
-            context.setVariable("gender", user.getGender());
-            context.setVariable("ageGroupLabel", user.getAgeGroup().getLabel());
-            context.setVariable("genderLabel", user.getGender().getLabel());
-            context.setVariable("temperatureSensitivityLabel", user.getTemperatureSensitivity().getLabel());
-            context.setVariable("activityTypeLabel", user.getActivityType().getLabel());
-            context.setVariable("styleRecommendation", styledWeather.getStyleRecommendation());
-            context.setVariable("smartAlertSummary", styledWeather.getSmartAlertSummary());
+            context.setVariable("briefing", briefing);
             context.setVariable("dashboardUrl", appBaseUrl);
-            context.setVariable("unsubscribeUrl", appBaseUrl + "/api/users/unsubscribe?token=" + encode(user.getUnsubscribeToken()));
+            String unsubscribeUrl = appBaseUrl + "/api/users/unsubscribe?token=" + encode(user.getUnsubscribeToken());
+            context.setVariable("unsubscribeUrl", unsubscribeUrl);
 
             String html = templateEngine.process("weather-mail", context);
-            helper.setText(html, true);
+            helper.setText(briefing.plainText(valueOrDash(user.getLocationName()), appBaseUrl, unsubscribeUrl)
+                    + "\n자료 제공: " + styledWeather.getDataSourceName() + " · " + styledWeather.getDataSourceUrl(), html);
 
             mailSender.send(message);
             weatherMailHistoryService.recordSuccess(user, weather);

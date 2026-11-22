@@ -11,6 +11,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FrontendContractTest {
 
     @Test
+    void rendersTheCompletePageForSignedInAndAnonymousVisitors() {
+        var resolver = new org.thymeleaf.templateresolver.ClassLoaderTemplateResolver();
+        resolver.setPrefix("templates/");
+        resolver.setSuffix(".html");
+        resolver.setTemplateMode("HTML");
+        resolver.setCharacterEncoding("UTF-8");
+        var engine = new org.thymeleaf.spring6.SpringTemplateEngine();
+        engine.setTemplateResolver(resolver);
+        for (boolean signedIn : new boolean[]{false, true}) {
+            var context = new org.thymeleaf.context.Context();
+            context.setVariable("signedIn", signedIn);
+            context.setVariable("loginUrl", "/test-login");
+            context.setVariable("logoutUrl", "/test-logout");
+            context.setVariable("cspNonce", "test-nonce");
+            String rendered = engine.process("index", context);
+            assertThat(rendered.trim()).endsWith("</html>");
+            assertThat(rendered).contains("nonce=\"test-nonce\"", "function renderAirReadings", "weather-chart.js");
+        }
+    }
+
+    @Test
     void exposesThreeDayPlannerShareAndPwaContracts() throws IOException {
         String html = classpathText("/templates/index.html");
 
@@ -29,8 +50,15 @@ class FrontendContractTest {
                 .contains("service-worker-v17.js")
                 .contains("<dialog class=\"location-search-dialog\" id=\"weatherSearch\"")
                 .contains("data-inline=\"true\"")
+                .contains("className = \"place-search-action\"")
+                .contains("다른 지역 검색")
+                .contains("class=\"location-search-content\" id=\"locationSearchContent\"")
                 .contains("function openLocationSearch()")
                 .contains("locationSearchDialog.showModal()")
+                .contains("weather-search-modal-open")
+                .contains("locationSearchInvoker = document.activeElement")
+                .contains("focusTarget?.focus({preventScroll: true})")
+                .contains("id=\"heroWeatherLocation\" tabindex=\"-1\"")
                 .contains("has-weather-location")
                 .contains("id=\"closeLocationSearch\"")
                 .contains("id=\"heroWeatherCard\"")
@@ -63,7 +91,7 @@ class FrontendContractTest {
                 .contains("const loginUrl")
                 .contains("if (locations.length === 1)")
                 .contains("날씨를 불러옵니다.")
-                .contains("정확한 위치를 선택해주세요")
+                .contains("날씨를 볼 장소를 골라주세요")
                 .contains("id=\"refreshWeather\"")
                 .contains("id=\"unitToggle\"")
                 .contains("id=\"themeToggle\"")
@@ -111,6 +139,15 @@ class FrontendContractTest {
                 .contains("#mainContent.has-weather-location .daily-periods")
                 .contains("@media (max-width: 760px)")
                 .contains("@media (prefers-reduced-motion: reduce)");
+
+        String observatoryCss = classpathText("/static/weather-observatory.css");
+        assertThat(observatoryCss)
+                .contains("weather-search-modal-open .mobile-weather-nav")
+                .contains("height: 100dvh")
+                .contains(".location-search-content")
+                .contains("overflow-y: auto")
+                .contains(".location-results")
+                .contains("max-height: none");
     }
 
     @Test
@@ -118,13 +155,16 @@ class FrontendContractTest {
         String worker = classpathText("/static/service-worker-v17.js");
 
         assertThat(worker)
-                .contains("weather-shell-v26")
+                .contains("weather-shell-v38")
                 .contains("weather.css?v=20261013-rollback-tablet-v1")
+                .contains("weather-observatory.css?v=20261122-first-use-v4")
                 .contains("url.pathname.startsWith(\"/api/\")")
                 .contains("request.mode === \"navigate\"")
                 .contains("OFFLINE")
                 .contains("caches.match(request)")
-                .contains("cache.put(request, response.clone())");
+                .contains(".put(request, response.clone())");
+        assertThat(worker).contains("/offline.html", "APP_SHELL.includes(url.pathname + url.search)")
+                .doesNotContain("cache.put(\"/\"");
     }
 
     private String classpathText(String path) throws IOException {

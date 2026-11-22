@@ -79,6 +79,35 @@ class WeatherDtoTest {
     }
 
     @Test
+    void materialAdvicePrioritizesColdTemperatureOverHighHumidity() {
+        WeatherDto coldHumid = WeatherDto.builder()
+                .tmp("1")
+                .pop("20")
+                .pty("0")
+                .sky("3")
+                .reh("80")
+                .build();
+        WeatherDto mildHumid = WeatherDto.builder()
+                .tmp("20")
+                .pop("0")
+                .pty("0")
+                .sky("1")
+                .reh("80")
+                .build();
+        WeatherDto hotHumid = WeatherDto.builder()
+                .tmp("28")
+                .pop("0")
+                .pty("0")
+                .sky("1")
+                .reh("80")
+                .build();
+
+        assertThat(coldHumid.getMaterialAdvice()).contains("울", "플리스").doesNotContain("린넨");
+        assertThat(mildHumid.getMaterialAdvice()).doesNotContain("린넨");
+        assertThat(hotHumid.getMaterialAdvice()).contains("린넨");
+    }
+
+    @Test
     void smartAlertSummaryCombinesOnlyDetectedRisks() {
         WeatherDto risky = WeatherDto.builder()
                 .date("20260809")
@@ -103,6 +132,10 @@ class WeatherDtoTest {
         WeatherDto safe = WeatherDto.builder()
                 .tmp("24")
                 .pop("10")
+                .pty("0")
+                .sky("1")
+                .reh("50")
+                .wsd("2.0")
                 .uvIndex(2)
                 .pollenType("잡초류")
                 .pollenRiskLevel(0)
@@ -127,6 +160,8 @@ class WeatherDtoTest {
                 .tmp("29")
                 .pop("70")
                 .pty("0")
+                .sky("1")
+                .reh("50")
                 .wsd("8.2")
                 .uvIndex(9)
                 .activityType(ActivityType.DAILY)
@@ -146,6 +181,10 @@ class WeatherDtoTest {
         WeatherDto normal = WeatherDto.builder()
                 .tmp("7")
                 .pop("10")
+                .pty("0")
+                .sky("1")
+                .reh("50")
+                .wsd("2.0")
                 .temperatureSensitivity(TemperatureSensitivity.NONE)
                 .build();
         WeatherDto coldSensitive = normal.toBuilder()
@@ -164,6 +203,9 @@ class WeatherDtoTest {
                 .tmp("23")
                 .pty("1")
                 .pop("80")
+                .sky("4")
+                .reh("50")
+                .wsd("2.0")
                 .pm10Grade("3")
                 .pm25Grade("2")
                 .build();
@@ -200,5 +242,69 @@ class WeatherDtoTest {
                 .build();
 
         assertThat(fallback.getDataQualityLabel()).isEqualTo("마지막 정상자료");
+    }
+
+    @Test
+    void missingForecastDoesNotInventMorningTemperatureOrFavorableAdvice() {
+        WeatherDto missing = WeatherDto.builder().build();
+
+        assertThat(missing.getForecastLabel()).isEqualTo("예보");
+        assertThat(missing.getTmp()).isEqualTo("-");
+        assertThat(missing.getPersonalizedFeelsLikeTemperature()).isNull();
+        assertThat(missing.getSkyDescription()).isEqualTo("자료 없음");
+        assertThat(missing.getWeatherMood()).isEqualTo("자료 없음");
+        assertThat(missing.getOutingScore()).isEqualTo(-1);
+        assertThat(missing.getOutingScoreLabel()).isEqualTo("자료 부족");
+        assertThat(missing.getDecisionHeadline()).contains("확인");
+        assertThat(missing.getUmbrellaAdvice()).contains("자료가 부족");
+        assertThat(missing.getClothingAdvice()).contains("기온 자료가 없어");
+        assertThat(missing.getOutdoorAdvice()).contains("일부 예보가 없어");
+        assertThat(missing.getWeatherConditionLine()).contains("강수확률 자료 없음", "습도 자료 없음");
+    }
+
+    @Test
+    void missingTimeKeepsTheSuppliedPeriodInsteadOfPretendingItIsMorning() {
+        WeatherDto evening = WeatherDto.builder().date("20261023").periodLabel("저녁").build();
+
+        assertThat(evening.getForecastLabel()).isEqualTo("10월 23일 저녁 예보");
+        assertThat(evening.toBuilder().periodLabel(null).build().getForecastLabel())
+                .isEqualTo("10월 23일 예보");
+    }
+
+    @Test
+    void malformedMeasurementsAreNotShownAsNumbersOrUsedForTemperatureRisk() {
+        WeatherDto malformed = WeatherDto.builder()
+                .tmp("-999").pop("-1").reh("101").wsd("NaN").build();
+
+        assertThat(malformed.getTmp()).isEqualTo("-");
+        assertThat(malformed.getPop()).isEqualTo("-");
+        assertThat(malformed.getReh()).isEqualTo("-");
+        assertThat(malformed.getWsd()).isEqualTo("-");
+        assertThat(malformed.getPersonalizedFeelsLikeTemperature()).isNull();
+        assertThat(malformed.isTemperatureRisk()).isFalse();
+        assertThat(malformed.getRiskFactors()).noneMatch(factor -> "TEMPERATURE".equals(factor.code()));
+        assertThat(malformed.getOutingScore()).isEqualTo(-1);
+    }
+
+    @Test
+    void missingProbabilityNeverSuppressesAKnownRainWarning() {
+        WeatherDto rainy = WeatherDto.builder().pty("1").build();
+
+        assertThat(rainy.getUmbrellaAdvice()).isEqualTo("챙기는 것을 추천해요");
+        assertThat(rainy.getDecisionHeadline()).contains("우산");
+        assertThat(rainy.getSummaryMessage()).contains("비 소식");
+        assertThat(rainy.getOutingScoreLabel()).isEqualTo("자료 부족");
+    }
+
+    @Test
+    void partialAirQualityKeepsKnownBadReadingsWithoutClaimingMissingReadingsAreGood() {
+        var partialBad = WeatherDto.builder().pm10Value("90").pm10Grade("3").build();
+        assertThat(partialBad.getAirQualitySummary()).contains("미세먼지 나쁨", "초미세먼지 정보 없음");
+        assertThat(partialBad.getAirQualityAdvice()).contains("좋지 않아요");
+        assertThat(partialBad.getMaskAdvice()).contains("마스크");
+        var partialGood = partialBad.toBuilder().pm10Value("10").pm10Grade("1").build();
+        assertThat(partialGood.getAirQualityAdvice()).contains("일부 없을");
+        assertThat(partialGood.getMaskAdvice()).contains("재확인");
+        assertThat(partialGood.toBuilder().pm25Grade("-").build().getAirQualityAdvice()).doesNotContain("좋은 편");
     }
 }

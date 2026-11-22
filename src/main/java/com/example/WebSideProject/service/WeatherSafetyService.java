@@ -14,8 +14,10 @@ import org.springframework.web.util.UriUtils;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.List;
 public class WeatherSafetyService {
 
     private static final DateTimeFormatter API_HOUR = DateTimeFormatter.ofPattern("yyyyMMddHH");
+    private static final ZoneId KOREA_ZONE = ZoneId.of("Asia/Seoul");
 
     @Value("${weather-safety.warning.api-key:}")
     private String warningApiKey;
@@ -46,6 +49,7 @@ public class WeatherSafetyService {
     private String pollenBaseUrl;
 
     private final RestTemplate restTemplate;
+    private Clock clock = Clock.systemUTC();
 
     @Cacheable(
             cacheNames = "weather",
@@ -75,7 +79,7 @@ public class WeatherSafetyService {
         if (isBlank(uvApiKey)) return -1;
         try {
             String areaNo = areaCode(locationName);
-            LocalDateTime requestedAt = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
+            LocalDateTime requestedAt = koreanNow().withMinute(0).withSecond(0).withNano(0);
             URI uri = publicDataUri(uvBaseUrl + "/getUVIdxV5", uvApiKey)
                     .queryParam("pageNo", 1)
                     .queryParam("numOfRows", 1)
@@ -95,13 +99,14 @@ public class WeatherSafetyService {
     private PollenInsight safelyGetPollen(String locationName, int dayOffset) {
         if (isBlank(pollenApiKey)) return PollenInsight.empty();
         try {
-            String endpoint = pollenEndpoint(LocalDate.now().getMonthValue());
+            LocalDateTime requestedAt = koreanNow();
+            String endpoint = pollenEndpoint(requestedAt.getMonthValue());
             URI uri = publicDataUri(pollenBaseUrl + "/" + endpoint, pollenApiKey)
                     .queryParam("pageNo", 1)
                     .queryParam("numOfRows", 1)
                     .queryParam("dataType", "JSON")
                     .queryParam("areaNo", areaCode(locationName))
-                    .queryParam("time", LocalDateTime.now().format(API_HOUR))
+                    .queryParam("time", requestedAt.format(API_HOUR))
                     .build(true)
                     .toUri();
             String response = restTemplate.getForObject(uri, String.class);
@@ -115,7 +120,7 @@ public class WeatherSafetyService {
     private WarningInsight safelyGetWarning(String locationName) {
         if (isBlank(warningApiKey)) return WarningInsight.empty();
         try {
-            String today = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
+            String today = koreanNow().toLocalDate().format(DateTimeFormatter.BASIC_ISO_DATE);
             URI uri = publicDataUri(warningBaseUrl + "/getWthrWrnMsg", warningApiKey)
                     .queryParam("pageNo", 1)
                     .queryParam("numOfRows", 1)
@@ -254,6 +259,10 @@ public class WeatherSafetyService {
 
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    private LocalDateTime koreanNow() {
+        return LocalDateTime.now(clock.withZone(KOREA_ZONE));
     }
 
     record PollenInsight(String type, int level) {

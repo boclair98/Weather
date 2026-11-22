@@ -23,6 +23,7 @@ import org.springframework.web.util.UriUtils;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -36,6 +37,7 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 @Slf4j
@@ -63,6 +65,7 @@ public class WeatherService {
     private final RestTemplate restTemplate;
     private final WeatherSafetyService weatherSafetyService;
     private final ExternalApiGuard externalApiGuard;
+    private Clock clock = Clock.systemUTC();
     private final Cache<String, ForecastPayload> latestForecastSnapshots = Caffeine.newBuilder()
             .maximumSize(10_000)
             .expireAfterWrite(FALLBACK_MAX_AGE)
@@ -72,14 +75,14 @@ public class WeatherService {
             .expireAfterWrite(FALLBACK_MAX_AGE)
             .build();
 
-    @Cacheable(cacheNames = "weather", key = "'current:' + #nx + ':' + #ny", sync = true)
+    @Cacheable(cacheNames = "weather", key = "'current:' + #nx + ':' + #ny + ':' + (#locationName == null ? '' : #locationName)", sync = true)
     public CurrentWeatherDto getCurrentWeather(int nx, int ny, String locationName) {
         validateGrid(nx, ny);
-        LocalDateTime now = LocalDateTime.now(KOREA_ZONE);
+        LocalDateTime now = koreanNow();
         LocalDateTime availableObservation = now.getMinute() >= 40
                 ? now.withMinute(0).withSecond(0).withNano(0)
                 : now.minusHours(1).withMinute(0).withSecond(0).withNano(0);
-        String snapshotKey = "current:" + nx + ":" + ny;
+        String snapshotKey = "current:" + nx + ":" + ny + ":" + (locationName == null ? "" : locationName);
         try {
             CurrentWeatherDto observation = requestCurrentWeather(
                     nx, ny, locationName,
@@ -135,14 +138,18 @@ public class WeatherService {
         if (!values.containsKey("T1H") || !values.containsKey("REH") || !values.containsKey("WSD")) {
             throw new IllegalStateException("기상청 실황 응답에 필수 관측값이 없습니다.");
         }
+        double temperature = requireDouble(values.get("T1H"), "기온");
+        int humidity = requireInt(values.get("REH"), "습도");
+        double windSpeed = requireDouble(values.get("WSD"), "풍속");
+        if (temperature < -100 || temperature > 100 || humidity < 0 || humidity > 100 || windSpeed < 0) {
+            throw new IllegalStateException("기상청 실황 관측값이 유효 범위를 벗어났습니다.");
+        }
         return CurrentWeatherDto.of(
                 locationName,
                 observedAt,
-                requireDouble(values.get("T1H"), "기온"),
-                requireInt(values.get("REH"), "습도"),
-                requireDouble(values.get("WSD"), "풍속"),
-                values.getOrDefault("RN1", "0"),
-                currentPrecipitationLabel(values.getOrDefault("PTY", "0"))
+                temperature, humidity, windSpeed,
+                normalizeNonNegativeMeasurement(values.get("RN1")),
+                currentPrecipitationLabel(values.getOrDefault("PTY", ""))
         );
     }
 
@@ -154,10 +161,11 @@ public class WeatherService {
 
     private String currentPrecipitationLabel(String value) {
         return switch (value) {
+            case "0" -> "없음";
             case "1", "5" -> "비";
             case "2", "6" -> "비 또는 눈";
             case "3", "7" -> "눈";
-            default -> "없음";
+            default -> "정보 없음";
         };
     }
 
@@ -171,7 +179,9 @@ public class WeatherService {
 
     private double requireDouble(String value, String fieldName) {
         try {
-            return Double.parseDouble(value);
+            double parsed = Double.parseDouble(value);
+            if (!Double.isFinite(parsed)) throw new NumberFormatException("Non-finite observation");
+            return parsed;
         } catch (Exception e) {
             throw new IllegalStateException("기상청 실황 " + fieldName + " 값이 올바르지 않습니다.", e);
         }
@@ -187,7 +197,7 @@ public class WeatherService {
 
     @Cacheable(
             cacheNames = "weather",
-            key = "#nx + ':' + #ny + ':' + #period.name() + ':' + (#locationName == null ? '' : #locationName)",
+            key = "#nx + ':' + #ny + ':' + #period.name() + ':' + #root.target.forecastCacheDate(0) + ':' + (#locationName == null ? '' : #locationName)",
             sync = true
     )
     public WeatherDto getWeather(int nx, int ny, WeatherPeriod period, String locationName) {
@@ -203,7 +213,7 @@ public class WeatherService {
 
     @Cacheable(
             cacheNames = "weather",
-            key = "'daily:' + #nx + ':' + #ny + ':' + #dayOffset + ':' + (#locationName == null ? '' : #locationName)",
+            key = "'daily:' + #nx + ':' + #ny + ':' + #dayOffset + ':' + #root.target.forecastCacheDate(#dayOffset) + ':' + (#locationName == null ? '' : #locationName)",
             sync = true
     )
     public DailyWeatherDto getDailyWeather(int nx, int ny, String locationName, int dayOffset) {
@@ -216,7 +226,7 @@ public class WeatherService {
 
     @Cacheable(
             cacheNames = "plannerSource",
-            key = "'planner-three-day:' + #nx + ':' + #ny + ':' + (#locationName == null ? '' : #locationName)",
+            key = "'planner-three-day:' + #nx + ':' + #ny + ':' + #root.target.forecastCacheDate(0) + ':' + (#locationName == null ? '' : #locationName)",
             sync = true
     )
     public List<DailyWeatherDto> getPlannerDailyWeatherList(int nx, int ny, String locationName) {
@@ -228,7 +238,7 @@ public class WeatherService {
         ForecastPayload response = requestForecast(nx, ny, forecastBase.date(), forecastBase.time(), null);
         List<DailyWeatherDto> forecasts = new ArrayList<>(3);
         for (int dayOffset = 0; dayOffset <= 2; dayOffset++) {
-            String targetDate = LocalDate.now().plusDays(dayOffset)
+            String targetDate = koreanNow().toLocalDate().plusDays(dayOffset)
                     .format(DateTimeFormatter.ofPattern("yyyyMMdd"));
             WeatherDto morning = parseWeatherResponse(response, targetDate, WeatherPeriod.MORNING);
             WeatherDto afternoon = parseWeatherResponse(response, targetDate, WeatherPeriod.AFTERNOON);
@@ -238,14 +248,14 @@ public class WeatherService {
                 case 1 -> "내일";
                 default -> "모레";
             };
-            forecasts.add(DailyWeatherDto.from(morning, afternoon, evening, dayLabel, targetDate));
+            forecasts.add(DailyWeatherDto.from(morning, afternoon, evening, dayLabel, targetDate, clock));
         }
         return List.copyOf(forecasts);
     }
 
     @Cacheable(
             cacheNames = "weather",
-            key = "'hourly:' + #nx + ':' + #ny + ':' + #dayOffset + ':'"
+            key = "'hourly:' + #nx + ':' + #ny + ':' + #dayOffset + ':' + #root.target.forecastCacheDate(#dayOffset) + ':'"
                     + " + (#locationName == null ? '' : #locationName)",
             sync = true
     )
@@ -254,7 +264,7 @@ public class WeatherService {
         if (dayOffset < 0 || dayOffset > 2) {
             throw new IllegalArgumentException("dayOffset은 0부터 2까지만 지원합니다.");
         }
-        LocalDate targetDate = LocalDate.now().plusDays(dayOffset);
+        LocalDate targetDate = koreanNow().toLocalDate().plusDays(dayOffset);
         ForecastBase forecastBase = getDailyForecastBase();
         ForecastPayload payload = requestForecast(
                 nx, ny, forecastBase.date(), forecastBase.time(),
@@ -265,12 +275,16 @@ public class WeatherService {
             throw new IllegalStateException("선택한 날짜의 시간별 예보가 없습니다.");
         }
 
-        int minimum = forecasts.stream().mapToInt(HourlyForecast::temperature).min().orElse(0);
-        int maximum = forecasts.stream().mapToInt(HourlyForecast::temperature).max().orElse(0);
-        int maximumPop = forecasts.stream().mapToInt(HourlyForecast::pop).max().orElse(0);
+        Integer minimum = forecasts.stream().map(HourlyForecast::temperature).filter(Objects::nonNull)
+                .min(Integer::compareTo).orElse(null);
+        Integer maximum = forecasts.stream().map(HourlyForecast::temperature).filter(Objects::nonNull)
+                .max(Integer::compareTo).orElse(null);
+        Integer maximumPop = forecasts.stream().map(HourlyForecast::pop).filter(Objects::nonNull)
+                .max(Integer::compareTo).orElse(null);
         List<HourlyForecast> rainHours = forecasts.stream().filter(this::hasPrecipitationRisk).toList();
-        String precipitationSummary = buildHourlyPrecipitationSummary(rainHours);
-        String headline = minimum + "°C ~ " + maximum + "°C · " + precipitationSummary;
+        String precipitationSummary = buildHourlyPrecipitationSummary(forecasts, rainHours);
+        String headline = (minimum == null ? "기온 자료 없음" : minimum + "°C ~ " + maximum + "°C")
+                + " · " + precipitationSummary;
 
         List<HourlyWeatherDto.Hour> hours = forecasts.stream()
                 .map(forecast -> new HourlyWeatherDto.Hour(
@@ -279,7 +293,7 @@ public class WeatherService {
                         forecast.pop(),
                         precipitationLabel(forecast.pty()),
                         forecast.humidity(),
-                        Math.round(forecast.wind() * 10.0) / 10.0,
+                        forecast.wind() == null ? null : Math.round(forecast.wind() * 10.0) / 10.0,
                         skyLabel(forecast.sky())
                 ))
                 .toList();
@@ -393,7 +407,7 @@ public class WeatherService {
             boolean includeSafetyDetails
     ) {
         ForecastBase forecastBase = getDailyForecastBase();
-        String targetDate = LocalDate.now().plusDays(dayOffset)
+        String targetDate = koreanNow().toLocalDate().plusDays(dayOffset)
                 .format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         ForecastPayload response = requestForecast(nx, ny, forecastBase.date(), forecastBase.time(), targetDate);
 
@@ -407,7 +421,7 @@ public class WeatherService {
             default -> "모레";
         };
         if (!includeSafetyDetails) {
-            return DailyWeatherDto.from(morning, afternoon, evening, dayLabel, targetDate);
+            return DailyWeatherDto.from(morning, afternoon, evening, dayLabel, targetDate, clock);
         }
 
         AirQualityInfo airQuality = safelyGetAirQuality(locationName);
@@ -416,7 +430,7 @@ public class WeatherService {
                 applySafetyInsight(applyAirQuality(morning, airQuality), safetyInsight),
                 applySafetyInsight(applyAirQuality(afternoon, airQuality), safetyInsight),
                 applySafetyInsight(applyAirQuality(evening, airQuality), safetyInsight),
-                dayLabel, targetDate
+                dayLabel, targetDate, clock
         );
     }
 
@@ -446,7 +460,7 @@ public class WeatherService {
         WeatherDto weather = parseWeatherResponse(response, targetDate, period);
         int dayOffset = Math.max(0, Math.min(2,
                 (int) java.time.temporal.ChronoUnit.DAYS.between(
-                        LocalDate.now(), LocalDate.parse(targetDate, DateTimeFormatter.BASIC_ISO_DATE))));
+                        koreanNow().toLocalDate(), LocalDate.parse(targetDate, DateTimeFormatter.BASIC_ISO_DATE))));
         SafetyInsightDto safetyInsight = weatherSafetyService.getSafetyInsight(locationName, dayOffset);
         return applySafetyInsight(enrichAirQuality(weather, locationName), safetyInsight);
     }
@@ -487,7 +501,7 @@ public class WeatherService {
             ForecastPayload payload = new ForecastPayload(
                     response,
                     forecastIssuedAt(baseDate, baseTime),
-                    Instant.now(),
+                    clock.instant(),
                     false
             );
             latestForecastSnapshots.put(snapshotKey, payload);
@@ -495,7 +509,8 @@ public class WeatherService {
         } catch (RuntimeException e) {
             ForecastPayload snapshot = latestForecastSnapshots.getIfPresent(snapshotKey);
             if (snapshot != null
-                    && Duration.between(snapshot.fetchedAt(), Instant.now()).compareTo(FALLBACK_MAX_AGE) <= 0) {
+                    && Duration.between(snapshot.fetchedAt(), clock.instant()).compareTo(FALLBACK_MAX_AGE) <= 0
+                    && containsForecastDate(snapshot, targetDate)) {
                 log.warn(
                         "기상청 API 장애로 마지막 정상 예보 사용: nx={}, ny={}, fetchedAt={}",
                         nx, ny, snapshot.fetchedAt()
@@ -528,6 +543,21 @@ public class WeatherService {
         } catch (Exception e) {
             throw new IllegalStateException("기상청 응답 형식이 계약과 다릅니다.", e);
         }
+    }
+
+    private boolean containsForecastDate(ForecastPayload payload, String targetDate) {
+        if (targetDate == null) return true; // Multi-day consumers filter every requested date separately.
+        JSONArray items = new JSONObject(payload.body()).getJSONObject("response")
+                .getJSONObject("body").getJSONObject("items").getJSONArray("item");
+        for (int i = 0; i < items.length(); i++) {
+            if (targetDate.equals(items.getJSONObject(i).optString("fcstDate"))) return true;
+        }
+        return false;
+    }
+
+    /** Used by Spring's cache key expression; absolute KST date prevents midnight reuse. */
+    public String forecastCacheDate(int dayOffset) {
+        return koreanNow().toLocalDate().plusDays(dayOffset).toString();
     }
 
     private String forecastIssuedAt(String baseDate, String baseTime) {
@@ -589,6 +619,8 @@ public class WeatherService {
                 .pm25Value(airQualityInfo.pm25Value())
                 .pm25Grade(airQualityInfo.pm25Grade())
                 .airQualityStation(airQualityInfo.stationName())
+                .airQualityObservedAt(airQualityInfo.observedAt())
+                .airQualityStationBasis(airQualityInfo.stationBasis())
                 .build();
     }
 
@@ -612,7 +644,7 @@ public class WeatherService {
                 .queryParam("numOfRows", 100)
                 .queryParam("pageNo", 1)
                 .queryParam("sidoName", UriUtils.encode(sidoName, StandardCharsets.UTF_8))
-                .queryParam("ver", "1.0")
+                .queryParam("ver", "1.3")
                 .build(true)
                 .toUri();
 
@@ -633,6 +665,10 @@ public class WeatherService {
 
     private AirQualityInfo parseAirQualityResponse(String response, String locationName) {
         JSONObject json = new JSONObject(response);
+        String resultCode = json.getJSONObject("response").getJSONObject("header").optString("resultCode", "");
+        if (!"00".equals(resultCode)) {
+            throw new IllegalStateException("에어코리아 측정자료를 불러오지 못했습니다.");
+        }
         JSONArray items = json
                 .getJSONObject("response")
                 .getJSONObject("body")
@@ -643,23 +679,58 @@ public class WeatherService {
         }
 
         JSONObject selected = items.getJSONObject(0);
+        String stationBasis = "REGIONAL_REFERENCE";
         String normalizedLocationName = locationName == null ? "" : locationName.replace(" ", "");
         for (int i = 0; i < items.length(); i++) {
             JSONObject item = items.getJSONObject(i);
             String stationName = item.optString("stationName", "");
             if (!stationName.isBlank() && normalizedLocationName.contains(stationName.replace(" ", ""))) {
                 selected = item;
+                stationBasis = "LOCATION_MATCH";
                 break;
             }
         }
 
+        String pm10 = airQualityValue(selected, "pm10");
+        String pm25 = airQualityValue(selected, "pm25");
         return new AirQualityInfo(
                 selected.optString("stationName", "-"),
-                selected.optString("pm10Value", "-"),
-                selected.optString("pm10Grade", ""),
-                selected.optString("pm25Value", "-"),
-                selected.optString("pm25Grade", "")
+                pm10, airQualityHourlyGrade(selected, "pm10", pm10),
+                pm25, airQualityHourlyGrade(selected, "pm25", pm25),
+                airQualityObservedAt(selected.optString("dataTime", "")), stationBasis
         );
+    }
+
+    private String airQualityValue(JSONObject item, String pollutant) {
+        String flag = item.optString(pollutant + "Flag", "").trim();
+        return flag.isBlank() || "-".equals(flag)
+                ? normalizeNonNegativeMeasurement(item.optString(pollutant + "Value", "")) : "-";
+    }
+
+    private String normalizeNonNegativeMeasurement(String value) {
+        String normalized = value == null ? "" : value.trim();
+        if (!normalized.matches("\\d+(?:\\.\\d+)?")) return "-";
+        try {
+            return Double.isFinite(Double.parseDouble(normalized)) ? normalized : "-";
+        } catch (NumberFormatException ignored) {
+            return "-";
+        }
+    }
+
+    private String airQualityHourlyGrade(JSONObject item, String pollutant, String value) {
+        // pm*Grade is a 24-hour grade and must not label the current 1-hour value.
+        String grade = item.optString(pollutant + "Grade1h", "").trim();
+        return !"-".equals(value) && grade.matches("[1-4]") ? grade : "";
+    }
+
+    private String airQualityObservedAt(String value) {
+        try {
+            return LocalDateTime.parse(value.trim(), DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm")
+                            .withResolverStyle(java.time.format.ResolverStyle.STRICT))
+                    .atZone(KOREA_ZONE).toOffsetDateTime().toString();
+        } catch (Exception ignored) {
+            return "-";
+        }
     }
 
     private WeatherDto parseWeatherResponse(ForecastPayload payload, String targetDate, WeatherPeriod period) {
@@ -705,12 +776,12 @@ public class WeatherService {
                 .date(targetDate)
                 .time(targetTime)
                 .periodLabel(period.getLabel())
-                .sky(getForecastValue(weatherMap, nearbyMap, dailyMap, "SKY", "1"))
-                .pty(getForecastValue(weatherMap, nearbyMap, dailyMap, "PTY", "0"))
+                .sky(getForecastValue(weatherMap, nearbyMap, dailyMap, "SKY", "-"))
+                .pty(getForecastValue(weatherMap, nearbyMap, dailyMap, "PTY", "-"))
                 .tmp(getForecastValue(weatherMap, nearbyMap, dailyMap, "TMP", "-"))
                 .tmn(weatherMap.getOrDefault("TMN", dailyMap.getOrDefault("TMN", "-")))
                 .tmx(weatherMap.getOrDefault("TMX", dailyMap.getOrDefault("TMX", "-")))
-                .pop(getForecastValue(weatherMap, nearbyMap, dailyMap, "POP", "0"))
+                .pop(getForecastValue(weatherMap, nearbyMap, dailyMap, "POP", "-"))
                 .reh(getForecastValue(weatherMap, nearbyMap, dailyMap, "REH", "-"))
                 .wsd(getForecastValue(weatherMap, nearbyMap, dailyMap, "WSD", "-"))
                 .dataSourceName(KMA_SOURCE_NAME)
@@ -725,11 +796,11 @@ public class WeatherService {
     private LocalDate parseDecisionDate(String value) {
         LocalDate date;
         try {
-            date = value == null || value.isBlank() ? LocalDate.now() : LocalDate.parse(value);
+            date = value == null || value.isBlank() ? koreanNow().toLocalDate() : LocalDate.parse(value);
         } catch (Exception e) {
             throw new IllegalArgumentException("날짜는 yyyy-MM-dd 형식으로 입력해주세요.");
         }
-        LocalDate today = LocalDate.now();
+        LocalDate today = koreanNow().toLocalDate();
         if (date.isBefore(today) || date.isAfter(today.plusDays(2))) {
             throw new IllegalArgumentException("일정 최적화는 오늘부터 모레까지만 지원합니다.");
         }
@@ -757,27 +828,29 @@ public class WeatherService {
             JSONObject item = items.getJSONObject(i);
             if (!dateKey.equals(item.optString("fcstDate"))) continue;
             String forecastTime = item.optString("fcstTime");
-            if (forecastTime.length() != 4) continue;
+            if (!forecastTime.matches("(?:[01][0-9]|2[0-3])[0-5][0-9]")) continue;
             valuesByTime.computeIfAbsent(forecastTime, ignored -> new HashMap<>())
                     .putIfAbsent(item.optString("category"), item.optString("fcstValue"));
         }
 
         return valuesByTime.entrySet().stream()
-                .filter(entry -> entry.getValue().containsKey("TMP"))
+                .filter(entry -> entry.getValue().keySet().stream()
+                        .anyMatch(Set.of("TMP", "POP", "PTY", "REH", "WSD", "SKY")::contains))
                 .map(entry -> {
                     Map<String, String> values = entry.getValue();
                     LocalTime time = LocalTime.parse(entry.getKey(), DateTimeFormatter.ofPattern("HHmm"));
+                    Integer pop = parseForecastInt(values.get("POP"), 0, 100);
+                    String pty = forecastCode(values.get("PTY"), Set.of("0", "1", "2", "3", "4"));
+                    Integer temperature = parseForecastInt(values.get("TMP"), -100, 100);
+                    Integer humidity = parseForecastInt(values.get("REH"), 0, 100);
+                    Double wind = parseForecastWind(values.get("WSD"));
+                    String sky = forecastCode(values.get("SKY"), Set.of("1", "3", "4"));
+                    int availableFields = (int) java.util.stream.Stream.of(
+                            temperature, pop, pty, humidity, wind, sky
+                    ).filter(Objects::nonNull).count();
                     return new HourlyForecast(
-                            LocalDateTime.of(targetDate, time),
-                            safeParseInt(values.get("POP"), 0),
-                            values.getOrDefault("PTY", "0"),
-                            safeParseInt(values.get("TMP"), 20),
-                            safeParseInt(values.get("REH"), 50),
-                            safeParseDouble(values.get("WSD"), 0.0),
-                            values.getOrDefault("SKY", "1"),
-                            (int) List.of("TMP", "POP", "PTY", "REH", "WSD", "SKY").stream()
-                                    .filter(values::containsKey)
-                                    .count()
+                            LocalDateTime.of(targetDate, time), pop, pty, temperature,
+                            humidity, wind, sky, availableFields
                     );
                 })
                 .sorted(Comparator.comparing(HourlyForecast::time))
@@ -785,23 +858,34 @@ public class WeatherService {
     }
 
     private boolean hasPrecipitationRisk(HourlyForecast forecast) {
-        return !"0".equals(forecast.pty()) || forecast.pop() >= 60;
+        return (forecast.pty() != null && !"0".equals(forecast.pty()))
+                || (forecast.pop() != null && forecast.pop() >= 60);
     }
 
-    private String buildHourlyPrecipitationSummary(List<HourlyForecast> rainHours) {
+    private String buildHourlyPrecipitationSummary(
+            List<HourlyForecast> forecasts, List<HourlyForecast> rainHours
+    ) {
         if (rainHours.isEmpty()) {
+            if (forecasts.stream().allMatch(hour -> hour.pop() == null && hour.pty() == null)) {
+                return "강수 정보 없음";
+            }
+            if (forecasts.stream().anyMatch(hour -> hour.pop() == null || hour.pty() == null)) {
+                return "강수 정보 일부 없음";
+            }
             return "뚜렷한 강수 시간대 없음";
         }
         String start = rainHours.get(0).time().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
         String end = rainHours.get(rainHours.size() - 1).time().plusHours(1)
                 .toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
         String type = rainHours.stream().map(HourlyForecast::pty)
+                .filter(Objects::nonNull)
                 .filter(code -> !"0".equals(code))
                 .findFirst().map(this::precipitationLabel).orElse("비");
         return start + "~" + end + " " + type + " 가능성";
     }
 
     private String skyLabel(String sky) {
+        if (sky == null) return "자료 없음";
         return switch (sky) {
             case "1" -> "맑음";
             case "3" -> "구름많음";
@@ -814,7 +898,7 @@ public class WeatherService {
         int available = hourly.stream().mapToInt(HourlyForecast::sourceFieldCount).sum();
         int expected = hourly.size() * 6;
         int completeness = expected == 0 ? 0 : (int) Math.round(available * 100.0 / expected);
-        long ageSeconds = Math.max(0, Duration.between(payload.fetchedAt(), Instant.now()).getSeconds());
+        long ageSeconds = Math.max(0, Duration.between(payload.fetchedAt(), clock.instant()).getSeconds());
         String freshness = payload.fallback() ? "STALE_FALLBACK"
                 : ageSeconds <= 900 ? "FRESH" : ageSeconds <= 3600 ? "RECENT" : "STALE";
         String quality = payload.fallback() ? "DEGRADED"
@@ -845,7 +929,7 @@ public class WeatherService {
             List<HourlyForecast> window = new ArrayList<>(requiredPoints);
             for (int hour = 0; hour < requiredPoints; hour++) {
                 HourlyForecast point = byTime.get(start.time().plusHours(hour));
-                if (point != null) window.add(point);
+                if (point != null && point.sourceFieldCount() == 6) window.add(point);
             }
             if (window.size() != requiredPoints) continue;
 
@@ -884,6 +968,7 @@ public class WeatherService {
     }
 
     private String precipitationLabel(String pty) {
+        if (pty == null) return "자료 없음";
         return switch (pty) {
             case "1" -> "비";
             case "2" -> "비·눈";
@@ -933,7 +1018,7 @@ public class WeatherService {
         int available = hourly.stream().mapToInt(HourlyForecast::sourceFieldCount).sum();
         int expected = hourly.size() * 6;
         int completeness = expected == 0 ? 0 : (int) Math.round(available * 100.0 / expected);
-        long ageSeconds = Math.max(0, Duration.between(payload.fetchedAt(), Instant.now()).getSeconds());
+        long ageSeconds = Math.max(0, Duration.between(payload.fetchedAt(), clock.instant()).getSeconds());
         String freshness = payload.fallback() ? "STALE_FALLBACK"
                 : ageSeconds <= 900 ? "FRESH" : ageSeconds <= 3600 ? "RECENT" : "STALE";
         String quality = payload.fallback() ? "DEGRADED"
@@ -947,20 +1032,26 @@ public class WeatherService {
         );
     }
 
-    private int safeParseInt(String value, int defaultValue) {
+    private Integer parseForecastInt(String value, int minimum, int maximum) {
         try {
-            return Integer.parseInt(value);
+            int parsed = Integer.parseInt(value);
+            return parsed >= minimum && parsed <= maximum ? parsed : null;
         } catch (Exception ignored) {
-            return defaultValue;
+            return null;
         }
     }
 
-    private double safeParseDouble(String value, double defaultValue) {
+    private Double parseForecastWind(String value) {
         try {
-            return Double.parseDouble(value);
+            double parsed = Double.parseDouble(value);
+            return Double.isFinite(parsed) && parsed >= 0 ? parsed : null;
         } catch (Exception ignored) {
-            return defaultValue;
+            return null;
         }
+    }
+
+    private String forecastCode(String value, Set<String> supported) {
+        return value != null && supported.contains(value) ? value : null;
     }
 
     private int countSourceFields(
@@ -970,11 +1061,16 @@ public class WeatherService {
     ) {
         int count = 0;
         for (String category : List.of("TMP", "POP", "REH", "WSD", "SKY", "PTY")) {
-            if (exactMap.containsKey(category)
-                    || nearbyMap.containsKey(category)
-                    || dailyMap.containsKey(category)) {
-                count++;
-            }
+            String value = getForecastValue(exactMap, nearbyMap, dailyMap, category, null);
+            Object validValue = switch (category) {
+                case "TMP" -> parseForecastInt(value, -100, 100);
+                case "POP", "REH" -> parseForecastInt(value, 0, 100);
+                case "WSD" -> parseForecastWind(value);
+                case "SKY" -> forecastCode(value, Set.of("1", "3", "4"));
+                case "PTY" -> forecastCode(value, Set.of("0", "1", "2", "3", "4"));
+                default -> null;
+            };
+            if (validValue != null) count++;
         }
         return count;
     }
@@ -1006,8 +1102,9 @@ public class WeatherService {
     }
 
     private ForecastBase getForecastBase() {
-        LocalDate date = LocalDate.now();
-        LocalTime time = LocalTime.now();
+        LocalDateTime now = koreanNow();
+        LocalDate date = now.toLocalDate();
+        LocalTime time = now.toLocalTime();
         int hour = time.getHour();
 
         if (hour < 2 || (hour == 2 && time.getMinute() < 10)) {
@@ -1028,8 +1125,9 @@ public class WeatherService {
     }
 
     private ForecastBase getDailyForecastBase() {
-        LocalDate date = LocalDate.now();
-        LocalTime time = LocalTime.now();
+        LocalDateTime now = koreanNow();
+        LocalDate date = now.toLocalDate();
+        LocalTime time = now.toLocalTime();
         if (time.isBefore(LocalTime.of(2, 10))) {
             return new ForecastBase(
                     date.minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")),
@@ -1040,7 +1138,11 @@ public class WeatherService {
     }
 
     private LocalDate getForecastDate(WeatherPeriod period) {
-        return LocalDate.now();
+        return koreanNow().toLocalDate();
+    }
+
+    private LocalDateTime koreanNow() {
+        return LocalDateTime.now(clock.withZone(KOREA_ZONE));
     }
 
     private String extractSidoName(String locationName) {
@@ -1086,11 +1188,11 @@ public class WeatherService {
 
     private record HourlyForecast(
             LocalDateTime time,
-            int pop,
+            Integer pop,
             String pty,
-            int temperature,
-            int humidity,
-            double wind,
+            Integer temperature,
+            Integer humidity,
+            Double wind,
             String sky,
             int sourceFieldCount
     ) {
@@ -1114,10 +1216,12 @@ public class WeatherService {
             String pm10Value,
             String pm10Grade,
             String pm25Value,
-            String pm25Grade
+            String pm25Grade,
+            String observedAt,
+            String stationBasis
     ) {
         private static AirQualityInfo empty() {
-            return new AirQualityInfo("-", "-", "", "-", "");
+            return new AirQualityInfo("-", "-", "", "-", "", "-", "UNAVAILABLE");
         }
     }
 }

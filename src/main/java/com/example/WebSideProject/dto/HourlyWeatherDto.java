@@ -8,19 +8,19 @@ public record HourlyWeatherDto(
         String forecastDate,
         String headline,
         String precipitationSummary,
-        int minimumTemperature,
-        int maximumTemperature,
-        int maximumPrecipitationProbability,
+        Integer minimumTemperature,
+        Integer maximumTemperature,
+        Integer maximumPrecipitationProbability,
         List<Hour> hours,
         ForecastProvenanceDto provenance
 ) {
     public record Hour(
             String time,
-            int temperature,
-            int precipitationProbability,
+            Integer temperature,
+            Integer precipitationProbability,
             String precipitation,
-            int humidity,
-            double windSpeed,
+            Integer humidity,
+            Double windSpeed,
             String sky
     ) {
     }

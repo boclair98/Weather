@@ -71,9 +71,6 @@ public class UserService {
                 throw new SecurityException("날씨 구독에는 인증된 이메일 하나만 연결할 수 있습니다.");
             }
             String verificationOwner = normalizeCodersUserId(codersUserId);
-            if (verificationOwner == null) {
-                verificationOwner = requestedEmails.get(0);
-            }
             String verificationCredential = request.getVerificationCode();
             if (verificationCredential == null || verificationCredential.isBlank()) {
                 // Accept the old field while clients roll forward to the code UI.

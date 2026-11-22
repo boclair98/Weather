@@ -34,4 +34,48 @@ class RouteBriefingDtoTest {
         assertThat(briefing.checklist()).anyMatch(item -> item.contains("자외선"));
         assertThat(briefing.checklist()).anyMatch(item -> item.contains("기온 차"));
     }
+
+    @Test
+    void missingTemperaturesDoNotCreateATwentyDegreeDefaultOrFavorableAssurances() {
+        RouteBriefingDto partial = briefing(weather(null), weather("30"));
+        RouteBriefingDto missing = briefing(weather(null), weather(null));
+
+        assertThat(partial.checklist()).anyMatch(item -> item.contains("기온 자료가 없어"));
+        assertThat(partial.checklist()).noneMatch(item -> item.contains("기온 차가"));
+        assertThat(partial.headline()).contains("자료가 부족");
+        assertThat(missing.checklist()).noneMatch(item -> item.contains("변수가 적") || item.contains("변수는 적"));
+        assertThat(missing.headline()).doesNotContain("무난");
+    }
+
+    @Test
+    void zeroDegreesIsARealMeasurementWhenComparingTheTwoLocations() {
+        RouteBriefingDto briefing = briefing(weather("0"), weather("5"));
+
+        assertThat(briefing.originWeather().getTmp()).isEqualTo("0");
+        assertThat(briefing.checklist()).anyMatch(item -> item.contains("기온 차가 5°C"));
+        assertThat(briefing.checklist()).noneMatch(item -> item.contains("기온 자료가 없어"));
+    }
+
+    @Test
+    void missingAndUnsupportedPrecipitationTypesRemainUnknownRatherThanDry() {
+        RouteBriefingDto briefing = briefing(
+                weather("20").toBuilder().pty(null).build(),
+                weather("20").toBuilder().pty("9").build());
+
+        assertThat(briefing.checklist()).anyMatch(item -> item.contains("강수 자료가 부족"));
+        assertThat(briefing.checklist()).noneMatch(item -> item.contains("변수가 적") || item.contains("변수는 적"));
+        assertThat(briefing.headline()).contains("자료가 부족").doesNotContain("무난");
+    }
+
+    private RouteBriefingDto briefing(WeatherDto origin, WeatherDto destination) {
+        return RouteBriefingDto.from(
+                LocationDto.Response.builder().locationName("출발지").build(),
+                LocationDto.Response.builder().locationName("목적지").build(),
+                1000, 600, origin, destination);
+    }
+
+    private WeatherDto weather(String temperature) {
+        return WeatherDto.builder().tmp(temperature).pop("0").pty("0")
+                .sky("1").reh("50").wsd("2.0").build();
+    }
 }

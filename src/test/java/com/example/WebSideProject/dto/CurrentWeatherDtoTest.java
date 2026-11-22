@@ -46,4 +46,13 @@ class CurrentWeatherDtoTest {
         assertThat(fallback.advice()).startsWith("원천 연결이 지연되어 마지막 정상 실황입니다.");
         assertThat(fallback.temperature()).isEqualTo(24.0);
     }
+
+    @Test
+    void absentPrecipitationFieldsRemainUnknown() {
+        var weather = CurrentWeatherDto.of("서울", "2026-10-25T12:00+09:00", 20, 50, 1, null, null);
+        assertThat(weather.oneHourPrecipitation()).isEqualTo("-");
+        assertThat(weather.precipitationType()).isEqualTo("정보 없음");
+        assertThat(weather.headline()).isEqualTo("강수 관측 정보 없음");
+        assertThat(weather.advice()).contains("자료가 없어요");
+    }
 }

@@ -5,7 +5,9 @@ import com.example.WebSideProject.Enum.ActivityType;
 import com.example.WebSideProject.Enum.GenderType;
 import com.example.WebSideProject.Enum.TemperatureSensitivity;
 
+import java.time.Clock;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 
 public record DailyWeatherDto(
@@ -21,6 +23,7 @@ public record DailyWeatherDto(
         String dayLabel,
         String forecastDate
 ) {
+    private static final ZoneId KOREA_ZONE = ZoneId.of("Asia/Seoul");
 
     public static DailyWeatherDto from(WeatherDto morning, WeatherDto afternoon, WeatherDto evening) {
         return from(morning, afternoon, evening, "오늘", morning.getDate());
@@ -33,7 +36,19 @@ public record DailyWeatherDto(
             String dayLabel,
             String forecastDate
     ) {
-        int currentHour = "오늘".equals(dayLabel) ? LocalTime.now().getHour() : 0;
+        return from(morning, afternoon, evening, dayLabel, forecastDate, Clock.systemUTC());
+    }
+
+    public static DailyWeatherDto from(
+            WeatherDto morning,
+            WeatherDto afternoon,
+            WeatherDto evening,
+            String dayLabel,
+            String forecastDate,
+            Clock clock
+    ) {
+        int currentHour = "오늘".equals(dayLabel)
+                ? LocalTime.now(clock.withZone(KOREA_ZONE)).getHour() : 0;
         return fromAtHour(morning, afternoon, evening, currentHour, dayLabel, forecastDate);
     }
 
@@ -64,19 +79,20 @@ public record DailyWeatherDto(
                 .toList();
         List<PeriodWeather> recommendationPool = remainingPeriods.isEmpty() ? periods : remainingPeriods;
         PeriodWeather best = recommendationPool.stream()
+                .filter(period -> period.weather().hasCoreWeatherData())
                 .max((left, right) -> Integer.compare(
                         left.weather().getOutingScore(),
                         right.weather().getOutingScore()
                 ))
-                .orElse(recommendationPool.get(0));
+                .orElse(null);
 
         return new DailyWeatherDto(
                 morning,
                 afternoon,
                 evening,
-                best.code(),
-                best.label(),
-                best.weather().getOutingScore(),
+                best == null ? "UNAVAILABLE" : best.code(),
+                best == null ? "자료 부족" : best.label(),
+                best == null ? -1 : best.weather().getOutingScore(),
                 buildHeadline(best, periods, dayLabel),
                 buildTemperatureTrend(morning, afternoon, evening),
                 buildRainSummary(periods),
@@ -111,8 +127,13 @@ public record DailyWeatherDto(
     }
 
     private static String buildHeadline(PeriodWeather best, List<PeriodWeather> periods, String dayLabel) {
+        if (best == null) return dayLabel + "은 일부 예보가 없어 시간대 비교를 준비하지 못했어요.";
+        if (periods.stream().anyMatch(period -> !period.weather().hasCoreWeatherData())) {
+            return dayLabel + " 확인된 예보 중에는 " + best.label() + "을 참고해 주세요.";
+        }
         long difficultPeriods = periods.stream()
-                .filter(period -> period.weather().getOutingScore() < 70)
+                .filter(period -> period.weather().hasCoreWeatherData()
+                        && period.weather().getOutingScore() < 70)
                 .count();
         if (difficultPeriods == periods.size()) {
             return dayLabel + "은 세 시간대 모두 준비가 필요해요.";
@@ -137,6 +158,9 @@ public record DailyWeatherDto(
                 .toList();
 
         if (rainyPeriods.isEmpty()) {
+            if (periods.stream().anyMatch(period -> !period.weather().hasPrecipitationData())) {
+                return "일부 시간대의 강수 자료가 없어요. 외출 전 비 예보를 다시 확인하세요.";
+            }
             return "세 시간대 모두 우산 부담이 낮아요.";
         }
         return String.join("·", rainyPeriods) + " 외출에는 우산을 확인하세요.";
@@ -151,8 +175,7 @@ public record DailyWeatherDto(
     }
 
     private static boolean hasPrecipitation(WeatherDto weather) {
-        String description = weather.getPtyDescription();
-        return !"없음".equals(description) && !"알 수 없음".equals(description);
+        return List.of("1", "2", "3", "4").contains(weather.getPty() == null ? "" : weather.getPty());
     }
 
     private record PeriodWeather(String code, String label, int hour, WeatherDto weather) {

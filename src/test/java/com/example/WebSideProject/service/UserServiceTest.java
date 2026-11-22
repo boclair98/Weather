@@ -3,7 +3,9 @@ package com.example.WebSideProject.service;
 import com.example.WebSideProject.dto.UserDto;
 import com.example.WebSideProject.Enum.WeatherPeriod;
 import com.example.WebSideProject.entity.User;
+import com.example.WebSideProject.entity.EmailVerificationChallenge;
 import com.example.WebSideProject.event.SubscriptionWelcomeMailRequested;
+import com.example.WebSideProject.repository.EmailVerificationChallengeRepository;
 import com.example.WebSideProject.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -20,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -116,7 +119,7 @@ class UserServiceTest {
         when(repository.findByEmail("first@example.com")).thenReturn(Optional.empty());
         when(repository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(verificationService.consumeVerifiedEmail(
-                eq("first@example.com"), eq("verification-token"), eq("first@example.com")))
+                isNull(), eq("verification-token"), eq("first@example.com")))
                 .thenReturn("first@example.com");
 
         UserDto.RegisterRequest request = request("first@example.com");
@@ -129,6 +132,39 @@ class UserServiceTest {
         ArgumentCaptor<User> savedUser = ArgumentCaptor.forClass(User.class);
         verify(repository).save(savedUser.capture());
         assertThat(savedUser.getValue().getOwnerId()).isNull();
+    }
+
+    @Test
+    void anonymousUserCanSubscribeAfterRequestingAndConfirmingAnEmailCode() {
+        UserRepository repository = mock(UserRepository.class);
+        EmailVerificationChallengeRepository challenges = mock(EmailVerificationChallengeRepository.class);
+        MailService mail = mock(MailService.class);
+        EmailVerificationService verification = new EmailVerificationService(challenges, mail);
+        ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
+        UserService service = new UserService(repository, publisher, verification);
+        ReflectionTestUtils.setField(service, "emailVerificationRequired", true);
+        when(repository.findByEmail("first@example.com")).thenReturn(Optional.empty());
+        when(repository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        verification.requestVerification(null, "First@Example.com");
+        ArgumentCaptor<EmailVerificationChallenge> challengeCaptor = ArgumentCaptor.forClass(EmailVerificationChallenge.class);
+        verify(challenges).save(challengeCaptor.capture());
+        EmailVerificationChallenge challenge = challengeCaptor.getValue();
+        ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
+        verify(mail).sendEmailVerificationMail(eq("first@example.com"), codeCaptor.capture());
+        when(challenges.findFirstByOwnerIdAndEmailOrderByCreatedAtDesc(challenge.getOwnerId(), "first@example.com"))
+                .thenReturn(Optional.of(challenge));
+        verification.confirmCode(null, "first@example.com", codeCaptor.getValue());
+
+        UserDto.RegisterRequest request = request("first@example.com");
+        request.setVerificationCode(codeCaptor.getValue());
+        List<UserDto.Response> responses = service.registerAll(request, null);
+
+        assertThat(responses).hasSize(1);
+        assertThat(responses.get(0).getEmail()).isEqualTo("first@example.com");
+        assertThat(challenge.isConsumed()).isTrue();
+        verify(repository).save(any(User.class));
+        verify(publisher).publishEvent(any(SubscriptionWelcomeMailRequested.class));
     }
 
     @Test

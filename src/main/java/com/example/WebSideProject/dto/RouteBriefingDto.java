@@ -41,17 +41,29 @@ public record RouteBriefingDto(
             checklist.add("목적지에 " + destinationWeather.getWeatherWarningTitle() + "가 발효 중입니다.");
         }
 
-        int temperatureGap = Math.abs(parseTemperature(originWeather) - parseTemperature(destinationWeather));
-        if (temperatureGap >= 4) {
-            checklist.add("출발지와 목적지의 기온 차가 " + temperatureGap + "°C라 벗기 쉬운 겉옷이 좋아요.");
+        Integer originTemperature = parseTemperature(originWeather);
+        Integer destinationTemperature = parseTemperature(destinationWeather);
+        if (originTemperature != null && destinationTemperature != null) {
+            int temperatureGap = Math.abs(originTemperature - destinationTemperature);
+            if (temperatureGap >= 4) {
+                checklist.add("확인된 출발지와 목적지의 기온 차가 " + temperatureGap + "°C라 벗기 쉬운 겉옷이 좋아요.");
+            }
+        } else {
+            checklist.add("일부 지역의 기온 자료가 없어 기온 차를 비교하지 못했어요. 이동 전 최신 기온을 확인하세요.");
         }
+        if (!originWeather.hasPrecipitationData() || !destinationWeather.hasPrecipitationData()) {
+            checklist.add("일부 지역의 강수 자료가 부족해요. 이동 전 비나 눈 예보를 다시 확인하세요.");
+        }
+        boolean complete = originWeather.hasCoreWeatherData() && destinationWeather.hasCoreWeatherData();
         if (checklist.isEmpty()) {
-            checklist.add("경로 전반에 큰 날씨 변수는 적어 보여요.");
+            checklist.add(complete ? "확인된 예보에서는 큰 날씨 변수가 적어요. 출발 전 최신 예보도 확인하세요."
+                    : "일부 날씨 자료가 없어 판단하기 어려워요. 출발 전 최신 예보를 확인하세요.");
         }
 
-        String headline = destinationWeather.getOutingScore() >= 70
-                ? "이동하기 무난한 경로예요. 도착지 준비만 확인하세요."
-                : "도착지 날씨 변수가 있어 출발 전 준비가 필요해요.";
+        String headline = !complete ? "일부 날씨 자료가 부족해요. 이동 전 최신 예보를 확인하세요."
+                : destinationWeather.getOutingScore() >= 70
+                    ? "확인된 예보에서는 이동이 무난해요. 출발지와 도착지 예보를 확인하세요."
+                    : "확인된 도착지 예보에 날씨 변수가 있어 출발 전 준비가 필요해요.";
         return new RouteBriefingDto(
                 origin,
                 destination,
@@ -76,11 +88,7 @@ public record RouteBriefingDto(
         return (minutes / 60) + "시간 " + (minutes % 60) + "분";
     }
 
-    private static int parseTemperature(WeatherDto weather) {
-        try {
-            return Integer.parseInt(weather.getTmp());
-        } catch (NumberFormatException ignored) {
-            return 20;
-        }
+    private static Integer parseTemperature(WeatherDto weather) {
+        return weather.hasTemperatureData() ? Integer.parseInt(weather.getTmp()) : null;
     }
 }

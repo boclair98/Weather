@@ -12,7 +12,9 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Clock;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,10 +22,12 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class SmartWeatherAlertScheduler {
+    private static final ZoneId KOREA_ZONE = ZoneId.of("Asia/Seoul");
 
     private final WeatherService weatherService;
     private final UserService userService;
     private final MailService mailService;
+    private Clock clock = Clock.systemUTC();
 
     @Scheduled(cron = "0 15 7-21/2 * * *", zone = "Asia/Seoul")
     @SchedulerLock(name = "smart-weather-alert", lockAtLeastFor = "PT1M", lockAtMostFor = "PT25M")
@@ -91,7 +95,7 @@ public class SmartWeatherAlertScheduler {
     }
 
     private WeatherPeriod currentPeriod() {
-        int hour = LocalTime.now().getHour();
+        int hour = LocalTime.now(clock.withZone(KOREA_ZONE)).getHour();
         if (hour < 11) return WeatherPeriod.MORNING;
         if (hour < 17) return WeatherPeriod.AFTERNOON;
         return WeatherPeriod.EVENING;

@@ -1,15 +1,16 @@
-const CACHE_NAME = "weather-shell-v26";
-const APP_SHELL = ["/", "/weather.css?v=20261013-rollback-tablet-v1", "/favicon.svg", "/manifest.webmanifest"];
+const CACHE_NAME = "weather-shell-v38";
+const APP_SHELL = ["/offline.html", "/weather.css?v=20261013-rollback-tablet-v1", "/weather-letter.css?v=20261023-observatory-v1", "/weather-observatory.css?v=20261122-first-use-v4", "/weather-letter.js?v=20261122-friendly-copy-v1", "/weather-chart.js?v=20261023-observatory-v1", "/weather-workspace.js?v=20261025-v1", "/weather-compare.js?v=20261025-v1", "/favicon.svg", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).catch(() => undefined));
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+      .then((keys) => Promise.all(keys.filter((key) => key.startsWith("weather-shell-") && key !== CACHE_NAME).map((key) => caches.delete(key))))
+      .catch(() => undefined)
       .then(() => self.clients.claim())
   );
 });
@@ -31,21 +32,24 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (request.mode === "navigate") {
+    // Never cache account-specific HTML, SSO callbacks, tokens or subscription pages.
     event.respondWith(
       fetch(request)
-        .then((response) => {
-          if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put("/", response.clone()));
-          return response;
-        })
-        .catch(() => caches.match("/"))
+        .catch(async () => (await caches.match("/offline.html").catch(() => undefined)) || new Response("네트워크 연결을 확인해주세요.", {status: 503, headers: {"Content-Type": "text/plain;charset=UTF-8"}}))
     );
     return;
   }
 
+  // Only public shell assets belong in the service-worker cache.
+  if (!APP_SHELL.includes(url.pathname + url.search)) return;
+
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request).then((response) => {
-        if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
+    caches.match(request).catch(() => undefined).then((cached) => {
+      const network = fetch(request).then(async (response) => {
+        if (response.ok) {
+          try { await (await caches.open(CACHE_NAME)).put(request, response.clone()); }
+          catch { /* Cache quota/storage failure must not block a valid network response. */ }
+        }
         return response;
       });
       if (cached) {

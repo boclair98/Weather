@@ -47,6 +47,29 @@ class WeatherDecisionServiceTest {
                 .hasMessageContaining("180분");
     }
 
+    @Test
+    void excludesIncompleteHoursInsteadOfRecommendingThemAsDryWeather() {
+        JSONObject response = new JSONObject(forecastResponse());
+        JSONArray items = response.getJSONObject("response").getJSONObject("body")
+                .getJSONObject("items").getJSONArray("item");
+        for (int index = items.length() - 1; index >= 0; index--) {
+            JSONObject item = items.getJSONObject(index);
+            if ("1900".equals(item.getString("fcstTime")) && "POP".equals(item.getString("category"))) {
+                items.remove(index);
+            }
+        }
+
+        WeatherDecisionDto decision = service(response.toString()).getDecisionWindow(
+                60, 127, "을지로3가", LocalDate.now().toString(), "18:00", 60, 60
+        );
+
+        assertThat(decision.candidates()).hasSize(2);
+        assertThat(decision.candidates()).extracting(WeatherDecisionDto.WindowCandidate::start)
+                .doesNotContain("19:00");
+        assertThat(decision.recommendedStart()).isEqualTo("17:00");
+        assertThat(decision.provenance().completenessPercent()).isLessThan(100);
+    }
+
     private WeatherService service(String response) {
         WeatherService service = new WeatherService(
                 new StubRestTemplate(response),

@@ -46,7 +46,7 @@ public class EmailVerificationService {
         challengeRepository.save(EmailVerificationChallenge.issue(
                 normalizedOwnerId,
                 normalizedEmail,
-                hash(verificationCode),
+                hashCode(normalizedOwnerId, normalizedEmail, verificationCode),
                 expiresAt
         ));
 
@@ -98,7 +98,7 @@ public class EmailVerificationService {
             throw new IllegalArgumentException("이미 구독에 사용된 인증번호입니다. 새 인증번호를 요청해주세요.");
         }
         if (challenge.isVerified()) {
-            if (!matchesHash(code, challenge.getTokenHash())) {
+            if (!matchesCode(code, challenge)) {
                 throw new IllegalArgumentException("인증번호가 일치하지 않습니다. 다시 확인해주세요.");
             }
             return new VerificationResponse(
@@ -110,7 +110,7 @@ public class EmailVerificationService {
         if (challenge.getFailedAttempts() >= MAX_CODE_ATTEMPTS) {
             throw new IllegalArgumentException("인증번호 입력 횟수를 초과했습니다. 새 인증번호를 요청해주세요.");
         }
-        if (!matchesHash(code, challenge.getTokenHash())) {
+        if (!matchesCode(code, challenge)) {
             challenge.recordFailedAttempt();
             int remaining = Math.max(0, MAX_CODE_ATTEMPTS - challenge.getFailedAttempts());
             if (remaining == 0) {
@@ -151,7 +151,9 @@ public class EmailVerificationService {
 
     @Transactional
     public String consumeVerifiedEmail(String ownerId, String rawToken, String expectedEmail) {
-        EmailVerificationChallenge challenge = findChallenge(rawToken);
+        EmailVerificationChallenge challenge = isVerificationCode(rawToken)
+                ? findCodeChallenge(ownerId, rawToken.trim(), expectedEmail)
+                : findChallenge(rawToken);
         String normalizedOwnerId = resolveOwnerId(ownerId, challenge.getEmail());
         LocalDateTime now = LocalDateTime.now();
         if (!normalizedOwnerId.equals(challenge.getOwnerId())) {
@@ -159,6 +161,9 @@ public class EmailVerificationService {
         }
         if (challenge.isExpired(now)) {
             throw new IllegalArgumentException("이메일 인증이 만료되었습니다. 인증 메일을 다시 요청해주세요.");
+        }
+        if (challenge.isConsumed()) {
+            throw new IllegalArgumentException("이미 구독에 사용된 인증번호입니다. 새 인증번호를 요청해주세요.");
         }
         if (!challenge.isVerified()) {
             throw new SecurityException("이메일 인증번호를 먼저 확인해주세요.");
@@ -170,9 +175,38 @@ public class EmailVerificationService {
         return challenge.getEmail();
     }
 
+    private EmailVerificationChallenge findCodeChallenge(String ownerId, String code, String expectedEmail) {
+        EmailVerificationChallenge challenge;
+        if (expectedEmail != null) {
+            String email = normalizeEmail(expectedEmail);
+            String normalizedOwnerId = resolveOwnerId(ownerId, email);
+            challenge = challengeRepository
+                    .findFirstByOwnerIdAndEmailOrderByCreatedAtDesc(normalizedOwnerId, email)
+                    .orElseThrow(() -> new SecurityException(
+                            "현재 계정과 이메일로 요청한 인증번호만 사용할 수 있습니다."
+                    ));
+        } else if (ownerId != null && !ownerId.isBlank()) {
+            // Older callers may only provide the signed-in owner. Each owner
+            // has at most one current challenge because requests replace it.
+            challenge = challengeRepository.findFirstByOwnerIdOrderByCreatedAtDesc(ownerId.trim())
+                    .orElseThrow(() -> new SecurityException("현재 계정으로 요청한 인증번호만 사용할 수 있습니다."));
+        } else {
+            throw new IllegalArgumentException("인증한 이메일 주소를 함께 입력해주세요.");
+        }
+        if (!matchesCode(code, challenge)) {
+            throw new SecurityException("유효하지 않은 이메일 인증번호입니다.");
+        }
+        return challenge;
+    }
+
     private EmailVerificationChallenge findChallenge(String rawToken) {
         if (rawToken == null || rawToken.isBlank() || rawToken.length() > 128) {
             throw new IllegalArgumentException("유효한 이메일 인증 토큰이 필요합니다.");
+        }
+        if (isVerificationCode(rawToken)) {
+            // Code verification must use the owner/email-scoped POST flow;
+            // the deprecated link endpoint must not approve a guessed code.
+            throw new IllegalArgumentException("이메일 인증번호는 입력 화면에서 확인해주세요.");
         }
         return challengeRepository.findByTokenHash(hash(rawToken))
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 이메일 인증번호입니다."));
@@ -189,7 +223,7 @@ public class EmailVerificationService {
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("본인 이메일을 입력해주세요.");
         }
-        String normalized = email.trim().toLowerCase();
+        String normalized = email.trim().toLowerCase(Locale.ROOT);
         if (normalized.length() > 254 || !EMAIL_PATTERN.matcher(normalized).matches()) {
             throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다.");
         }
@@ -217,12 +251,33 @@ public class EmailVerificationService {
         return rawCode.trim();
     }
 
+    private boolean isVerificationCode(String credential) {
+        return credential != null && credential.trim().matches("\\d{" + CODE_LENGTH + "}");
+    }
+
+    private String hashCode(String ownerId, String email, String code) {
+        // Length-prefix the owner so unusual identity strings cannot collide
+        // with the separator. No code is globally unique across subscribers.
+        return hash("email-code-v2:" + ownerId.length() + ":" + ownerId + ":" + email + ":" + code);
+    }
+
+    private boolean matchesCode(String code, EmailVerificationChallenge challenge) {
+        String scopedHash = hashCode(challenge.getOwnerId(), challenge.getEmail(), code);
+        if (constantTimeEquals(scopedHash, challenge.getTokenHash())) return true;
+        // Keep already-issued codes working during their 15-minute lifetime.
+        return matchesHash(code, challenge.getTokenHash());
+    }
+
     private boolean matchesHash(String rawCode, String storedHash) {
+        return constantTimeEquals(hash(rawCode), storedHash);
+    }
+
+    private boolean constantTimeEquals(String expectedHash, String storedHash) {
         if (storedHash == null || storedHash.isBlank()) {
             return false;
         }
         return MessageDigest.isEqual(
-                hash(rawCode).getBytes(StandardCharsets.UTF_8),
+                expectedHash.getBytes(StandardCharsets.UTF_8),
                 storedHash.getBytes(StandardCharsets.UTF_8)
         );
     }

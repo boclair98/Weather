@@ -29,10 +29,10 @@ public record CurrentWeatherDto(
             String precipitationType
     ) {
         int apparentTemperature = calculateApparentTemperature(temperature, humidity, windSpeed);
-        boolean precipitation = !"없음".equals(precipitationType);
-        String headline = precipitation
-                ? precipitationType + " 관측 중"
-                : "강수 현상 없음";
+        boolean precipitation = "비".equals(precipitationType) || "눈".equals(precipitationType)
+                || "비 또는 눈".equals(precipitationType);
+        String headline = precipitation ? precipitationType + " 관측 중"
+                : "없음".equals(precipitationType) ? "강수 현상 없음" : "강수 관측 정보 없음";
         String advice = buildAdvice(apparentTemperature, humidity, windSpeed, precipitationType);
         return new CurrentWeatherDto(
                 locationName == null || locationName.isBlank() ? "선택 위치" : locationName,
@@ -42,8 +42,8 @@ public record CurrentWeatherDto(
                 apparentTemperature,
                 humidity,
                 Math.round(windSpeed * 10.0) / 10.0,
-                oneHourPrecipitation == null || oneHourPrecipitation.isBlank() ? "0" : oneHourPrecipitation,
-                precipitationType,
+                oneHourPrecipitation == null || oneHourPrecipitation.isBlank() ? "-" : oneHourPrecipitation,
+                precipitationType == null || precipitationType.isBlank() ? "정보 없음" : precipitationType,
                 headline,
                 advice,
                 "기상청 초단기실황",
@@ -74,8 +74,11 @@ public record CurrentWeatherDto(
             double windSpeed,
             String precipitationType
     ) {
-        if (!"없음".equals(precipitationType)) {
+        if ("비".equals(precipitationType) || "눈".equals(precipitationType) || "비 또는 눈".equals(precipitationType)) {
             return "관측상 강수가 확인됐어요. 우산을 챙기고 미끄러운 길을 주의하세요.";
+        }
+        if (!"없음".equals(precipitationType)) {
+            return "강수 관측 자료가 없어요. 아래 시간별 예보도 함께 확인하세요.";
         }
         if (apparentTemperature >= 31) {
             return "현재 체감이 매우 더워요. 물을 챙기고 장시간 야외 활동을 줄이세요.";
